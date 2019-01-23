@@ -14,16 +14,15 @@ protocol_nickname::protocol_nickname(){
     this->identifier_list = {"name","n"};
     
     this->help_message = base64::decode(
-        "5pi156ewKC5uYW1l5oiWLm4pCuaMh+S7pC5uYW1"
-        "lIFvlkI3lrZdd77ya5pu05pS55pi156ew5Li6W+"
-        "WQjeWtl13jgIIK5oyH5LukLm4gW+WQjeWtl13vv"
-        "JrkuIrov7Dlkb3ku6TnmoTnroDlhpnlvaLlvI/j"
-        "gIIK5oyH5LukLm5hbWUgc2lsZW5jZSBb5ZCN5a2"
-        "XXe+8muabtOaUueaYteensOS4ulvlkI3lrZdd77"
-        "yM5L2G5py65Zmo5Lq65LiN5Lya5Zug6K+l6KGM6"
-        "ICM5Zue5aSN44CCCuaMh+S7pC5ucyBb5ZCN5a2X"
-        "Xe+8muS4iui/sOWRveS7pOeahOeugOWGmeW9ouW"
-        "8j+OAgg==");
+       "5pi156ewKC5uYW1l5oiWLm4pCuaMh+S7pC5uYW1l"
+        "IFvlkI3lrZdd77ya5pu05pS55pi156ew5Li6W+WQ"
+        "jeWtl10K5oyH5LukLm4gW+WQjeWtl13vvJrkuIro"
+        "v7Dlkb3ku6TnmoTnroDlhpnlvaLlvI8K5oyH5Luk"
+        "Lm5hbWUgc2lsZW5jZSBb5ZCN5a2XXe+8muabtOaU"
+        "ueaYteensOS4ulvlkI3lrZdd77yM5L2G5py65Zmo"
+        "5Lq65LiN5Lya5Zue5aSNCuaMh+S7pC5ucyBb5ZCN"
+        "5a2XXe+8muS4iui/sOWRveS7pOeahOeugOWGmeW9"
+        "ouW8jw==");
 }
 
 bool protocol_nickname::resolve_request(
