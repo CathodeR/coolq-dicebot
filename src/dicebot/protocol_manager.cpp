@@ -57,17 +57,16 @@ protocol_help::protocol_help(){
     this->identifier_regex = "h(?:help)?";
     this->identifier_list = {"help","h"};
     this->help_message = base64::decode(
-        "RGljZUJvdCBieSBkeW5pbGF0aCB2MS42LjAK6K6/6Zeu6aG555"
-        "uu5Li76aG1aHR0cDovL2dpdGh1Yi5jb20vZHluaWxhdGgvY29v"
-        "bHEtZGljZWJvdArojrflvpfkvb/nlKjor7TmmI7ku6Xlj4rkuo"
-        "bop6Pmm7TlpJrlhoXlrrnjgIIK5L2/55So5pa55byP566A5LuL"
-        "77yaCi5yIDFkOCsxZDYrMyDmma7pgJrpqrDlrZAKLmMgY29j6a"
-        "qw5a2QCi53bzQgb3dvZOmqsOWtkAoud240IG53b2TpqrDlrZAK"
-        "LmYgRkFURemqsOWtkAror6bnu4bmjIfku6Tlj4LogIPor7fliY"
-        "3lvoDpobnnm67kuLvpobXjgIIK5aaC5p6c5Zyo5L2/55So5Lit"
-        "6YGH5Yiw5LqGYnVn77yM5oiW6ICF5pyJ5LuA5LmI5Yqf6IO95b"
-        "u66K6u77yM5qyi6L+O5Zyo6aG555uu5Li76aG16YCa6L+HaXNz"
-        "dWXlj43ppojvvIzmhJ/osKLmgqjnmoTluK7liqnjgII=");
+        "RGljZUJvdCBieSBkeW5pbGF0aCB2MS42LjIgZGV2Cuiuv+mXrumhueebruS4u+m"
+        "htWh0dHA6Ly9naXRodWIuY29tL2R5bmlsYXRoL2Nvb2xxLWRpY2Vib3QK6I635b"
+        "6X5L2/55So6K+05piO5Lul5Y+K5LqG6Kej5pu05aSa5YaF5a6544CCCuS9v+eUq"
+        "OaWueW8j+eugOS7i++8mgouciAxZDgrMWQ2KzMg5pmu6YCa6aqw5a2QCi5jIGNv"
+        "Y+mqsOWtkAoud280IG93b2TpqrDlrZAKLnduNCBud29k6aqw5a2QCi5mIEZBVEX"
+        "pqrDlrZAK5pu05aSa5oyH5Luk77yac2V0IHZhciBsaXN0IGRlbGV0ZSBtYW51YW"
+        "wK5L2/55SoLmhlbHAgW+aMh+S7pOWQjeensF3mnaXojrflvpflr7nlupTmjIfku"
+        "6TnmoTluK7liqkK5aaC5p6c5Zyo5L2/55So5Lit6YGH5Yiw5LqGYnVn77yM5oiW"
+        "6ICF5pyJ5LuA5LmI5Yqf6IO95bu66K6u77yM5qyi6L+O5Zyo6aG555uu5Li76aG"
+        "16YCa6L+HaXNzdWXlj43ppojvvIzmhJ/osKLmgqjnmoTluK7liqnjgII=");
 }
 
 bool protocol_help::register_help(p_protocol v_protocol){

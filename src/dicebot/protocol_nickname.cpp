@@ -1,7 +1,9 @@
 #include "./protocol_nickname.h"
 
 #include "./nick_manager.h"
+#include "../cqsdk/utils/base64.h"
 
+namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -10,6 +12,18 @@ protocol_nickname::protocol_nickname(){
     this->filter_command = std::regex("^(s)(?:ilence)? *",std::regex_constants::icase);
     this->identifier_regex = "n(?:ame)?";
     this->identifier_list = {"name","n"};
+    
+    this->help_message = base64::decode(
+        "5pi156ewKC5uYW1l5oiWLm4pCuaMh+S7pC5uYW1"
+        "lIFvlkI3lrZdd77ya5pu05pS55pi156ew5Li6W+"
+        "WQjeWtl13jgIIK5oyH5LukLm4gW+WQjeWtl13vv"
+        "JrkuIrov7Dlkb3ku6TnmoTnroDlhpnlvaLlvI/j"
+        "gIIK5oyH5LukLm5hbWUgc2lsZW5jZSBb5ZCN5a2"
+        "XXe+8muabtOaUueaYteensOS4ulvlkI3lrZdd77"
+        "yM5L2G5py65Zmo5Lq65LiN5Lya5Zug6K+l6KGM6"
+        "ICM5Zue5aSN44CCCuaMh+S7pC5ucyBb5ZCN5a2X"
+        "Xe+8muS4iui/sOWRveS7pOeahOeugOWGmeW9ouW"
+        "8j+OAgg==");
 }
 
 bool protocol_nickname::resolve_request(

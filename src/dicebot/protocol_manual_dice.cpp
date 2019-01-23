@@ -6,7 +6,9 @@
 #include "./nick_manager.h"
 #include "./manual_dice.h"
 #include "./manual_dice_control.h"
+#include "../cqsdk/utils/base64.h"
 
+namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -24,6 +26,15 @@ protocol_manual_dice::protocol_manual_dice(){
     this->method_map.insert(manual_pair("k", &manualdice_kill));
     this->method_map.insert(manual_pair("a", &manualdice_add));
     this->method_map.insert(manual_pair("r", &manualdice_roll));
+
+    this->help_message = base64::decode(
+        "5omL5Yqo6aqw5a2QKC5tYW51YWzmiJbogIUubSkK5oyH5LukLm0gW2RpY2"
+        "Vd77ya5Lqn55Sf5omL5Yqo6aqw5a2Q77yM5ZCO5o6l6aqw5a2Q77yM6L+Z"
+        "6YeM5LiN5pSv5oyB566X5byP44CCCuaMh+S7pC5tciBbbnVtYmVyXe+8mu"
+        "mqsOaMh+WumumqsOWtkO+8jOWQjuaOpemqsOWtkOW6j+WPt+OAggrmjIfk"
+        "u6QubWsgW251bWJlcl3vvJrmtojnga3mjIflrprpqrDlrZDvvIzlkI7mjq"
+        "XpqrDlrZDluo/lj7fjgIIK5oyH5LukLm1rYe+8mua4heepuuaJgOacieaJ"
+        "i+WKqOmqsOWtkOOAgg==");
 }
 
 bool protocol_manual_dice::resolve_request(

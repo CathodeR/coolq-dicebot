@@ -2,7 +2,9 @@
 #include "./dice_utils.h"
 #include "./nick_manager.h"
 #include "./dice_roller.h"
+#include "../cqsdk/utils/base64.h"
 
+namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -94,7 +96,16 @@ protocol_coc_dice::protocol_coc_dice(){
     this->is_stand_alone = false;
     this->full_dice = std::regex("^([pb]\\d+ *)* *", std::regex_constants::icase);
     this->identifier_regex = "c(?:oc)?";
-    this->identifier_list ={"coc","c"};
+    this->identifier_list ={"coc","c"};    
+    
+    this->help_message = base64::decode(
+        "Q29D5a6a5Yi26aqw5a2QKC5jb2PmiJYuYykK5oy"
+        "H5LukLmNvY++8mmNvY+WumuWItumqsOWtkOOAgg"
+        "rmjIfku6QuY++8muS4iui/sOWRveS7pOeahOeug"
+        "OWGmeW9ouW8j+OAggrmjIfku6QuY29jIHAx77ya"
+        "5oOp572a6aqwMe+8iHBlbmFsdHkgMe+8ieOAggr"
+        "mjIfku6QuY29jIGIx77ya5aWW5Yqx6aqwMe+8iG"
+        "JvbnVzIDHvvInjgII=");
 }
 
 bool protocol_coc_dice::resolve_request(
