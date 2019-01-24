@@ -53,10 +53,10 @@ CQ_MAIN {
             cqlogging::debug(u8"DICE", u8"调用失败，错误码：" + std::to_string(err.code));
         }
         catch(const std::exception &err){
-            cqlogging::debug(u8"DICE", u8"发生std exception：" + std::to_string(err.what()));
+            cqlogging::warning(u8"DICE", u8"发生std exception：" + std::to_string(err.what()));
         }
         catch (...){
-            cqlogging::debug(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
+            cqlogging::warning(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
         }
         e.block(); 
     }; 
@@ -81,10 +81,10 @@ CQ_MAIN {
             cqlogging::debug(u8"DICE", u8"调用失败，错误码：" + std::to_string(err.code));
         }
         catch(const std::exception &err){
-            cqlogging::debug(u8"DICE", u8"发生std exception：" + std::to_string(err.what()));
+            cqlogging::warning(u8"DICE", u8"发生std exception：" + std::to_string(err.what()));
         }
         catch (...){
-            cqlogging::debug(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
+            cqlogging::warning(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
         }
         e.block();
     };
@@ -110,10 +110,10 @@ CQ_MAIN {
             cqlogging::debug(u8"DICE", u8"调用失败，错误码：" + std::to_string(err.code));
         }
         catch(const std::exception &err){
-            cqlogging::debug(u8"DICE", u8"发生std exception：" + std::to_string(err.what()));
+            cqlogging::warning(u8"DICE", u8"发生std exception：" + std::to_string(err.what()));
         }
         catch (...){
-            cqlogging::debug(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
+            cqlogging::warning(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
         }
         e.block();
     };
