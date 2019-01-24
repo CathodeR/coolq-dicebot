@@ -32,13 +32,12 @@ CQ_MAIN {
     };
 
     cqevent::on_private_msg = [](const cq::PrivateMessageEvent &e) {
-
-        dicebot::event_info ei(e.user_id);
-        if(!dicebot::try_fill_nickname(ei)){
-            ei.nickname = get_nickname(e.user_id);
-        }
-
         try{
+            dicebot::event_info ei(e.user_id);
+            if(!dicebot::try_fill_nickname(ei)){
+                ei.nickname = get_nickname(e.user_id);
+            }
+
             std::string output;
             if(dicebot::message_pipeline(e.raw_message,ei,output)){
                 cq::Message message;
@@ -62,13 +61,12 @@ CQ_MAIN {
     }; 
 
     cqevent::on_group_msg = [](const cq::GroupMessageEvent &e ) { 
-        
-        dicebot::event_info ei(e.user_id,e.group_id,dicebot::event_type::group);
-        if(!dicebot::try_fill_nickname(ei)){
-            ei.nickname = get_group_nickname(e.group_id,e.user_id);
-        }
-
         try {
+            dicebot::event_info ei(e.user_id,e.group_id,dicebot::event_type::group);
+            if(!dicebot::try_fill_nickname(ei)){
+                ei.nickname = get_group_nickname(e.group_id,e.user_id);
+            }
+
             std::string output;
             if(dicebot::message_pipeline(e.raw_message, ei, output)){
                 cq::Message message;
@@ -90,13 +88,12 @@ CQ_MAIN {
     };
 
     cqevent::on_discuss_msg = [](const cq::DiscussMessageEvent &e ) {
-
-        dicebot::event_info ei(e.user_id,e.discuss_id,dicebot::event_type::discuss);
-        if(!dicebot::try_fill_nickname(ei)){
-            ei.nickname = get_nickname(e.user_id);
-        }
-
         try {
+            dicebot::event_info ei(e.user_id,e.discuss_id,dicebot::event_type::discuss);
+            if(!dicebot::try_fill_nickname(ei)){
+                ei.nickname = get_nickname(e.user_id);
+            }
+
             std::string output;
             if(dicebot::message_pipeline(e.raw_message, ei, output)){
                 cq::Message message;
