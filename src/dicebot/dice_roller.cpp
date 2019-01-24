@@ -141,8 +141,20 @@ std::string dice_roll::detail_fate() noexcept{
     ost << "[";
     for(uint16_t i = 0;i < 4;i++){
         dice_pair dp = results[i];
-        ost << dp.first ;
-        if(i!=3) ost<<" + ";
+        switch(dp.first){
+            case 1:
+                ost << "+";
+                break;
+            case -1:
+                ost << "-";
+                break;
+            case 0:
+                ost << "o";
+                break;
+            default:
+                break;
+        }
+        if(i!=3) ost<<" ";
     }
     if(this->results.size() > 4){
         int val = this->results[4].first;
@@ -151,6 +163,7 @@ std::string dice_roll::detail_fate() noexcept{
         val = val > 0 ? val : -val;
         ost << val;
     }
+    else ost << "]";
     return ost.str();
 }
 
