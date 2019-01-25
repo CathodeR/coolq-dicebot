@@ -54,9 +54,6 @@ CQ_MAIN {
         catch(const std::exception &err){
             cqlogging::warning(u8"DICE", u8"发生std exception：" + std::to_string(err.what()) + u8"\n发送消息为：" + e.raw_message);
         }
-        catch (...){
-            cqlogging::warning(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
-        }
         e.block(); 
     }; 
 
@@ -80,9 +77,6 @@ CQ_MAIN {
         }
         catch(const std::exception &err){
             cqlogging::warning(u8"DICE", u8"发生std exception：" + std::to_string(err.what()) + u8"\n发送消息为：" + e.raw_message);
-        }
-        catch (...){
-            cqlogging::warning(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
         }
         e.block();
     };
@@ -108,9 +102,6 @@ CQ_MAIN {
         }
         catch(const std::exception &err){
             cqlogging::warning(u8"DICE", u8"发生std exception：" + std::to_string(err.what()) + u8"\n发送消息为：" + e.raw_message);
-        }
-        catch (...){
-            cqlogging::warning(u8"DICE", u8"发生无法捕捉的异常，发送消息为：" + e.raw_message);
         }
         e.block();
     };
