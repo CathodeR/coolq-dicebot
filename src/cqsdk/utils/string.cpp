@@ -92,35 +92,21 @@ namespace cq::utils {
 
         if (config.convert_unicode_emoji) {
             result = sregex_replace(result, regex(R"(\[CQ:emoji,\s*id=(\d+)\])"), [](const smatch &m) {
-                uint32_t target = std::stoul(m[1]);
-                uint32_t guide = 0;
-                int len = 0;
-                if(target <= 0x7f){
-                    char a[2] = {target & 0xff,0};
-                    return std::string(a);
-                }
-                else if(target <= 0x07ff){
-                    guide = 0b11000000;
-                    len = 2;
-                }
-                else if(target <= 0xffff){
-                    guide = 0b11100000;
-                    len = 3;
-                } 
-                else if(target <= 0x1fffff){
-                    guide = 0b11110000;
-                    len = 4;
-                } 
-                else return std::string();
+                const auto codepoint_str = m.str(1);
+                u32string u32_str;
 
-                char buf[5];
-                buf[len] = 0;
-                while(--len){
-                    buf[len] = target & 0b00111111 | 0b10000000;
-                    target = target >> 6;
+                if (boost::starts_with(codepoint_str, "100000")) {
+                    // keycap # to keycap 9
+                    const auto codepoint = static_cast<char32_t>(stoul(codepoint_str.substr(strlen("100000"))));
+                    u32_str.append({codepoint, 0xFE0F, 0x20E3});
+                } else {
+                    const auto codepoint = static_cast<char32_t>(stoul(codepoint_str));
+                    u32_str.append({codepoint});
                 }
-                buf[len] = target | guide;
-                return std::string(buf);
+
+                const auto p = reinterpret_cast<const uint32_t *>(u32_str.data());
+                wstring_convert<codecvt_utf8<uint32_t>, uint32_t> conv;
+                return conv.to_bytes(p, p + u32_str.size());
             });
 
             // CoolQ sometimes use "#\uFE0F" to represent "#\uFE0F\u20E3"
@@ -135,13 +121,9 @@ namespace cq::utils {
         return result;
     }
 
-    string ws2s(const wstring &ws) { 
-        return wstring_convert<codecvt<wchar_t,char,std::mbstate_t>, wchar_t>().to_bytes(ws);
-    }
+    string ws2s(const wstring &ws) { return wstring_convert<codecvt_utf8<wchar_t>, wchar_t>().to_bytes(ws); }
 
-    wstring s2ws(const string &s) { 
-        return wstring_convert<codecvt<wchar_t,char,std::mbstate_t>, wchar_t>().from_bytes(s); 
-    }
+    wstring s2ws(const string &s) { return wstring_convert<codecvt_utf8<wchar_t>, wchar_t>().from_bytes(s); }
 
     string ansi(const string &s) { return string_encode(s, Encoding::ANSI); }
 } // namespace cq::utils
