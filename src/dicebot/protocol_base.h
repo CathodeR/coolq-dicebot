@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "./common.h"
 
@@ -25,13 +25,13 @@ namespace dicebot::protocol{
             protocol_ot << " " << message;
         }
         void append_roll(std::string const & roll_command, std::string const & detail, std::string const & roll_result){
-            protocol_ot << " 掷骰: " << roll_command;
+            protocol_ot << u8" 掷骰: " << roll_command;
             if(detail.size() > 0) protocol_ot << " = " << detail;
             protocol_ot<<" = " << roll_result;
         }
 
         void append_roll(std::string const & roll_command, std::string const & detail, int const roll_result){
-            protocol_ot << " 掷骰: " << roll_command;
+            protocol_ot << u8" 掷骰: " << roll_command;
             if(detail.size() > 0) protocol_ot << " = " << detail;
             protocol_ot<<" = " << roll_result;
         }
