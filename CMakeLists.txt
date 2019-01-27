@@ -2,8 +2,11 @@ cmake_minimum_required(VERSION 3.9)
 project(coolq-dicebot)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "/utf-8 ${CMAKE_CXX_FLAGS}")  # use UTF-8 source files
-set(CMAKE_CXX_FLAGS "/MP ${CMAKE_CXX_FLAGS}")  # build with object level parallelism
+
+if(NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
+  set(CMAKE_CXX_FLAGS "/utf-8 ${CMAKE_CXX_FLAGS}")  # use UTF-8 source files
+  set(CMAKE_CXX_FLAGS "/MP ${CMAKE_CXX_FLAGS}")  # build with object level parallelism
+endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
@@ -32,7 +35,7 @@ add_definitions(-DBOOST_CONFIG_SUPPRESS_OUTDATED_MESSAGE
                 -DWIN32_LEAN_AND_MEAN
                 -DNOMINMAX)
 
-find_package(Iconv REQUIRED)
+find_package(unofficial-iconv REQUIRED)
 find_package(SQlite3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS serialization)
 
@@ -51,7 +54,7 @@ if(NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   file(GLOB_RECURSE SOURCE_FILES src/main.cpp src/cqsdk/*.cpp src/dicebot/*.cpp)
   set(LIB_NAME "com.dynilath.coolqdicebot")
   add_library(${LIB_NAME} SHARED ${SOURCE_FILES})
-  target_link_libraries(${LIB_NAME} ${ICONV_AND_DEPS_LIBRARIES})
+  target_link_libraries(${LIB_NAME} unofficial::iconv::libiconv unofficial::iconv::libcharset)
   target_link_libraries(${LIB_NAME} sqlite3)
   target_link_libraries(${LIB_NAME} ${Boost_LIBRARIES})
 endif()

@@ -1,7 +1,9 @@
 $config_type = 'Debug'
 
 Set-Location $PSScriptRoot\..\  # enter the parent folder
-mkdir test\$config_type -ErrorAction SilentlyContinue  # create build folder if not exists
+if(-not (Test-Path -Path "test\$config_type")){
+    New-Item -Path "test\$config_type" -ItemType "directory"
+}
 Set-Location .\test\$config_type  # enter the build folder
 
 $vcpkg_root = $env:VCPKG_ROOT

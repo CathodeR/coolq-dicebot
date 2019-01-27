@@ -94,7 +94,7 @@
             "args": [
                 "-NoProfile",
                 "-File",
-                "'${workspaceFolder}/scripts/build.ps1'",
+                "'${workspaceFolder}/scripts/build_linux_test.ps1'",
             ],
             "problemMatcher": "$gcc",
             "group": "build",
