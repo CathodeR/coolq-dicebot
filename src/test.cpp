@@ -64,6 +64,7 @@ else compare = std::to_string(((double)_Val1) _Oper ((double)_Val2));\
 ASSERT_EQ(ret.str(), compare);\
 ASSERT_EQ(ret.is_using_int,false);}
 
+#pragma region number test
 
     TEST(NumberTest, Add_01_Int_Int){EASY_CASE_HACK( 12, + , 1234, true);}
     TEST(NumberTest, Add_02_Int_Float){EASY_CASE_HACK( 12, +, 123.4, false);}
@@ -98,6 +99,8 @@ ASSERT_EQ(ret.is_using_int,false);}
     TEST(NumberTest, Divide_06_MAX_B_DOWN){EASY_CEIL_HACK(-INT_MAX,/,3);}
     TEST(NumberTest, Divide_07_Int_Int){EASY_CASE_HACK( 32, / , 12, false);}
 
+#pragma endregion
+
 #define GENERATE_ROLL_RESULT(_list,_sample,_max,_min,_roll_method){\
 _list.assign(_max-_min+1,0);\
 int repeat = _sample;\
@@ -127,6 +130,7 @@ ASSERT_LE(dr.summary,_max);}}
         }
     };
 
+#pragma region direct roll test
     TEST(RollTest, Base_01_d100){
         int sample_sum = (4000);
 
@@ -341,6 +345,73 @@ ASSERT_LE(dr.summary,_max);}}
         ASSERT_EQ(dr.status,dicebot::roll::roll_status::TOO_MANY_DICE);
     }
     
+    TEST(RollTest, WOD_01_O_5D8){
+        int sample_sum = (1000);
+
+        int min_val = 0;
+        int max_val = 5;
+
+        std::vector<int> result;
+        GENERATE_ROLL_RESULT(
+            result,
+            sample_sum,
+            max_val,
+            min_val,
+            dicebot::roll::roll_owod(dr,"5D8"));
+
+        std::vector<int> compare;
+        compare.assign(max_val - min_val+1,0);
+        dice_result_structor drs(max_val,10);
+        while(drs.increase()){
+            int result = 0;
+            for(uint16_t i=0;i<drs.d_vals.size();i++){
+                int t_r = drs.d_vals[i] >= 8 ? 1 : (drs.d_vals[i] == 1 ? -1 : 0);
+                result += t_r;
+            }
+            if(result < 0) result = 0;
+            compare[result]++;
+        }
+
+        double chi_square = fun_chi_square(result,compare);
+        //chi-square check with 0.1% of coherence
+        double chi_01_percent = 20.51500565;
+        ASSERT_LT(chi_square,chi_01_percent);
+    }
+    
+    TEST(RollTest, FATE_01){
+        int sample_sum = (1000);
+
+        int min_val = -4;
+        int max_val = 4;
+
+        std::vector<int> result;
+        result.assign(9,0);
+        int t = sample_sum;
+        while(t--){
+            roll::dice_roll dr;
+            roll::roll_fate(dr);
+            result[dr.summary + 4]++;
+        }
+
+        std::vector<int> compare;
+        compare.assign(9,0);
+        dice_result_structor drs(4,3);
+        do{
+            int result = 0;
+            for(uint16_t i=0;i<drs.d_vals.size();i++){
+                result += drs.d_vals[i];
+            }
+            result -= 4;
+            compare[result]++;
+        }while(drs.increase());
+
+        double chi_square = fun_chi_square(result,compare);
+        //chi-square check with 0.1% of coherence
+        double chi_01_percent = 16.2662361962381;
+        ASSERT_LT(chi_square,chi_01_percent);
+    }
+#pragma endregion
+
     TEST(DiceSpliter, TEST_01_2d6_1d4_1d8){
         int sample_sum = (2000);
 
@@ -499,74 +570,6 @@ ASSERT_LE(dr.summary,_max);}}
             ASSERT_EQ(result, 0);
         }
     }
-    
-    TEST(RollTest, WOD_01_O_5D8){
-        int sample_sum = (1000);
-
-        int min_val = 0;
-        int max_val = 5;
-
-        std::vector<int> result;
-        GENERATE_ROLL_RESULT(
-            result,
-            sample_sum,
-            max_val,
-            min_val,
-            dicebot::roll::roll_owod(dr,"5D8"));
-
-        std::vector<int> compare;
-        compare.assign(max_val - min_val+1,0);
-        dice_result_structor drs(max_val,10);
-        while(drs.increase()){
-            int result = 0;
-            for(uint16_t i=0;i<drs.d_vals.size();i++){
-                int t_r = drs.d_vals[i] >= 8 ? 1 : (drs.d_vals[i] == 1 ? -1 : 0);
-                result += t_r;
-            }
-            if(result < 0) result = 0;
-            compare[result]++;
-        }
-
-        double chi_square = fun_chi_square(result,compare);
-        //chi-square check with 0.1% of coherence
-        double chi_01_percent = 20.51500565;
-        ASSERT_LT(chi_square,chi_01_percent);
-    }
-    
-    TEST(RollTest, FATE_01){
-        int sample_sum = (1000);
-
-        int min_val = -4;
-        int max_val = 4;
-
-        std::vector<int> result;
-        result.assign(9,0);
-        int t = sample_sum;
-        while(t--){
-            roll::dice_roll dr;
-            roll::roll_fate(dr);
-            result[dr.summary + 4]++;
-        }
-
-        std::vector<int> compare;
-        compare.assign(9,0);
-        dice_result_structor drs(4,3);
-        do{
-            int result = 0;
-            for(uint16_t i=0;i<drs.d_vals.size();i++){
-                result += drs.d_vals[i];
-            }
-            result -= 4;
-            compare[result]++;
-        }while(drs.increase());
-
-        double chi_square = fun_chi_square(result,compare);
-        //chi-square check with 0.1% of coherence
-        double chi_01_percent = 16.2662361962381;
-        ASSERT_LT(chi_square,chi_01_percent);
-    }
-
-
 
 } // test
 
