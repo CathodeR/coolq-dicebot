@@ -1,7 +1,7 @@
 #include "./manual_dice.h"
 
 #include "./dice_roller.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -144,13 +144,13 @@ namespace dicebot::manual{
             oa << ((*iter_list).first);
             oa << ((*iter_list).second);
         }
-        return cq::utils::base64::encode((const unsigned char *)(strs.str().c_str()),strs.str().size());
+        return base64_encode((const unsigned char *)(strs.str().c_str()),strs.str().size());
     }
 
     void manual_dice::decode(std::string & source){
         this->clear();
         std::string source_copy(source);
-        source_copy = cq::utils::base64::decode(source_copy);
+        source_copy = base64_decode(source_copy);
         std::istringstream iss(source_copy);
         boost::archive::binary_iarchive ia(iss);
 

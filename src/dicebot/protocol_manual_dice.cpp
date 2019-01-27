@@ -6,9 +6,8 @@
 #include "./nick_manager.h"
 #include "./manual_dice.h"
 #include "./manual_dice_control.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
-namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -27,7 +26,7 @@ protocol_manual_dice::protocol_manual_dice(){
     this->method_map.insert(manual_pair("a", &manualdice_add));
     this->method_map.insert(manual_pair("r", &manualdice_roll));
 
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "5omL5Yqo6aqw5a2QKC5tYW51YWzmiJbogIUubSkK"
         "5oyH5LukLm0gW2RpY2Vd77ya5Lqn55Sf5omL5Yqo"
         "6aqw5a2Q77yM5ZCO5o6l6aqw5a2Q77yM6L+Z6YeM"

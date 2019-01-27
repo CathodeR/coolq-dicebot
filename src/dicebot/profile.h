@@ -2,7 +2,7 @@
 
 #include "./common.h"
 
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 
@@ -66,13 +66,13 @@ namespace dicebot::profile{
                 oa << ((*iter_list).first);
                 oa << ((*iter_list).second);
             }
-            return cq::utils::base64::encode((const unsigned char *)(strs.str().c_str()),strs.str().size());
+            return base64_encode((const unsigned char *)(strs.str().c_str()),strs.str().size());
         }
 
         bool decode(std::string const & source) noexcept{
             this->swap(std::map<_profile_Key,_profile_Val>());
             std::string source_copy(source);
-            source_copy = cq::utils::base64::decode(source_copy);
+            source_copy = base64_decode(source_copy);
             std::istringstream iss(source_copy);
             boost::archive::binary_iarchive ia(iss);
             size_t len = 0;

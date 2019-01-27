@@ -62,7 +62,7 @@ endif()
 
 # build test
 set(TEST_BUILD_NAME "dicebot.gtest")
-file(GLOB_RECURSE TEST_SOURCE src/test.cpp src/cqsdk/utils/base64.cpp src/dicebot/*.cpp)
+file(GLOB_RECURSE TEST_SOURCE src/test.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp src/dicebot/*.cpp)
 add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE})
 target_link_libraries(${TEST_BUILD_NAME} ${ICONV_AND_DEPS_LIBRARIES})
 target_link_libraries(${TEST_BUILD_NAME} sqlite3)

@@ -4,11 +4,10 @@
 #include "./nick_manager.h"
 #include "./dice_spliter.h"
 #include "./profile_manager.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 //regular dice, with detailed info
 
-namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -17,7 +16,7 @@ protocol_roll_dice::protocol_roll_dice(){
     this->filter_command = std::regex("^s(?:ource)? *", std::regex_constants::icase);
     this->identifier_regex = "r(?:oll)?";
     this->identifier_list = {"roll","r"};
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "6aqw5a2Q5oyH5LukKC5yb2xs5oiWLnIpCuaMh+S7"
         "pC5yIDFkMjDvvJrpqrDkuIDkuKoxZDIwCuaMh+S7"
         "pC5yIDFkMjArMmQ2KzTvvJrpqrAxZDIwKzJkNis0"

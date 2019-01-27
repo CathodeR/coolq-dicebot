@@ -1,7 +1,6 @@
 #include "./protocol_manager.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
-namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace protocol;
 
@@ -56,7 +55,7 @@ protocol_help::protocol_help(){
     this->is_stand_alone = true;
     this->identifier_regex = "h(?:elp)?";
     this->identifier_list = {"help","h"};
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "RGljZUJvdCBieSBkeW5pbGF0aCB2MS42LjIgcHJl"
         "dmlldwrkvb/nlKjmlrnlvI/nroDku4vvvJoKLnIg"
         "MWQ4KzFkNiszIOaZrumAmumqsOWtkAouYyBjb2Pp"

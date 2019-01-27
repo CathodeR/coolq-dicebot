@@ -1,9 +1,8 @@
 #include "./protocol_nickname.h"
 
 #include "./nick_manager.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
-namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -13,7 +12,7 @@ protocol_nickname::protocol_nickname(){
     this->identifier_regex = "n(?:ame)?";
     this->identifier_list = {"name","n"};
     
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
        "5pi156ewKC5uYW1l5oiWLm4pCuaMh+S7pC5uYW1l"
         "IFvlkI3lrZdd77ya5pu05pS55pi156ew5Li6W+WQ"
         "jeWtl10K5oyH5LukLm4gW+WQjeWtl13vvJrkuIro"

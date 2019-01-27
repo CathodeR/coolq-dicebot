@@ -2,9 +2,8 @@
 #include "./dice_utils.h"
 #include "./nick_manager.h"
 #include "./dice_roller.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
-namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -19,7 +18,7 @@ protocol_wod_dice::protocol_wod_dice(){
     this->method_map.insert(std::pair<std::string, wod_call>("n", &protocol_wod_dice::nwod));
     this->method_map.insert(std::pair<std::string, wod_call>("o", &protocol_wod_dice::owod));
 
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "V29E5a6a5Yi26aqw5a2QKC53b2TmiJYudykK5oyH"
         "5LukLndvNO+8muS9v+eUqG93b2Top4TliJnov5vo"
         "oYzpqrDmsaDkuLo055qE5qOA5a6aCuaMh+S7pC53"
@@ -109,7 +108,7 @@ protocol_coc_dice::protocol_coc_dice(){
     this->identifier_regex = "c(?:oc)?";
     this->identifier_list ={"coc","c"};    
     
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "Q29D5a6a5Yi26aqw5a2QKC5jb2PmiJYuYykK5oyH"
         "5LukLmNvY++8mmNvY+WumuWItumqsOWtkArmjIfk"
         "u6QuY++8muS4iui/sOWRveS7pOeahOeugOWGmeW9"
@@ -152,7 +151,7 @@ protocol_fate_dice::protocol_fate_dice(){
     this->identifier_regex = "f(?:ate)?";
     this->identifier_list ={"fate","f"};
 
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "RkFUReWumuWItumqsOWtkCguZmF0ZeaIli5mKQrm"
         "jIfku6QuZu+8mkZBVEXpqrAK5oyH5LukLmYrNO+8"
         "muaMh+Wumis05L+u5q2j");

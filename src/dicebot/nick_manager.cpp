@@ -2,19 +2,9 @@
 
 #include "./nick_manager.h"
 
-#ifndef NO_COOLQ
-#include "../cqsdk/cqsdk.h"
-#else
-#include "../cqsdk/utils/base64.h"
-#endif
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 #include "sqlite3.h"
-
-
-namespace base64 = cq::utils::base64;
-#ifndef NO_COOLQ
-namespace cqapi = cq::api;
-#endif
 
 namespace dicebot::nickname{
     #define NICK_TABLE_NAME "nickname"
@@ -79,7 +69,7 @@ namespace dicebot::nickname{
         char * pchar_err_message = nullptr;
         int ret_code = sqlite3_exec(database, ostrs_sql_command.str().c_str(), &sqlite3_callback_query_name, (void*)&str_nick_endcoded, &pchar_err_message);
         if(ret_code == SQLITE_OK){
-            event.nickname = base64::decode(str_nick_endcoded);
+            event.nickname = base64_decode(str_nick_endcoded);
             return true;
         }
         else{
@@ -127,7 +117,7 @@ namespace dicebot::nickname{
     bool insert_database(event_info const & event){
         sqlite3 * database = database::database_manager::get_database();
 
-        std::string name = base64::encode((unsigned char *)(event.nickname.c_str()),event.nickname.size());
+        std::string name = base64_encode((unsigned char *)(event.nickname.c_str()),event.nickname.size());
 
         ostrs ostrs_sql_command(ostrs::ate);
         ostrs_sql_command.str("insert into " NICK_TABLE_NAME " values ( ");
@@ -155,7 +145,7 @@ namespace dicebot::nickname{
     bool update_database(event_info const & event){
         sqlite3 * database = database::database_manager::get_database();
 
-        std::string name = base64::encode((unsigned char *)(event.nickname.c_str()),event.nickname.size());
+        std::string name = base64_encode((unsigned char *)(event.nickname.c_str()),event.nickname.size());
 
         ostrs ostrs_sql_command(ostrs::ate);
         ostrs_sql_command.str("update " NICK_TABLE_NAME " set ");

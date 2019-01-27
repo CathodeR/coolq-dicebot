@@ -5,9 +5,8 @@
 #include "./dice_spliter.h"
 #include "./nick_manager.h"
 #include "./profile_manager.h"
-#include "../cqsdk/utils/base64.h"
+#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
 
-namespace base64 = cq::utils::base64;
 using namespace dicebot;
 using namespace dicebot::protocol;
 
@@ -18,7 +17,7 @@ protocol_set_roll::protocol_set_roll(){
     this->identifier_list = {"set","s"};
     this->filter_name = "^([^\\+\\-\\*/\\(\\)\\s]+)";
 
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "6K6+572u6aqw5a2QKC5zZXTmiJbogIUucykK5oyH"
         "5LukLnNldCAxZDEwMO+8muiuvuWumum7mOiupOmq"
         "sOWtkOS4ujFkMTAwCuaMh+S7pC5y77ya5aaC5p6c"
@@ -90,7 +89,7 @@ protocol_set_var::protocol_set_var(){
     this->identifier_list ={"var","v"};
     this->filter_name = "^([^\\+\\-\\*/\\(\\)\\s]+)";
 
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "6K6+572u5Y+Y6YePKC52YXLmiJbogIUudikK5oyH"
         "5LukLnYgMTIg55Sf5ZG977ya6K6+5a6a5LiA5Liq"
         "5ZCN56ew5Li64oCc55Sf5ZG94oCd55qE5Y+Y6YeP"
@@ -232,7 +231,7 @@ protocol_list::protocol_list(){
     this->identifier_regex = "l(?:ist)?";
     this->identifier_list ={"list","l"};
 
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "5pi+56S65bey5L+d5a2Y55qE6aqw5a2Q5ZKM5Y+Y"
         "6YePKC5saXN05oiW6ICFLmwpCuaMh+S7pC5saXN0"
         "IHJvbGzvvJrmmL7npLrmiYDmnInkv53lrZjnmoTp"
@@ -338,7 +337,7 @@ protocol_delete::protocol_delete(){
     this->identifier_regex = "d(?:elete)?";
     this->identifier_list ={"d","delete"};
     
-    this->help_message = base64::decode(
+    this->help_message = base64_decode(
         "5Yig6Zmk5bey5L+d5a2Y55qE6aqw5a2Q5ZKM5Y+Y"
         "6YePKC5kZWxldGXmiJbogIUuZCkK5oyH5LukLmRl"
         "bGV0ZSByb2xs77ya5Yig6Zmk5omA5pyJ5L+d5a2Y"
