@@ -1,10 +1,10 @@
 $config_type = 'Debug'
 
 Set-Location $PSScriptRoot\..\  # enter the parent folder
-if(-not (Test-Path -Path "test\$config_type")){
-    New-Item -Path "test\$config_type" -ItemType "directory"
+if(-not (Test-Path -Path "build\$config_type")){
+    New-Item -Path "build\$config_type" -ItemType "directory"
 }
-Set-Location .\test\$config_type  # enter the build folder
+Set-Location .\build\$config_type  # enter the build folder
 
 $vcpkg_root = $env:VCPKG_ROOT
 $vcpkg_triplet = "x64-linux"

@@ -18,7 +18,9 @@ if(CMAKE_BUILD_TYPE MATCHES "^Debug$")
   list(APPEND CMAKE_IGNORE_PATH ${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/lib)
 endif()
 
-if(NOT CMAKE_CI_CONFIG MATCHES "^Appveyor$")
+# with cqdicebot triplet, gtest should be linked like this
+# appveyor is properly installed with gtest, there is no problem with it
+if(NOT CMAKE_CI_CONFIG MATCHES "^Appveyor$" AND NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   message(STATUS "Using link_directories() for Local envir.")
   if(CMAKE_BUILD_TYPE MATCHES "^Debug$")
     link_directories(${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/Debug/lib)
@@ -42,10 +44,10 @@ find_package(Boost REQUIRED COMPONENTS serialization)
 enable_testing()
 include(GoogleTest)
 
-if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
+#if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
   find_package(GTest REQUIRED)
-  message(STATUS "Using find_package() for Appveyor.")
-endif()
+#  message(STATUS "Using find_package() for Appveyor.")
+#endif()
 
 include(FixLinkConflict)
 
@@ -57,18 +59,20 @@ if(NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   target_link_libraries(${LIB_NAME} unofficial::iconv::libiconv unofficial::iconv::libcharset)
   target_link_libraries(${LIB_NAME} sqlite3)
   target_link_libraries(${LIB_NAME} ${Boost_LIBRARIES})
+  # cotire(${LIB_NAME})
 endif()
-# cotire(${LIB_NAME})
 
 # build test
 set(TEST_BUILD_NAME "dicebot.gtest")
 file(GLOB_RECURSE TEST_SOURCE src/test.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp src/dicebot/*.cpp)
 add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE})
-target_link_libraries(${TEST_BUILD_NAME} ${ICONV_AND_DEPS_LIBRARIES})
 target_link_libraries(${TEST_BUILD_NAME} sqlite3)
 target_link_libraries(${TEST_BUILD_NAME} ${Boost_LIBRARIES})
 
+# link gtest
 if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
+  target_link_libraries(${TEST_BUILD_NAME} GTest::GTest)
+elseif(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   target_link_libraries(${TEST_BUILD_NAME} GTest::GTest)
 else()
   if(CMAKE_BUILD_TYPE MATCHES "^Debug$")
