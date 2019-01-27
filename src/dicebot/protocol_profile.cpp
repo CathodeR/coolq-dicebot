@@ -180,7 +180,7 @@ bool protocol_set_var::resolve_request(
 
 #pragma region list
 protocol_list::gen_var_t protocol_list::var_msg = [](
-    profile::user_profile::user_var_map_type const & map,
+    profile::user_profile::user_var_map_t const & map,
     std::string const & head,
     std::string const & message,
     output_constructor & out){
@@ -198,7 +198,7 @@ protocol_list::gen_var_t protocol_list::var_msg = [](
     };
 
 protocol_list::gen_defr_t protocol_list::defr_msg  = [](
-    profile::user_profile::def_roll_map_type const & map,
+    profile::user_profile::def_roll_map_t const & map,
     std::string const & head,
     output_constructor & out){
         if(map.size() == 0) return;
@@ -210,7 +210,7 @@ protocol_list::gen_defr_t protocol_list::defr_msg  = [](
     };    
 
 protocol_list::gen_macro_t protocol_list::macro_msg = [](
-    profile::user_profile::mac_roll_map_type const & map,
+    profile::user_profile::mac_roll_map_t const & map,
     std::string const & head,
     std::string const & message,
     output_constructor & out){

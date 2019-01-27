@@ -22,13 +22,17 @@ namespace dicebot::profile{
         var_pair(){};
     };
     
+    #pragma region profile template
+
     template <class _profile_Key, class _profile_Val>
     class profile_template: public std::map<_profile_Key,_profile_Val>{
-        using profile_map = std::map<_profile_Key,_profile_Val>;
-        using profile_pair = std::pair<_profile_Key,_profile_Val>;
+        using profile_map = typename std::map<_profile_Key,_profile_Val>;
+        using profile_pair = typename std::pair<_profile_Key,_profile_Val>;
+        using profile_citer = typename profile_map::const_iterator;
+        using profile_iter = typename profile_map::iterator;
     public:
         profile_status get(_profile_Key const & var_type, _profile_Val & var) const noexcept{
-            std::map<_profile_Key,_profile_Val>::const_iterator target = this->find(var_type);
+            profile_citer target = this->find(var_type);
             if(target != this->cend()){
                 var = target->second;
                 return profile_status::finished;
@@ -37,7 +41,7 @@ namespace dicebot::profile{
         }
 
         profile_status set(_profile_Key const & var_type, _profile_Val const & new_var) noexcept{
-            std::map<_profile_Key,_profile_Val>::iterator target = this->find(var_type);
+            profile_iter target = this->find(var_type);
             if(target != this->end()){
                 target->second = new_var;
                 return profile_status::finished;
@@ -49,7 +53,7 @@ namespace dicebot::profile{
         }
 
         profile_status add(_profile_Key const & var_type, _profile_Val const & new_var) noexcept{
-            std::map<_profile_Key,_profile_Val>::iterator target = this->find(var_type);
+            profile_iter target = this->find(var_type);
             if(target == this->end()){
                 this->insert(std::pair<_profile_Key,_profile_Val>(var_type,new_var));
                 return profile_status::finished;
@@ -70,7 +74,8 @@ namespace dicebot::profile{
         }
 
         bool decode(std::string const & source) noexcept{
-            this->swap(std::map<_profile_Key,_profile_Val>());
+            this->clear();
+            //this->swap(std::map<_profile_Key,_profile_Val>());
             std::string source_copy(source);
             source_copy = base64_decode(source_copy);
             std::istringstream iss(source_copy);
@@ -83,7 +88,7 @@ namespace dicebot::profile{
                     ia >> first;
                     _profile_Val second;
                     ia >> second;
-                    this->insert(std::pair<_profile_Key,_profile_Val>(first,second));
+                    this->insert(profile_pair(first,second));
                 }
             }
             catch(std::exception e){
@@ -95,18 +100,20 @@ namespace dicebot::profile{
             return true;
         }
     };
+    #pragma endregion
 
+    #pragma region user profile
     class user_profile{
     public:
-        using sys_var_map_type = profile_template<sys_var_type,var_pair>;
-        using user_var_map_type = profile_template<std::string,var_pair>;
-        using def_roll_map_type = profile_template<def_roll_type,std::string>;
-        using mac_roll_map_type = profile_template<std::string,std::string>;
+        using sys_var_map_t = profile_template<sys_var_type,var_pair>;
+        using user_var_map_t = profile_template<std::string,var_pair>;
+        using def_roll_map_t = profile_template<def_roll_type,std::string>;
+        using mac_roll_map_t = profile_template<std::string,std::string>;
     private:
-        sys_var_map_type sys_vars;
-        user_var_map_type user_vars;
-        def_roll_map_type def_roll;
-        mac_roll_map_type mac_rolls;
+        sys_var_map_t sys_vars;
+        user_var_map_t user_vars;
+        def_roll_map_t def_roll;
+        mac_roll_map_t mac_rolls;
         static bool init_sys_var(sys_var_type const type,var_pair & val){
             switch(type){
             case sys_var_type::rs_on:
@@ -135,54 +142,11 @@ namespace dicebot::profile{
         bool set_var(_profile_Key const & key, _profile_Val const & val){
             return false;
         }
-
-        template <>
-        bool get_var<sys_var_map_type::key_type, sys_var_map_type::mapped_type>(
-            sys_var_map_type::key_type const & key, 
-            sys_var_map_type::mapped_type & val){
-            if(sys_vars.get(key,val) == profile_status::finished) return true;
-            else{
-                init_sys_var(key,val);
-                return sys_vars.add(key,val) == profile_status::finished;
-            }
-        }
-
-        template <>
-        bool set_var<sys_var_map_type::key_type, sys_var_map_type::mapped_type>(
-            sys_var_map_type::key_type const & key, 
-            sys_var_map_type::mapped_type const & val){
-            if(sys_vars.set(key,val) == profile_status::finished) return true;
-            else{
-                return sys_vars.add(key,val) == profile_status::finished;
-            }
-        }
-
-        #define easy_get_var(_type,_target) template <>\
-        bool get_var<_type::key_type,_type::mapped_type>(_type::key_type const & key, _type::mapped_type & val){\
-            return _target.get(key,val) == profile_status::finished;}
-
-        #define easy_set_var(_type,_target) template <>\
-        bool set_var<_type::key_type,_type::mapped_type>(_type::key_type const & key, _type::mapped_type const & val){\
-            return _target.set(key,val) == profile_status::finished;}
-
-        easy_get_var(user_var_map_type, user_vars);
-        easy_set_var(user_var_map_type, user_vars);
-        easy_get_var(def_roll_map_type, def_roll);
-        easy_set_var(def_roll_map_type, def_roll);
-        easy_get_var(mac_roll_map_type, mac_rolls);
-        easy_set_var(mac_roll_map_type, mac_rolls);
         
         template <class _profile_Key, class _profile_Val>
         profile_template<_profile_Key,_profile_Val> * get_map(){
             return nullptr;
         }
-
-        #define easy_get_map(_type,_target) template <>\
-        _type * get_map<_type::key_type,_type::mapped_type>(){return &_target;}
-
-        easy_get_map(user_var_map_type, user_vars);
-        easy_get_map(mac_roll_map_type, mac_rolls);
-        easy_get_map(def_roll_map_type, def_roll);
 
         bool encode(std::vector<std::string> & target) const{
             target.clear();
@@ -202,4 +166,49 @@ namespace dicebot::profile{
             return true;
         }
     };
+
+    template <>
+    bool inline user_profile::get_var<user_profile::sys_var_map_t::key_type, user_profile::sys_var_map_t::mapped_type>(
+        user_profile::sys_var_map_t::key_type const & key, 
+        user_profile::sys_var_map_t::mapped_type & val){
+        if(sys_vars.get(key,val) == profile_status::finished) return true;
+        else{
+            init_sys_var(key,val);
+            return sys_vars.add(key,val) == profile_status::finished;
+        }
+    }
+
+    template <>
+    bool inline user_profile::set_var<user_profile::sys_var_map_t::key_type, user_profile::sys_var_map_t::mapped_type>(
+        user_profile::sys_var_map_t::key_type const & key, 
+        user_profile::sys_var_map_t::mapped_type const & val){
+        if(sys_vars.set(key,val) == profile_status::finished) return true;
+        else{
+            return sys_vars.add(key,val) == profile_status::finished;
+        }
+    }
+
+    #define easy_get_var(_type,_target) template <>\
+    inline bool user_profile::get_var<_type::key_type,_type::mapped_type>(_type::key_type const & key, _type::mapped_type & val){\
+        return _target.get(key,val) == profile_status::finished;}
+
+    #define easy_set_var(_type,_target) template <>\
+    inline bool user_profile::set_var<_type::key_type,_type::mapped_type>(_type::key_type const & key, _type::mapped_type const & val){\
+        return _target.set(key,val) == profile_status::finished;}
+
+    easy_get_var(user_profile::user_var_map_t, user_vars);
+    easy_set_var(user_profile::user_var_map_t, user_vars);
+    easy_get_var(user_profile::def_roll_map_t, def_roll);
+    easy_set_var(user_profile::def_roll_map_t, def_roll);
+    easy_get_var(user_profile::mac_roll_map_t, mac_rolls);
+    easy_set_var(user_profile::mac_roll_map_t, mac_rolls);
+
+    #define easy_get_map(_type,_target) template <>\
+    inline _type * user_profile::get_map<_type::key_type,_type::mapped_type>(){return &_target;}
+
+    easy_get_map(user_profile::user_var_map_t, user_vars);
+    easy_get_map(user_profile::mac_roll_map_t, mac_rolls);
+    easy_get_map(user_profile::def_roll_map_t, def_roll);
+
+    #pragma endregion
 }

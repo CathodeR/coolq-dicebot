@@ -40,19 +40,19 @@ namespace dicebot::protocol{
         using call_map_value_t = call_map_t::value_type;
 
         using gen_var_t = std::function<void(
-            profile::user_profile::user_var_map_type const &,
+            profile::user_profile::user_var_map_t const &,
             std::string const &,
             std::string const &,
             output_constructor &)>;
 
         using gen_macro_t = std::function<void(
-            profile::user_profile::mac_roll_map_type const &,
+            profile::user_profile::mac_roll_map_t const &,
             std::string const &,
             std::string const &,
             output_constructor &)>;
 
         using gen_defr_t = std::function<void(
-            profile::user_profile::def_roll_map_type const &,
+            profile::user_profile::def_roll_map_t const &,
             std::string const &,
             output_constructor &)>;
 
