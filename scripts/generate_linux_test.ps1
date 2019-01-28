@@ -4,6 +4,9 @@ Set-Location $PSScriptRoot\..\  # enter the parent folder
 if(-not (Test-Path -Path "build\$config_type")){
     New-Item -Path "build\$config_type" -ItemType "directory"
 }
+if(-not (Test-Path -Path "build\test_db")){
+    New-Item -Path "build\test_db" -ItemType "directory"
+}
 Set-Location .\build\$config_type  # enter the build folder
 
 $vcpkg_root = $env:VCPKG_ROOT
