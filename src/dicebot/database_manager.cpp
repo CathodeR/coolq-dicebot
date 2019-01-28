@@ -43,6 +43,7 @@ database_manager::~database_manager(){
 }
 
 int database_manager::register_table(std::string str_table_name, std::string str_table_sql){
+    if(is_no_sql_mode) return SQLITE_ABORT;
     bool isExist;
     int i_ret_code = is_table_exist(str_table_name, isExist);
     if(i_ret_code == SQLITE_OK && !isExist){
@@ -66,6 +67,9 @@ int database_manager::register_table(std::string str_table_name, std::string str
 }
 
 inline int database_manager::is_table_exist(const std::string & table_name , bool & isExist){
+    isExist = false;
+    if(is_no_sql_mode) return SQLITE_ABORT;
+    
     std::string sql_command = "select count(*) from sqlite_master where type ='table' and name ='" + table_name + "'";
     char * pchar_err_message = nullptr;
     int i_count_of_table = 0;
