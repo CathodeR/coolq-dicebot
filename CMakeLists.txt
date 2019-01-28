@@ -62,6 +62,16 @@ if(NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   # cotire(${LIB_NAME})
 endif()
 
+# build test target
+if(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
+  file(GLOB_RECURSE HTEST_SOURCE src/htest.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp src/dicebot/*.cpp)
+  set(HTEST_NAME "dicebot")
+  add_executable(${HTEST_NAME} ${HTEST_SOURCE})
+  target_link_libraries(${HTEST_NAME} sqlite3)
+  target_link_libraries(${HTEST_NAME} ${Boost_LIBRARIES})
+  # cotire(${LIB_NAME})
+endif()
+
 # build test
 set(TEST_BUILD_NAME "dicebot.gtest")
 file(GLOB_RECURSE TEST_SOURCE src/test.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp src/dicebot/*.cpp)

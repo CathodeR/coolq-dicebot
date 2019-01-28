@@ -13,35 +13,15 @@
 #include <climits>
 
 #include "gtest/gtest.h"
-#include "dicebot/number.h"
+
+#include "dicebot/dicebot.h"
+#include "dicebot/manual_dice.h"
 #include "dicebot/dice_roller.h"
 #include "dicebot/dice_spliter.h"
-#include "dicebot/manual_dice.h"
 
 namespace dicebot::test{
 
-double fun_chi_square(std::vector<int> sample, std::vector<int> expect){
-    if(sample.size()!= expect.size()) return INFINITY;
-    double sum_sample = 0.0;
-    for(size_t i =0;i<sample.size();i++){
-        sum_sample += sample[i];
-    }
-    double sum_expect = 0.0;
-    for(size_t i =0;i<expect.size();i++){
-        sum_expect += expect[i];
-    }
-
-    double chi_square = 0.0;
-
-    int re_type = sample.size() -1;
-    while(re_type >= 0){
-        double val_expect = expect[re_type]*sum_sample/sum_expect;
-        double fi_expect = sample[re_type] - val_expect;
-        chi_square += ((fi_expect*fi_expect)/val_expect);
-        re_type --;
-    }
-    return chi_square;
-}
+#pragma region number test
 
 #define EASY_CASE_HACK( _Val1, _Oper, _Val2, _Is_Int) {dicebot::number num1 = _Val1;\
 dicebot::number ret = num1 _Oper _Val2;\
@@ -66,7 +46,6 @@ else compare = std::to_string(((double)_Val1) _Oper ((double)_Val2));\
 ASSERT_EQ(ret.str(), compare);\
 ASSERT_EQ(ret.is_using_int,false);}
 
-#pragma region number test
 
     TEST(NumberTest, Add_01_Int_Int){EASY_CASE_HACK( 12, + , 1234, true);}
     TEST(NumberTest, Add_02_Int_Float){EASY_CASE_HACK( 12, +, 123.4, false);}
@@ -103,6 +82,31 @@ ASSERT_EQ(ret.is_using_int,false);}
 
 #pragma endregion
 
+#pragma region direct roll test
+
+double fun_chi_square(std::vector<int> sample, std::vector<int> expect){
+    if(sample.size()!= expect.size()) return INFINITY;
+    double sum_sample = 0.0;
+    for(size_t i =0;i<sample.size();i++){
+        sum_sample += sample[i];
+    }
+    double sum_expect = 0.0;
+    for(size_t i =0;i<expect.size();i++){
+        sum_expect += expect[i];
+    }
+
+    double chi_square = 0.0;
+
+    int re_type = sample.size() -1;
+    while(re_type >= 0){
+        double val_expect = expect[re_type]*sum_sample/sum_expect;
+        double fi_expect = sample[re_type] - val_expect;
+        chi_square += ((fi_expect*fi_expect)/val_expect);
+        re_type --;
+    }
+    return chi_square;
+}
+
 #define GENERATE_ROLL_RESULT(_list,_sample,_max,_min,_roll_method){\
 _list.assign(_max-_min+1,0);\
 int repeat = _sample;\
@@ -132,7 +136,6 @@ ASSERT_LE(dr.summary,_max);}}
         }
     };
 
-#pragma region direct roll test
     TEST(RollTest, Base_01_d100){
         int sample_sum = (4000);
 
@@ -412,8 +415,7 @@ ASSERT_LE(dr.summary,_max);}}
         double chi_01_percent = 16.2662361962381;
         ASSERT_LT(chi_square,chi_01_percent);
     }
-#pragma endregion
-
+    
     TEST(DiceSpliter, TEST_01_2d6_1d4_1d8){
         int sample_sum = (2000);
 
@@ -508,7 +510,7 @@ ASSERT_LE(dr.summary,_max);}}
 
         int repeat = sample_sum;
         while(repeat--){
-            manual::manual_dice md = manual::manual_dice("4d6+1d8");
+            manual::manual_dice md = dicebot::manual::manual_dice("4d6+1d8");
             int result = 0;
             result = md.i_sum_result;
             ASSERT_GE(result, 5);
@@ -572,8 +574,27 @@ ASSERT_LE(dr.summary,_max);}}
             ASSERT_EQ(result, 0);
         }
     }
+#pragma endregion
 
 } // test
+
+class Protocol_Level_test : public ::testing::Test{
+protected:
+    Protocol_Level_test(){
+        dicebot::initialize("./build/test_db/");
+    }
+    ~Protocol_Level_test(){
+        dicebot::salvage();
+    }
+};
+
+TEST_F(Protocol_Level_test,test1){
+    dicebot::event_info ei(123456);
+    ei.nickname = "dynilath";
+    std::string output;
+    dicebot::message_pipeline(".r2d20+4",ei,output);
+    ASSERT_GT(output.size(),0);
+}
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
