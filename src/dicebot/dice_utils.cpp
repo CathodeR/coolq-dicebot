@@ -4,10 +4,10 @@ using namespace dicebot;
 
 void utils::split_line(std::string const & source, std::list<std::string>& source_splits){
     if(source.length() > 2){
-        unsigned int iter_source = 0;
+        std::string::size_type iter_source = 0;
         std::string spliter = "\r\n";
         while(iter_source < source.length()){
-            unsigned int i_target = source.find(spliter, iter_source);
+            std::string::size_type i_target = source.find(spliter, iter_source);
             if(i_target == std::string::npos){
                 if(i_target > iter_source) source_splits.push_back(source.substr(iter_source, source.length() - iter_source));
                 break;
