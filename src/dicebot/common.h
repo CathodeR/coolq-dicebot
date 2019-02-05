@@ -4,11 +4,9 @@
 #include <string>
 #include <list>
 #include <vector>
-#include <stack>
 #include <regex>
 #include <sstream>
 #include <memory>
-
 #include <functional>
 
 namespace dicebot{
