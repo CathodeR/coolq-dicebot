@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 
-#include "./dice_utils.h"
+#include "./utils/dice_utils.h"
 
 using namespace dicebot;
 using namespace dicebot::roll;

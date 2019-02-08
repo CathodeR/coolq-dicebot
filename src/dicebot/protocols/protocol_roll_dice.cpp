@@ -1,10 +1,10 @@
 #include "./protocol_roll_dice.h"
 
-#include "./dice_utils.h"
-#include "./nick_manager.h"
-#include "./dice_spliter.h"
-#include "./profile_manager.h"
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../utils/dice_utils.h"
+#include "../data/nick_manager.h"
+#include "../data/profile_manager.h"
+#include "../dice_spliter.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 //regular dice, with detailed info
 

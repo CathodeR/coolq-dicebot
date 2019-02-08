@@ -1,7 +1,7 @@
 #include "./manual_dice.h"
 
-#include "./dice_roller.h"
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../dice_roller.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>

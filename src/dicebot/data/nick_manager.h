@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./common.h"
+#include "../common.h"
 
 namespace dicebot::nickname{
     class nickname_manager{

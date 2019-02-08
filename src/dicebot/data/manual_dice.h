@@ -1,6 +1,6 @@
 #pragma once
 
-#include "./common.h"
+#include "../common.h"
 
 namespace dicebot::manual{
     using vec_mdice = std::vector<std::pair<int,int>>;

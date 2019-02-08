@@ -1,23 +1,23 @@
 #pragma once
 
 #include "./common.h"
-#include "./dice_utils.h"
-#include "./number.h"
+#include "./utils/dice_utils.h"
+#include "./utils/number.h"
 
 #include <memory>
 
 #include "./dice_roller.h"
-#include "./protocol_manager.h"
-#include "./protocol_base.h"
-#include "./protocol_nickname.h"
-#include "./protocol_roll_dice.h"
-#include "./protocol_profile.h"
-#include "./protocol_manual_dice.h"
-#include "./protocol_specialized_dice.h"
-#include "./nick_manager.h"
-#include "./database_manager.h"
-#include "./manual_dice_control.h"
-#include "./profile_manager.h"
+#include "./protocols/protocol_manager.h"
+#include "./protocols/protocol_base.h"
+#include "./protocols/protocol_nickname.h"
+#include "./protocols/protocol_roll_dice.h"
+#include "./protocols/protocol_profile.h"
+#include "./protocols/protocol_manual_dice.h"
+#include "./protocols/protocol_specialized_dice.h"
+#include "./data/nick_manager.h"
+#include "./data/database_manager.h"
+#include "./data/manual_dice_control.h"
+#include "./data/profile_manager.h"
 
 namespace dicebot{
     protocol_manager * dice_protocols;

@@ -51,11 +51,13 @@ include(GoogleTest)
 
 include(FixLinkConflict)
 
+file(GLOB_RECURSE DICEBOT_SOURCE src/dicebot/*.cpp src/dicebot/*/*.cpp)
+
 # build target
 if(NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
-  file(GLOB_RECURSE SOURCE_FILES src/main.cpp src/cqsdk/*.cpp src/dicebot/*.cpp)
+  file(GLOB_RECURSE SOURCE_FILES src/main.cpp src/cqsdk/*.cpp)
   set(LIB_NAME "com.dynilath.coolqdicebot")
-  add_library(${LIB_NAME} SHARED ${SOURCE_FILES})
+  add_library(${LIB_NAME} SHARED ${SOURCE_FILES} ${DICEBOT_SOURCE})
   target_link_libraries(${LIB_NAME} unofficial::iconv::libiconv unofficial::iconv::libcharset)
   target_link_libraries(${LIB_NAME} sqlite3)
   target_link_libraries(${LIB_NAME} ${Boost_LIBRARIES})
@@ -64,9 +66,9 @@ endif()
 
 # build test target
 if(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
-  file(GLOB_RECURSE HTEST_SOURCE src/htest.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp src/dicebot/*.cpp)
+  file(GLOB_RECURSE HTEST_SOURCE src/htest.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp)
   set(HTEST_NAME "dicebot")
-  add_executable(${HTEST_NAME} ${HTEST_SOURCE})
+  add_executable(${HTEST_NAME} ${HTEST_SOURCE} ${DICEBOT_SOURCE})
   target_link_libraries(${HTEST_NAME} sqlite3)
   target_link_libraries(${HTEST_NAME} ${Boost_LIBRARIES})
   # cotire(${LIB_NAME})
@@ -74,8 +76,8 @@ endif()
 
 # build test
 set(TEST_BUILD_NAME "dicebot.gtest")
-file(GLOB_RECURSE TEST_SOURCE src/test.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp src/dicebot/*.cpp)
-add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE})
+file(GLOB_RECURSE TEST_SOURCE src/test.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp)
+add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE}  ${DICEBOT_SOURCE})
 target_link_libraries(${TEST_BUILD_NAME} sqlite3)
 target_link_libraries(${TEST_BUILD_NAME} ${Boost_LIBRARIES})
 

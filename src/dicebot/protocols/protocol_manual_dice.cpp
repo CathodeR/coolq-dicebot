@@ -1,12 +1,12 @@
 #include "./protocol_manual_dice.h"
 
 
-#include "./dice_roller.h"
-#include "./dice_utils.h"
-#include "./nick_manager.h"
-#include "./manual_dice.h"
-#include "./manual_dice_control.h"
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../dice_roller.h"
+#include "../utils/dice_utils.h"
+#include "../data/nick_manager.h"
+#include "../data/manual_dice.h"
+#include "../data/manual_dice_control.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 using namespace dicebot;
 using namespace dicebot::protocol;

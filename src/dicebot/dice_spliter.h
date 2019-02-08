@@ -1,7 +1,7 @@
 #pragma once
 
 #include "./common.h"
-#include "./number.h"
+#include "./utils/number.h"
 
 namespace dicebot{
     enum class operation_mode{

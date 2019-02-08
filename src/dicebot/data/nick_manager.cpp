@@ -2,7 +2,7 @@
 
 #include "./nick_manager.h"
 
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 #include "sqlite3.h"
 

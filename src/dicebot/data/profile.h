@@ -1,8 +1,8 @@
 #pragma once
 
-#include "./common.h"
+#include "../common.h"
 
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 

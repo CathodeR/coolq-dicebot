@@ -1,8 +1,8 @@
 #pragma once
 
-#include "./common.h"
+#include "../common.h"
 #include "./protocol_base.h"
-#include "./profile.h"
+#include "../data/profile.h"
 namespace dicebot::protocol{
 	class protocol_set_roll : public protocol_base
 	{

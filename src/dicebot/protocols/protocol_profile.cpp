@@ -1,11 +1,10 @@
 #include "./protocol_profile.h"
 
-#include "./dice_utils.h"
-#include "./profile_manager.h"
-#include "./dice_spliter.h"
-#include "./nick_manager.h"
-#include "./profile_manager.h"
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../utils/dice_utils.h"
+#include "../data/profile_manager.h"
+#include "../dice_spliter.h"
+#include "../data/nick_manager.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 using namespace dicebot;
 using namespace dicebot::protocol;

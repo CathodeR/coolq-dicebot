@@ -1,7 +1,7 @@
 #include "./protocol_nickname.h"
 
-#include "./nick_manager.h"
-#include "../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../data/nick_manager.h"
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 using namespace dicebot;
 using namespace dicebot::protocol;
