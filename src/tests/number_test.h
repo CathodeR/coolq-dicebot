@@ -7,6 +7,7 @@
 #endif
 
 #include <climits>
+#include <cmath>
 
 #include "../dicebot/utils/number.h"
 #include "gtest/gtest.h"
@@ -60,7 +61,7 @@ namespace dicebot::test {
         oper<double> double_oper;
 
         if (is_int)
-            compare = std::to_string((int32_t)double_oper((double)val1, (double)val2));
+            compare = std::to_string(std::lround(double_oper((double)val1, (double)val2)));
         else {
             compare = std::to_string(double_oper((double)val1, (double)val2));
             int pos = compare.find_last_not_of('0');

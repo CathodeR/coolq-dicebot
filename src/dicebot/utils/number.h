@@ -1,16 +1,20 @@
 #pragma once
+#include <cmath>
 #include <cstdint>
 #include <exception>
 #include <string>
-
 /*
 ** 2018-12
 ** by dynilath
-** an number class that auto-adjust between float and integer
+** an number class that auto-adjust between float_type and integer
 */
 namespace dicebot {
-#define ZERO_THRESHOLD 1e-3
-#define P_INT32_MIN -(INT32_MAX)
+
+    using integer_type = int32_t;
+    using float_type = double;
+
+    constexpr integer_type P_INT32_MIN = -(INT32_MAX);
+    constexpr float_type ZERO_THRESHOLD = 1e-4;
 
     class zero_divider_exception : public std::exception {
     public:
@@ -18,8 +22,8 @@ namespace dicebot {
     };
 
     union number_val {
-        int32_t i_value;
-        float f_value;
+        integer_type i_value;
+        float_type f_value;
     };
 
     class number {
@@ -50,21 +54,21 @@ namespace dicebot {
 
         void int_2_float() {
             if (!this->is_using_int) return;
-            this->value.f_value = static_cast<float>(this->value.i_value);
+            this->value.f_value = static_cast<float_type>(this->value.i_value);
             this->is_using_int = false;
         }
 
         void float_2_int() {
             if (this->is_using_int) return;
-            this->value.i_value = (int32_t)this->value.f_value;
+            this->value.i_value = (integer_type)this->value.f_value;
             this->is_using_int = true;
         }
 
         inline void try_to_be_integer() {
             if (!this->is_using_int) {
                 if (this->value.f_value < INT32_MAX && this->value.f_value > P_INT32_MIN) {
-                    int32_t new_val = (int32_t)(this->value.f_value);
-                    float diff = this->value.f_value - new_val;
+                    integer_type new_val = std::lround(this->value.f_value);
+                    float_type diff = this->value.f_value - new_val;
                     this->is_using_int = (diff < ZERO_THRESHOLD && diff > -ZERO_THRESHOLD);
                     if (this->is_using_int) this->value.i_value = new_val;
                 }
@@ -79,12 +83,12 @@ namespace dicebot {
             this->is_using_int = true;
         }
 
-        number(const int32_t source) {
+        number(const integer_type source) {
             this->value.i_value = source;
             this->is_using_int = true;
         }
 
-        number(const float source) {
+        number(const float_type source) {
             this->value.f_value = source;
             this->is_using_int = false;
         }
@@ -104,18 +108,19 @@ namespace dicebot {
             }
         }
 
-        inline number operator+(const int32_t &val1) const {
+        inline number operator+(const integer_type &val1) const {
             if (this->is_using_int
                 && (val1 == 0 || (val1 > 0 && INT32_MAX - val1 > this->value.i_value)
                     || (val1 < 0 && P_INT32_MIN - val1 < this->value.i_value))) {
                 return number(this->value.i_value + val1);
             } else {
-                return *this + static_cast<float>(val1);
+                return *this + static_cast<float_type>(val1);
             }
         }
 
-        inline number operator+(const float &val1) const {
-            float value_this = this->is_using_int ? static_cast<float>(this->value.i_value) : this->value.f_value;
+        inline number operator+(const float_type &val1) const {
+            float_type value_this =
+                this->is_using_int ? static_cast<float_type>(this->value.i_value) : this->value.f_value;
             number ret(value_this + val1);
             ret.try_to_be_integer();
             return ret;
@@ -129,18 +134,19 @@ namespace dicebot {
             }
         }
 
-        inline number operator-(const int32_t val1) const {
+        inline number operator-(const integer_type val1) const {
             if (this->is_using_int
                 && (val1 == 0 || (val1 > 0 && P_INT32_MIN + val1 < this->value.i_value)
                     || (val1 < 0 && INT32_MAX + val1 > this->value.i_value))) {
                 return number(this->value.i_value - val1);
             } else {
-                return *this - static_cast<float>(val1);
+                return *this - static_cast<float_type>(val1);
             }
         }
 
-        inline number operator-(const float val1) const {
-            float value_this = this->is_using_int ? static_cast<float>(this->value.i_value) : this->value.f_value;
+        inline number operator-(const float_type val1) const {
+            float_type value_this =
+                this->is_using_int ? static_cast<float_type>(this->value.i_value) : this->value.f_value;
             number ret(value_this - val1);
             ret.try_to_be_integer();
             return ret;
@@ -154,7 +160,7 @@ namespace dicebot {
             }
         }
 
-        inline number operator*(const int32_t val1) const {
+        inline number operator*(const integer_type val1) const {
             if (this->is_using_int
                 && (val1 == 0 || this->value.i_value == 0
                     || (val1 > 0 && this->value.i_value > 0 && INT32_MAX / val1 > this->value.i_value)
@@ -163,12 +169,13 @@ namespace dicebot {
                     || (val1 > 0 && this->value.i_value < 0 && P_INT32_MIN / val1 < this->value.i_value))) {
                 return number(this->value.i_value * val1);
             } else {
-                return (*this) * static_cast<float>(val1);
+                return (*this) * static_cast<float_type>(val1);
             }
         }
 
-        inline number operator*(const float val1) const {
-            float value_this = this->is_using_int ? static_cast<float>(this->value.i_value) : this->value.f_value;
+        inline number operator*(const float_type val1) const {
+            float_type value_this =
+                this->is_using_int ? static_cast<float_type>(this->value.i_value) : this->value.f_value;
             number ret(value_this * val1);
             ret.try_to_be_integer();
             return ret;
@@ -184,11 +191,11 @@ namespace dicebot {
             if (val1.is_using_int) {
                 return *this / val1.value.i_value;
             } else {
-                return number(this->value.f_value / val1.value.f_value);
+                return *this / val1.value.f_value;
             }
         }
 
-        inline number operator/(const int32_t val1) const {
+        inline number operator/(const integer_type val1) const {
             if (val1 == 0) {
                 throw zero_divider_exception();
             }
@@ -196,16 +203,17 @@ namespace dicebot {
             if (this->is_using_int && this->value.i_value % val1 == 0) {
                 return number(this->value.i_value / val1);
             } else {
-                return (*this) / static_cast<float>(val1);
+                return (*this) / static_cast<float_type>(val1);
             }
         }
 
-        inline number operator/(const float val1) const {
+        inline number operator/(const float_type val1) const {
             if (val1 < ZERO_THRESHOLD && val1 > -ZERO_THRESHOLD) {
                 throw zero_divider_exception();
             }
 
-            float value_this = this->is_using_int ? static_cast<float>(this->value.i_value) : this->value.f_value;
+            float_type value_this =
+                this->is_using_int ? static_cast<float_type>(this->value.i_value) : this->value.f_value;
             number ret(value_this / val1);
             ret.try_to_be_integer();
             return ret;
@@ -218,14 +226,14 @@ namespace dicebot {
                 return *this == val1.value.f_value;
         }
 
-        inline bool operator==(const int32_t val1) const {
+        inline bool operator==(const integer_type val1) const {
             if (this->is_using_int)
                 return this->value.i_value == val1;
             else
                 return this->value.i_value == val1;
         }
 
-        inline bool operator==(const float val1) const {
+        inline bool operator==(const float_type val1) const {
             if (this->is_using_int)
                 return this->value.i_value == val1;
             else
@@ -243,11 +251,11 @@ namespace dicebot {
             }
         }
 
-        inline uint32_t force_positive_int() {
+        inline integer_type force_positive_int() {
             if (this->is_using_int) {
                 return this->value.i_value > 0 ? this->value.i_value : 0;
             } else {
-                return this->value.f_value > 0 ? static_cast<uint32_t>(this->value.f_value) : 0;
+                return this->value.f_value > 0 ? static_cast<integer_type>(this->value.f_value) : 0;
             }
         }
     };
