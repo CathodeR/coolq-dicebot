@@ -44,10 +44,10 @@ find_package(Boost REQUIRED COMPONENTS serialization)
 enable_testing()
 include(GoogleTest)
 
-#if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
+if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
   find_package(GTest REQUIRED)
-#  message(STATUS "Using find_package() for Appveyor.")
-#endif()
+  message(STATUS "Using find_package() for Appveyor.")
+endif()
 
 include(FixLinkConflict)
 
