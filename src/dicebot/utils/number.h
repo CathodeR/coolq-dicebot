@@ -13,7 +13,7 @@ namespace dicebot {
 #define P_INT32_MIN -(INT32_MAX)
 
     class zero_divider_exception : public std::exception {
-       public:
+    public:
         zero_divider_exception() : exception() {}
     };
 
@@ -23,7 +23,7 @@ namespace dicebot {
     };
 
     class number {
-       private:
+    private:
         number_val value;
 
         void initialize(const std::string source) {
@@ -50,7 +50,7 @@ namespace dicebot {
 
         void int_2_float() {
             if (!this->is_using_int) return;
-            this->value.f_value = this->value.i_value;
+            this->value.f_value = static_cast<float>(this->value.i_value);
             this->is_using_int = false;
         }
 
@@ -71,7 +71,7 @@ namespace dicebot {
             }
         }
 
-       public:
+    public:
         bool is_using_int;
 
         number() {
@@ -156,7 +156,8 @@ namespace dicebot {
 
         inline number operator*(const int32_t val1) const {
             if (this->is_using_int
-                && (val1 == 0 || this->value.i_value == 0 || (val1 > 0 && this->value.i_value > 0 && INT32_MAX / val1 > this->value.i_value)
+                && (val1 == 0 || this->value.i_value == 0
+                    || (val1 > 0 && this->value.i_value > 0 && INT32_MAX / val1 > this->value.i_value)
                     || (val1 < 0 && this->value.i_value < 0 && INT32_MAX / val1 < this->value.i_value)
                     || (val1 < 0 && this->value.i_value > 0 && P_INT32_MIN / val1 > this->value.i_value)
                     || (val1 > 0 && this->value.i_value < 0 && P_INT32_MIN / val1 < this->value.i_value))) {
@@ -175,7 +176,8 @@ namespace dicebot {
 
         inline number operator/(const number &val1) const {
             if ((val1.is_using_int && val1.value.i_value == 0)
-                || (!val1.is_using_int && val1.value.f_value < ZERO_THRESHOLD && val1.value.f_value > -ZERO_THRESHOLD)) {
+                || (!val1.is_using_int && val1.value.f_value < ZERO_THRESHOLD
+                    && val1.value.f_value > -ZERO_THRESHOLD)) {
                 throw zero_divider_exception();
             }
 
@@ -187,7 +189,9 @@ namespace dicebot {
         }
 
         inline number operator/(const int32_t val1) const {
-            if (val1 == 0) { throw zero_divider_exception(); }
+            if (val1 == 0) {
+                throw zero_divider_exception();
+            }
 
             if (this->is_using_int && this->value.i_value % val1 == 0) {
                 return number(this->value.i_value / val1);
@@ -197,7 +201,9 @@ namespace dicebot {
         }
 
         inline number operator/(const float val1) const {
-            if (val1 < ZERO_THRESHOLD && val1 > -ZERO_THRESHOLD) { throw zero_divider_exception(); }
+            if (val1 < ZERO_THRESHOLD && val1 > -ZERO_THRESHOLD) {
+                throw zero_divider_exception();
+            }
 
             float value_this = this->is_using_int ? static_cast<float>(this->value.i_value) : this->value.f_value;
             number ret(value_this / val1);
@@ -247,4 +253,4 @@ namespace dicebot {
     };
 
     const number zero = 0;
-}  // namespace dicebot
+} // namespace dicebot

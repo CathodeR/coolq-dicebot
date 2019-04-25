@@ -8,11 +8,11 @@ using namespace diceparser;
 static void recurse_dicelet_ct(syntax_item *node, std::vector<p_component> &container) {
     if (!node->is_terminal()) {
         syntax_nterminal *nt_node = dynamic_cast<syntax_nterminal *>(node);
-        if (nt_node->prod_type == production_type::dicelet_ct_const_expr || nt_node->prod_type == production_type::dicelet_ct_rand_expr) {
+        if (nt_node->prod_type == production_type::dicelet_ct_const_expr
+            || nt_node->prod_type == production_type::dicelet_ct_rand_expr) {
             container.push_back(build_component_from_syntax(nt_node->items[0].get()));
-        } else if (
-            nt_node->prod_type == production_type::dicelet_ct_dicelet_ct_comma_const_expr
-            || nt_node->prod_type == production_type::dicelet_ct_dicelet_ct_comma_rand_expr) {
+        } else if (nt_node->prod_type == production_type::dicelet_ct_dicelet_ct_comma_const_expr
+                   || nt_node->prod_type == production_type::dicelet_ct_dicelet_ct_comma_rand_expr) {
             recurse_dicelet_ct(nt_node->items[0].get(), container);
             container.push_back(build_component_from_syntax(nt_node->items[2].get()));
         }
@@ -42,158 +42,171 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
     } else {
         const syntax_nterminal *p_syntax_item = dynamic_cast<const syntax_nterminal *>(root);
         switch (p_syntax_item->prod_type) {
-            case production_type::acc_rand_expr:
-            case production_type::acc_const_expr:
-            case production_type::acc_dicelet_expr:
-            case production_type::const_unit_number:
-            case production_type::const_mul_const_unit:
-            case production_type::const_expr_const_mul:
-            case production_type::rand_mul_rand_unit:
-            case production_type::rand_expr_rand_mul:
-            case production_type::dicelet_expr_dicelet_mul:
-            case production_type::dicelet_mul_dicelet_u: {
-                return build_component_from_syntax(p_syntax_item->items[0].get());
+        case production_type::acc_rand_expr:
+        case production_type::acc_const_expr:
+        case production_type::acc_dicelet_expr:
+        case production_type::const_unit_number:
+        case production_type::const_mul_const_unit:
+        case production_type::const_expr_const_mul:
+        case production_type::rand_mul_rand_unit:
+        case production_type::rand_expr_rand_mul:
+        case production_type::dicelet_expr_dicelet_mul:
+        case production_type::dicelet_mul_dicelet_u: {
+            return build_component_from_syntax(p_syntax_item->items[0].get());
+        }
+        case production_type::const_unit_lbracket_const_expr_rbracket: {
+            return build_component_from_syntax(p_syntax_item->items[1].get());
+        }
+        case production_type::rand_unit_lbracket_rand_expr_rbracket: {
+            auto ret = std::make_shared<comp_holder>();
+            ret->child = build_component_from_syntax(p_syntax_item->items[1].get());
+            return ret;
+        }
+        case production_type::const_expr_minus_const_mul: {
+            auto p1 = build_component_from_syntax(p_syntax_item->items[1].get());
+            dynamic_cast<comp_number *>(p1.get())->what = dicebot::zero - dynamic_cast<comp_number *>(p1.get())->what;
+            return p1;
+        }
+        case production_type::const_mul_const_mul_muldvi_const_unit:
+        case production_type::const_expr_const_expr_minus_const_mul:
+        case production_type::const_expr_const_expr_plus_const_mul: {
+            auto ret = std::make_shared<comp_number>();
+            auto p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+            auto p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+            char oper = operator_from_syntax_item(p_syntax_item->items[1].get());
+            auto what1 = dynamic_cast<comp_number *>(p1.get())->what;
+            auto what2 = dynamic_cast<comp_number *>(p2.get())->what;
+            switch (oper) {
+            case '+':
+                ret->what = what1 + what2;
+                break;
+            case '-':
+                ret->what = what1 - what2;
+                break;
+            case '*':
+                ret->what = what1 * what2;
+                break;
+            case '/':
+                ret->what = what1 / what2;
+                break;
             }
-            case production_type::const_unit_lbracket_const_expr_rbracket: {
-                return build_component_from_syntax(p_syntax_item->items[1].get());
-            }
-            case production_type::rand_unit_lbracket_rand_expr_rbracket: {
-                auto ret = std::make_shared<comp_holder>();
-                ret->child = build_component_from_syntax(p_syntax_item->items[1].get());
-                return ret;
-            }
-            case production_type::const_expr_minus_const_mul: {
-                auto p1 = build_component_from_syntax(p_syntax_item->items[1].get());
-                dynamic_cast<comp_number *>(p1.get())->what = dicebot::zero - dynamic_cast<comp_number *>(p1.get())->what;
-                return p1;
-            }
-            case production_type::const_mul_const_mul_muldvi_const_unit:
-            case production_type::const_expr_const_expr_minus_const_mul:
-            case production_type::const_expr_const_expr_plus_const_mul: {
-                auto ret = std::make_shared<comp_number>();
-                auto p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-                auto p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-                char oper = operator_from_syntax_item(p_syntax_item->items[1].get());
-                auto what1 = dynamic_cast<comp_number *>(p1.get())->what;
-                auto what2 = dynamic_cast<comp_number *>(p2.get())->what;
-                switch (oper) {
-                    case '+': ret->what = what1 + what2; break;
-                    case '-': ret->what = what1 - what2; break;
-                    case '*': ret->what = what1 * what2; break;
-                    case '/': ret->what = what1 / what2; break;
-                }
-                return ret;
-            }
-            case production_type::rand_unit_d_const_unit: {
-                auto ret = std::make_shared<comp_dice_rdk>();
-                ret->mode = dice_rdk_mode::single_d;
-                p_component p1 = build_component_from_syntax(p_syntax_item->items[1].get());
-                ret->face = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-                return ret;
-            }
-            case production_type::rand_unit_const_unit_d_const_unit: {
-                auto ret = std::make_shared<comp_dice_rdk>();
-                ret->mode = dice_rdk_mode::numbered_d;
-                p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-                p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-                ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-                ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
-                return ret;
-            }
-            case production_type::rand_unit_const_unit_d_const_unit_k_const_unit: {
-                auto ret = std::make_shared<comp_dice_rdk>();
-                ret->mode = dice_rdk_mode::numbered_d_k;
-                p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-                p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-                ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-                ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
-                p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
-                ret->keep = dynamic_cast<comp_number *>(p3.get())->what.force_positive_int();
-                return ret;
-            }
-            case production_type::rand_unit_const_unit_d_const_unit_kl_const_unit: {
-                auto ret = std::make_shared<comp_dice_rdk>();
-                ret->mode = dice_rdk_mode::numbered_d_kl;
-                p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-                p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-                ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-                ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
-                p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
-                ret->keep = dynamic_cast<comp_number *>(p3.get())->what.force_positive_int();
-                return ret;
-            }
-            case production_type::rand_expr_minus_rand_mul: {
-                auto ret = std::make_shared<comp_calculus_reverse>();
-                ret->child = build_component_from_syntax(p_syntax_item->items[1].get());
-                return ret;
-            }
-            case production_type::rand_mul_const_mul_muldvi_rand_unit:
-            case production_type::rand_mul_rand_mul_muldvi_const_unit:
-            case production_type::rand_mul_rand_mul_muldvi_rand_unit:
-            case production_type::rand_expr_const_expr_plus_rand_mul:
-            case production_type::rand_expr_const_expr_minus_rand_mul:
-            case production_type::rand_expr_rand_expr_plus_const_mul:
-            case production_type::rand_expr_rand_expr_minus_const_mul:
-            case production_type::rand_expr_rand_expr_plus_rand_mul:
-            case production_type::rand_expr_rand_expr_minus_rand_mul: {
-                auto ret = std::make_shared<comp_calculus>();
-                ret->lchild = build_component_from_syntax(p_syntax_item->items[0].get());
-                ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
-                ret->rchild = build_component_from_syntax(p_syntax_item->items[2].get());
-                return ret;
-            }
-            case production_type::dicelet_u_const_unit_sharp_const_unit:
-            case production_type::dicelet_u_const_unit_sharp_rand_unit: {
-                auto ret = std::make_shared<dicelet_unit>();
-                p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-                uint16_t count = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-                ret->dicelets.resize(count, build_component_from_syntax(p_syntax_item->items[2].get()));
-                return std::move(ret);
-            }
-            case production_type::dicelet_u_lbrace_dicelet_ct_rbrace: {
-                auto ret = std::make_shared<dicelet_unit>();
-                recurse_dicelet_ct(p_syntax_item->items[1].get(), ret->dicelets);
-                return std::move(ret);
-            }
-            case production_type::dicelet_mul_const_mul_muldvi_dicelet_u:
-            case production_type::dicelet_mul_rand_mul_muldvi_dicelet_u:
-            case production_type::dicelet_expr_const_expr_minus_dicelet_mul:
-            case production_type::dicelet_expr_const_expr_plus_dicelet_mul:
-            case production_type::dicelet_expr_rand_expr_minus_dicelet_mul:
-            case production_type::dicelet_expr_rand_expr_plus_dicelet_mul: {
-                auto ret = std::make_shared<dicelet_calculus>();
-                ret->lchild = dicelet_from_normal_component(p_syntax_item->items[0].get());
-                ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
-                ret->rchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
-                return std::move(ret);
-            }
-            case production_type::dicelet_mul_dicelet_mul_muldvi_const_unit:
-            case production_type::dicelet_mul_dicelet_mul_muldvi_rand_unit:
-            case production_type::dicelet_expr_dicelet_expr_minus_const_mul:
-            case production_type::dicelet_expr_dicelet_expr_minus_rand_mul:
-            case production_type::dicelet_expr_dicelet_expr_plus_const_mul:
-            case production_type::dicelet_expr_dicelet_expr_plus_rand_mul: {
-                auto ret = std::make_shared<dicelet_calculus>();
-                ret->lchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
-                ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
-                ret->rchild = dicelet_from_normal_component(p_syntax_item->items[2].get());
-                return std::move(ret);
-            }
-            case production_type::dicelet_mul_dicelet_mul_muldvi_dicelet_u:
-            case production_type::dicelet_expr_dicelet_expr_minus_dicelet_mul:
-            case production_type::dicelet_expr_dicelet_expr_plus_dicelet_mul: {
-                auto ret = std::make_shared<dicelet_calculus>();
-                ret->lchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
-                ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
-                ret->rchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
-                return std::move(ret);
-            }
-            case production_type::dicelet_expr_minus_dicelet_mul: {
-                auto ret = std::make_shared<dicelet_calculus_reverse>();
-                ret->child = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
-                return std::move(ret);
-            }
-            default: break;
+            return ret;
+        }
+        case production_type::rand_unit_d_const_unit: {
+            auto ret = std::make_shared<comp_dice_rdk>();
+            ret->mode = dice_rdk_mode::single_d;
+            p_component p1 = build_component_from_syntax(p_syntax_item->items[1].get());
+            ret->face = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
+            return ret;
+        }
+        case production_type::rand_unit_const_unit_d_const_unit: {
+            auto ret = std::make_shared<comp_dice_rdk>();
+            ret->mode = dice_rdk_mode::numbered_d;
+            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+            p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+            ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
+            ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
+            return ret;
+        }
+        case production_type::rand_unit_const_unit_d_const_unit_k_const_unit: {
+            auto ret = std::make_shared<comp_dice_rdk>();
+            ret->mode = dice_rdk_mode::numbered_d_k;
+            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+            p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+            ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
+            ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
+            p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
+            ret->keep = dynamic_cast<comp_number *>(p3.get())->what.force_positive_int();
+            return ret;
+        }
+        case production_type::rand_unit_const_unit_d_const_unit_kl_const_unit: {
+            auto ret = std::make_shared<comp_dice_rdk>();
+            ret->mode = dice_rdk_mode::numbered_d_kl;
+            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+            p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+            ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
+            ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
+            p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
+            ret->keep = dynamic_cast<comp_number *>(p3.get())->what.force_positive_int();
+            return ret;
+        }
+        case production_type::rand_expr_minus_rand_mul: {
+            auto ret = std::make_shared<comp_calculus_reverse>();
+            ret->child = build_component_from_syntax(p_syntax_item->items[1].get());
+            return ret;
+        }
+        case production_type::rand_mul_const_mul_muldvi_rand_unit:
+        case production_type::rand_mul_rand_mul_muldvi_const_unit:
+        case production_type::rand_mul_rand_mul_muldvi_rand_unit:
+        case production_type::rand_expr_const_expr_plus_rand_mul:
+        case production_type::rand_expr_const_expr_minus_rand_mul:
+        case production_type::rand_expr_rand_expr_plus_const_mul:
+        case production_type::rand_expr_rand_expr_minus_const_mul:
+        case production_type::rand_expr_rand_expr_plus_rand_mul:
+        case production_type::rand_expr_rand_expr_minus_rand_mul: {
+            auto ret = std::make_shared<comp_calculus>();
+            ret->lchild = build_component_from_syntax(p_syntax_item->items[0].get());
+            ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
+            ret->rchild = build_component_from_syntax(p_syntax_item->items[2].get());
+            return ret;
+        }
+        case production_type::dicelet_u_const_unit_sharp_const_unit:
+        case production_type::dicelet_u_const_unit_sharp_rand_unit: {
+            auto ret = std::make_shared<dicelet_unit>();
+            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+            uint16_t count = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
+            ret->dicelets.resize(count, build_component_from_syntax(p_syntax_item->items[2].get()));
+            return std::move(ret);
+        }
+        case production_type::dicelet_u_lbrace_dicelet_ct_rbrace: {
+            auto ret = std::make_shared<dicelet_unit>();
+            recurse_dicelet_ct(p_syntax_item->items[1].get(), ret->dicelets);
+            return std::move(ret);
+        }
+        case production_type::dicelet_mul_const_mul_muldvi_dicelet_u:
+        case production_type::dicelet_mul_rand_mul_muldvi_dicelet_u:
+        case production_type::dicelet_expr_const_expr_minus_dicelet_mul:
+        case production_type::dicelet_expr_const_expr_plus_dicelet_mul:
+        case production_type::dicelet_expr_rand_expr_minus_dicelet_mul:
+        case production_type::dicelet_expr_rand_expr_plus_dicelet_mul: {
+            auto ret = std::make_shared<dicelet_calculus>();
+            ret->lchild = dicelet_from_normal_component(p_syntax_item->items[0].get());
+            ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
+            ret->rchild =
+                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
+            return std::move(ret);
+        }
+        case production_type::dicelet_mul_dicelet_mul_muldvi_const_unit:
+        case production_type::dicelet_mul_dicelet_mul_muldvi_rand_unit:
+        case production_type::dicelet_expr_dicelet_expr_minus_const_mul:
+        case production_type::dicelet_expr_dicelet_expr_minus_rand_mul:
+        case production_type::dicelet_expr_dicelet_expr_plus_const_mul:
+        case production_type::dicelet_expr_dicelet_expr_plus_rand_mul: {
+            auto ret = std::make_shared<dicelet_calculus>();
+            ret->lchild =
+                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
+            ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
+            ret->rchild = dicelet_from_normal_component(p_syntax_item->items[2].get());
+            return std::move(ret);
+        }
+        case production_type::dicelet_mul_dicelet_mul_muldvi_dicelet_u:
+        case production_type::dicelet_expr_dicelet_expr_minus_dicelet_mul:
+        case production_type::dicelet_expr_dicelet_expr_plus_dicelet_mul: {
+            auto ret = std::make_shared<dicelet_calculus>();
+            ret->lchild =
+                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
+            ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
+            ret->rchild =
+                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
+            return std::move(ret);
+        }
+        case production_type::dicelet_expr_minus_dicelet_mul: {
+            auto ret = std::make_shared<dicelet_calculus_reverse>();
+            ret->child = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
+            return std::move(ret);
+        }
+        default:
+            return nullptr;
         }
     }
 }
@@ -219,44 +232,54 @@ void comp_holder::print(str_container &strlist) const noexcept {
 number comp_dice_rdk::roll_the_dice(str_container &out) const {
     dicebot::roll::dice_roll dr;
     switch (this->mode) {
-        case dice_rdk_mode::single_d: {
-            dicebot::roll::roll_rdk(dr, 1, this->face, 1);
-            break;
-        }
-        case dice_rdk_mode::numbered_d: {
-            dicebot::roll::roll_rdk(dr, this->dice, this->face, this->dice);
-            break;
-        }
-        case dice_rdk_mode::numbered_d_k: {
-            dicebot::roll::roll_rdk(dr, this->dice, this->face, this->keep);
-            break;
-        }
-        case dice_rdk_mode::numbered_d_kl: {
-            dicebot::roll::roll_rdk(dr, this->dice, this->face, -this->keep);
-            break;
-        }
-        default: break;
+    case dice_rdk_mode::single_d: {
+        dicebot::roll::roll_rdk(dr, 1, this->face, 1);
+        break;
+    }
+    case dice_rdk_mode::numbered_d: {
+        dicebot::roll::roll_rdk(dr, this->dice, this->face, this->dice);
+        break;
+    }
+    case dice_rdk_mode::numbered_d_k: {
+        dicebot::roll::roll_rdk(dr, this->dice, this->face, this->keep);
+        break;
+    }
+    case dice_rdk_mode::numbered_d_kl: {
+        dicebot::roll::roll_rdk(dr, this->dice, this->face, -static_cast<signed>(this->keep));
+        break;
+    }
+    default:
+        break;
     }
 
     switch (dr.status) {
-        case roll::roll_status::FINISHED: {
-            out.emplace_back(dr.detail());
-            return dr.summary;
-        }
-        case roll::roll_status::TOO_MANY_DICE: {
-        }
-        case roll::roll_status::DICE_NOT_AVAILABLE: {
-        }
-        default: return 0;
+    case roll::roll_status::FINISHED: {
+        out.emplace_back(dr.detail());
+        return dr.summary;
+    }
+    case roll::roll_status::TOO_MANY_DICE: {
+    }
+    case roll::roll_status::DICE_NOT_AVAILABLE: {
+    }
+    default:
+        return 0;
     }
 }
 void comp_dice_rdk::print(str_container &strlist) const noexcept {
     std::ostringstream strss;
     switch (this->mode) {
-        case dice_rdk_mode::single_d: strss << "d" << this->face; break;
-        case dice_rdk_mode::numbered_d: strss << this->dice << "d" << this->face; break;
-        case dice_rdk_mode::numbered_d_k: strss << this->dice << "d" << this->face << "k" << this->keep; break;
-        case dice_rdk_mode::numbered_d_kl: strss << this->dice << "d" << this->face << "kl" << this->keep; break;
+    case dice_rdk_mode::single_d:
+        strss << "d" << this->face;
+        break;
+    case dice_rdk_mode::numbered_d:
+        strss << this->dice << "d" << this->face;
+        break;
+    case dice_rdk_mode::numbered_d_k:
+        strss << this->dice << "d" << this->face << "k" << this->keep;
+        break;
+    case dice_rdk_mode::numbered_d_kl:
+        strss << this->dice << "d" << this->face << "kl" << this->keep;
+        break;
     }
     strlist.emplace_back(strss.str());
 }
@@ -344,11 +367,20 @@ void dicelet_calculus::roll_dicelet(result_container &rets, str_container &out) 
 
     while (n--) {
         switch (this->what) {
-            case '+': ret_temp.emplace_back(*iter_l + *iter_r); break;
-            case '-': ret_temp.emplace_back(*iter_l - *iter_r); break;
-            case '*': ret_temp.emplace_back(*iter_l * *iter_r); break;
-            case '/': ret_temp.emplace_back(*iter_l / *iter_r); break;
-            default: break;
+        case '+':
+            ret_temp.emplace_back(*iter_l + *iter_r);
+            break;
+        case '-':
+            ret_temp.emplace_back(*iter_l - *iter_r);
+            break;
+        case '*':
+            ret_temp.emplace_back(*iter_l * *iter_r);
+            break;
+        case '/':
+            ret_temp.emplace_back(*iter_l / *iter_r);
+            break;
+        default:
+            break;
         }
         iter_l++;
         iter_r++;
@@ -368,7 +400,9 @@ void dicelet_calculus_reverse::roll_dicelet(result_container &rets, str_containe
     result_container ret_temp;
     str_container str_temp;
     this->child->roll_dicelet(ret_temp, str_temp);
-    for (number &num : ret_temp) { num = number(0) - num; }
+    for (number &num : ret_temp) {
+        num = number(0) - num;
+    }
     rets.splice(rets.end(), ret_temp);
     out.splice(out.end(), str_temp);
 }
