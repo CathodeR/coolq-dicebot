@@ -1,26 +1,21 @@
 #pragma once
 
+#include <stack>
 #include "./common.h"
 #include "./utils/number.h"
 
-namespace dicebot{
-    enum class operation_mode{
-        NUMBER = 1,
-        DICE = 3,
-        OPERATOR = 4,
-        BRACKET = 8
-    };
+namespace dicebot {
+    enum class operation_mode { NUMBER = 1, DICE = 3, OPERATOR = 4, BRACKET = 8 };
 
-    class operation_item{
+    class operation_item {
     private:
-        void assign_value_from(operation_item * item);
-        bool mode_oper_cal_value_from(operation_item * item1, operation_item * item2);
-        bool mode_oper_cal_value_from(operation_item * item);
-        
+        void assign_value_from(operation_item* item);
+        bool mode_oper_cal_value_from(operation_item* item1, operation_item* item2);
+        bool mode_oper_cal_value_from(operation_item* item);
+
         bool successful();
         bool abandon_right_part();
         bool fail();
-
 
     public:
         bool is_num_like();
@@ -36,7 +31,6 @@ namespace dicebot{
         std::shared_ptr<operation_item> left_bracket = nullptr;
         std::shared_ptr<operation_item> right_bracket = nullptr;
 
-
         bool is_unary_operator = false;
         operation_mode mode;
         std::string mode_num_like_source;
@@ -45,30 +39,30 @@ namespace dicebot{
         bool calculate();
 
         bool is_cal_successful = false;
-        
+
         number ret_value;
 
         std::string str_cal_command;
         std::string str_cal_detail;
 
         operation_item(operation_mode mode, std::string oper, std::string source);
-        operation_item(const operation_item & copy);
+        operation_item(const operation_item& copy);
         ~operation_item();
     };
 
     using p_item = std::shared_ptr<operation_item>;
-    
-    class operation{
+
+    class operation {
     private:
-        std::list<p_item> * list_operations;
+        std::list<p_item>* list_operations;
 
         int i_num_like_count = 0;
         int i_binary_operator_count = 0;
 
+        std::list<p_item>* list_output = nullptr;
+        std::stack<p_item>* stack_temp = nullptr;
+        std::list<size_t>* left_bracket_location = nullptr;
 
-        std::list<p_item> * list_output = nullptr;
-        std::stack<p_item> * stack_temp = nullptr;
-        std::list<size_t> * left_bracket_location = nullptr;
     public:
         bool no_dice = true;
 
@@ -86,10 +80,6 @@ namespace dicebot{
         size_t size();
     };
 
-    bool binary_tree_split_dice(
-        std::string const & str_input, 
-        std::string & str_roll_command, 
-        std::string & str_roll_detail,
-        std::string & str_roll_result, 
-        std::string & message);
-}
+    bool binary_tree_split_dice(std::string const& str_input, std::string& str_roll_command,
+                                std::string& str_roll_detail, std::string& str_roll_result, std::string& message);
+} // namespace dicebot

@@ -1,28 +1,39 @@
 #include "./tokenizer.h"
 
+#include <cctype>
 #include <list>
-
 using namespace dicebot;
 using namespace diceparser;
 
 struct keyword_container {
     char name[3];
     token_index kw;
-} static constexpr keyword_arr[]{{"d", token_index::keyword_d},   {"D", token_index::keyword_d},   {"kl", token_index::keyword_kl},
-                                 {"kL", token_index::keyword_kl}, {"Kl", token_index::keyword_kl}, {"KL", token_index::keyword_kl},
-                                 {"k", token_index::keyword_k},   {"K", token_index::keyword_k}};
+} static constexpr keyword_arr[]{{"d", token_index::keyword_d},
+                                 {"D", token_index::keyword_d},
+                                 {"kl", token_index::keyword_kl},
+                                 {"kL", token_index::keyword_kl},
+                                 {"Kl", token_index::keyword_kl},
+                                 {"KL", token_index::keyword_kl},
+                                 {"k", token_index::keyword_k},
+                                 {"K", token_index::keyword_k}};
 
 struct punct_container {
     char name;
     token_index pc;
-} static constexpr punct_arr[]{{'+', token_index::punct_add},   {'-', token_index::punct_sub},      {'*', token_index::punct_mul},
-                               {'/', token_index::punct_dvi},   {'{', token_index::punct_lbrace},   {'}', token_index::punct_rbrace},
-                               {',', token_index::punct_comma}, {'(', token_index::punct_lbracket}, {')', token_index::punct_rbracket},
+} static constexpr punct_arr[]{{'+', token_index::punct_add},
+                               {'-', token_index::punct_sub},
+                               {'*', token_index::punct_mul},
+                               {'/', token_index::punct_dvi},
+                               {'{', token_index::punct_lbrace},
+                               {'}', token_index::punct_rbrace},
+                               {',', token_index::punct_comma},
+                               {'(', token_index::punct_lbracket},
+                               {')', token_index::punct_rbracket},
                                {'#', token_index::punct_sharp}};
 
-tokenizer::tokenizer(std::deque<token_t>& tokens, std::map<std::string, std::string> const& macros, std::string const& source) :
-    token_container(tokens),
-    macro_map(macros) {
+tokenizer::tokenizer(std::deque<token_t>& tokens, std::map<std::string, std::string> const& macros,
+                     std::string const& source)
+    : token_container(tokens), macro_map(macros) {
     size_t len = this->regulate_brackets(source);
 
     this->sources.emplace_back(source.substr(0, len));
@@ -52,34 +63,42 @@ size_t tokenizer::regulate_brackets(std::string const& str) const {
     for (; i < str.size(); i++) {
         const char& c_here = str[i];
         switch (c_here) {
-            case '{': good_for_comma++;
-            case '(': chaser.push_back(bracket_pair(c_here, i)); break;
-            case '}':
-                good_for_comma--;
-                if (chaser.size() == 0) {
-                    terminate = true;
-                    break;
-                }
-                if (chaser.back().first == '{') {
-                    chaser.pop_back();
-                } else
-                    terminate = true;
+        case '{':
+            good_for_comma++;
+        case '(':
+            chaser.push_back(bracket_pair(c_here, i));
+            break;
+        case '}':
+            good_for_comma--;
+            if (chaser.size() == 0) {
+                terminate = true;
                 break;
-            case ')':
-                if (chaser.size() == 0) {
-                    terminate = true;
-                    break;
-                }
-                if (chaser.back().first == '(') {
-                    chaser.pop_back();
-                } else
-                    terminate = true;
+            }
+            if (chaser.back().first == '{') {
+                chaser.pop_back();
+            } else
+                terminate = true;
+            break;
+        case ')':
+            if (chaser.size() == 0) {
+                terminate = true;
                 break;
-            case ',':
-                if (good_for_comma == 0) { terminate = true; }
-                break;
-            case '\n': terminate = true; break;
-            default: break;
+            }
+            if (chaser.back().first == '(') {
+                chaser.pop_back();
+            } else
+                terminate = true;
+            break;
+        case ',':
+            if (good_for_comma == 0) {
+                terminate = true;
+            }
+            break;
+        case '\n':
+            terminate = true;
+            break;
+        default:
+            break;
         }
         if (terminate) break;
     }
@@ -130,7 +149,8 @@ token_t* tokenizer::next_token() {
     temp_token.pos_cur = temp_token.pos_next;
 
     bool has_got = this->get_punctuator(temp_token) || this->get_number(temp_token)
-                   || (temp_token.source_index == 0 && this->resolve_identifier(temp_token)) || this->get_keyword(temp_token);
+                   || (temp_token.source_index == 0 && this->resolve_identifier(temp_token))
+                   || this->get_keyword(temp_token);
 
     if (has_got) {
         if (temp_token.id == token_index::index_macro) {
@@ -222,7 +242,9 @@ void tokenizer::move_next_cursor(token_t& src_token, size_t length) const {
 
     while (src[src_token.pos_next] == ' ') src_token.pos_next++;
 
-    if (src_token.pos_next >= src.size()) { src_token.pos_next = npos; }
+    if (src_token.pos_next >= src.size()) {
+        src_token.pos_next = npos;
+    }
 }
 
 size_t greed_map_find(std::string const& source, size_t start_pos, std::map<std::string, std::string> const& map) {
@@ -286,7 +308,8 @@ bool tokenizer::resolve_identifier(token_t& target) const {
         for (size_t i = 0; i < suppose_macro.size(); i++) suppose_macro[i] = std::tolower(suppose_macro[i]);
 
         do {
-            if ((this->ambiguity_flags & ambigui_d) && suppose_macro == "d" || (this->ambiguity_flags & ambigui_k) && suppose_macro == "k"
+            if ((this->ambiguity_flags & ambigui_d) && suppose_macro == "d"
+                || (this->ambiguity_flags & ambigui_k) && suppose_macro == "k"
                 || (this->ambiguity_flags & ambigui_kl) && suppose_macro == "kl")
                 ;
             else
@@ -294,7 +317,8 @@ bool tokenizer::resolve_identifier(token_t& target) const {
 
             token_t suppose_target = target;
             suppose_target.pos_next += len;
-            if (suppose_target.pos_next >= this->sources[suppose_target.source_index].size()) suppose_target.pos_next = npos;
+            if (suppose_target.pos_next >= this->sources[suppose_target.source_index].size())
+                suppose_target.pos_next = npos;
             token_index prev_index;
             if (this->token_container.size() == 0)
                 prev_index = token_index::index_begin;
@@ -319,12 +343,12 @@ bool tokenizer::resolve_identifier(token_t& target) const {
             if ((ambiguity_flags & ambigui_d) && suppose_macro == "d") {
                 if (prev_index == token_index::keyword_d) break;
                 token_t tn = peek_next(suppose_target);
-                if (tn.id == token_index::punct_lbrace || tn.id == token_index::punct_lbracket || tn.id == token_index::index_number
-                    || tn.id == token_index::ambiguity_indentifier)
+                if (tn.id == token_index::punct_lbrace || tn.id == token_index::punct_lbracket
+                    || tn.id == token_index::index_number || tn.id == token_index::ambiguity_indentifier)
                     return false;
 
-                if (tn.id == token_index::index_stop || tn.id == token_index::punct_rbrace || tn.id == token_index::punct_rbracket
-                    || tn.id == token_index::punct_comma)
+                if (tn.id == token_index::index_stop || tn.id == token_index::punct_rbrace
+                    || tn.id == token_index::punct_rbracket || tn.id == token_index::punct_comma)
                     break;
 
                 if (tn.id == token_index::ambiguity_macro_d) {
