@@ -7,6 +7,7 @@
 
 namespace dicebot::diceparser {
 
+    enum oper_constants : uint8_t { oper_default = 0, no_named = 1, no_brace = 2 };
     class parser {
         using macro_map_t = std::map<std::string, std::string>;
         macro_map_t const &macro_map;

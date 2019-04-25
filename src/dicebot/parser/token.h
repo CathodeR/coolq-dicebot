@@ -10,13 +10,6 @@ namespace dicebot::diceparser {
 
     enum class dice_macro_class_t { const_macro, rand_macro, dicelet_macro };
 
-    // struct dice_macro_t{
-    //     dice_macro_class_t type;
-    //     std::string sources;
-    // };
-
-    enum oper_constants : uint8_t { oper_default = 0, no_named = 1, no_brace = 2 };
-
     enum class token_index : uint8_t {
         index_stop,
         index_begin,
@@ -50,4 +43,4 @@ namespace dicebot::diceparser {
 
     constexpr size_t npos = -1;
 
-}  // namespace dicebot::diceparser
+} // namespace dicebot::diceparser
