@@ -21,16 +21,14 @@ namespace dicebot::protocol{
         void append_message(std::string const & message){
             protocol_ot << " " << message;
         }
-        void append_message(int const & message){
+
+        template<class any_t>
+        void append_message(any_t && message){
             protocol_ot << " " << message;
         }
-        void append_roll(std::string const & roll_command, std::string const & detail, std::string const & roll_result){
-            protocol_ot << u8" 掷骰: " << roll_command;
-            if(detail.size() > 0) protocol_ot << " = " << detail;
-            protocol_ot<<" = " << roll_result;
-        }
-
-        void append_roll(std::string const & roll_command, std::string const & detail, int const roll_result){
+        
+        template<class any_t>
+        void append_roll(std::string const & roll_command, std::string const & detail, any_t && roll_result){
             protocol_ot << u8" 掷骰: " << roll_command;
             if(detail.size() > 0) protocol_ot << " = " << detail;
             protocol_ot<<" = " << roll_result;
