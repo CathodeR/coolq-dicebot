@@ -30,26 +30,14 @@ namespace dicebot {
     private:
         number_val value;
 
-        void initialize(const std::string source) {
-            int pos_of_dot = source.find_first_of('.');
-            if (pos_of_dot == std::string::npos) {
-                this->is_using_int = true;
-                this->value.i_value = std::stoi(source);
-            } else {
-                std::string str_decimal = source.substr(pos_of_dot + 1);
-                int i_decimal = std::stoi(str_decimal);
-                if (i_decimal == 0) {
-                    std::string str_integer = source.substr(0, pos_of_dot);
-                    this->is_using_int = true;
-                    if (str_integer.size() > 0)
-                        this->value.i_value = std::stoi(str_integer);
-                    else
-                        this->value.i_value = 0;
-                } else {
-                    this->is_using_int = false;
-                    this->value.f_value = std::stof(source);
-                }
-            }
+        void initialize(const std::string &source) {
+            this->is_using_int = false;
+            if (source.back() == '%') {
+                this->value.f_value = std::stof(source.substr(0, source.size() - 1)) / 100;
+            } else
+                this->value.f_value = std::stof(source);
+
+            this->try_to_be_integer();
         }
 
         void int_2_float() {
