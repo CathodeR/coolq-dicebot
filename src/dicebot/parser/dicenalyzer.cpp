@@ -219,7 +219,7 @@ void comp_number::print(str_container &strlist) const noexcept { strlist.push_ba
 
 number comp_holder::roll_the_dice(str_container &out) const {
     out.emplace_back("(");
-    number ret = this->roll_the_dice(out);
+    number ret = this->child->roll_the_dice(out);
     out.emplace_back(")");
     return std::move(ret);
 }
@@ -290,7 +290,18 @@ number comp_calculus::roll_the_dice(str_container &out) const {
     temp_list.emplace_back(std::string(1, this->what));
     number right = this->rchild->roll_the_dice(temp_list);
     out.splice(out.end(), temp_list);
-    return left + right;
+    switch (this->what) {
+    case '+':
+        return left + right;
+    case '-':
+        return left - right;
+    case '*':
+        return left * right;
+    case '/':
+        return left / right;
+    default:
+        return number(0);
+    }
 }
 void comp_calculus::print(str_container &strlist) const noexcept {
     this->lchild->print(strlist);
