@@ -39,6 +39,23 @@ protocol_roll_dice::protocol_roll_dice() {
         "nO+8jOS7jeeEtuaYvuekuuivpue7hue7k+aenA==");
 }
 
+template <class container_t, class item_t = typename container_t::value_type>
+static auto result_builder = [](const char* prefix, container_t& src, std::function<std::string(const item_t&)> strconv,
+                                const char* separater, const char* suffix) -> std::string {
+    std::string ret;
+    ret.assign(prefix);
+    bool is_first = true;
+    for (const auto& item : src) {
+        if (is_first)
+            is_first = false;
+        else
+            ret.append(separater);
+        ret.append(strconv(item));
+    }
+    ret.append(suffix);
+    return std::move(ret);
+};
+
 bool protocol_roll_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     bool detailed_roll_message = false;
     std::smatch match_list_command_detail;
@@ -52,7 +69,7 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
         detailed_roll_message = var.second != 0;
     }
 
-    if (match_list_command_detail.begin() != match_list_command_detail.end()) {
+    if (match_list_command_detail.size() > 0) {
         message_cp = match_list_command_detail.suffix().str();
         if (message_cp == "on") {
             var.second = var.first;
@@ -78,50 +95,51 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     } else
         message_cp = message;
 
-    std::string str_roll_command;
-    std::string str_roll_detail;
-    // std::string str_result;
+    if (message_cp.size() == 0) {
+        if (!pfm->get_value(profile::def_roll_type::def_roll, message_cp, event.user_id)) return false;
+    }
 
     auto map = pfm->get_profile(event.user_id)->get_map<std::string, std::string>();
     diceparser::parser parser(*map);
     auto pcomp = parser.parse(message_cp, diceparser::oper_constants::oper_default);
     auto p_dice = diceparser::build_component_from_syntax(pcomp.get());
 
-    if (p_dice) {
-        std::string str_roll_command;
-        std::string str_roll_detail;
-        std::string str_result;
-        diceparser::component::str_container strs_command;
+    if (!p_dice) return false;
 
-        p_dice->print(strs_command);
-        for (const auto& str : strs_command) str_roll_command.append(str);
+    std::string str_roll_command;
+    std::string str_roll_detail;
+    std::string str_result;
+    diceparser::component::str_container strs_command;
 
-        auto p_dicelet = std::dynamic_pointer_cast<diceparser::dicelet>(p_dice);
+    p_dice->print(strs_command);
+    for (const auto& str : strs_command) str_roll_command.append(str);
 
-        if (p_dicelet) {
-            diceparser::component::str_container strs_detail;
-            diceparser::dicelet::result_container results;
-            p_dicelet->roll_dicelet(results, strs_detail);
-            for (const auto& res : results) {
-                str_result.append(res.str());
-            }
-            if (detailed_roll_message)
-                for (const auto& str : strs_detail) str_roll_detail.append(str);
-        } else {
-            diceparser::component::str_container strs_detail;
-            number result = p_dice->roll_the_dice(strs_detail);
-            str_result.append(result.str());
-            if (detailed_roll_message)
-                for (const auto& str : strs_detail) str_roll_detail.append(str);
-        }
+    auto p_dicelet = std::dynamic_pointer_cast<diceparser::dicelet>(p_dice);
 
-        output_constructor oc(event.nickname);
-        if (parser.tail.size() > 0) oc.append_message(parser.tail);
+    if (p_dicelet) {
+        diceparser::component::str_container strs_detail;
+        diceparser::dicelet::result_container results;
+        p_dicelet->roll_dicelet(results, strs_detail);
+        str_result.assign(result_builder<diceparser::dicelet::result_container>(
+            "{", results, [](const number& n) -> std::string { return n.str(); }, ", ", "}"));
         if (detailed_roll_message)
-            oc.append_roll(str_roll_command, str_roll_detail, str_result);
-        else
-            oc.append_roll(str_roll_command, "", str_result);
-        response = oc.str();
+            str_roll_detail.assign(result_builder<diceparser::component::str_container>(
+                "", strs_detail, [](const std::string& s) -> std::string { return s; }, "", ""));
+    } else {
+        diceparser::component::str_container strs_detail;
+        number result = p_dice->roll_the_dice(strs_detail);
+        str_result.append(result.str());
+        if (detailed_roll_message)
+            str_roll_detail.assign(result_builder<diceparser::component::str_container>(
+                "", strs_detail, [](const std::string& s) -> std::string { return s; }, "", ""));
     }
-    return false;
+
+    output_constructor oc(event.nickname);
+    if (parser.tail.size() > 0) oc.append_message(parser.tail);
+    if (detailed_roll_message)
+        oc.append_roll(str_roll_command, str_roll_detail, str_result);
+    else
+        oc.append_roll(str_roll_command, "", str_result);
+    response = oc.str();
+    return true;
 }
