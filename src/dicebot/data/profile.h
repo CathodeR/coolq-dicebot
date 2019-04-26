@@ -32,7 +32,7 @@ namespace dicebot::profile{
         using profile_iter = typename profile_map::iterator;
     public:
         profile_status get(_profile_Key const & var_type, _profile_Val & var) const noexcept{
-            profile_citer target = this->find(var_type);
+            auto target = this->find(var_type);
             if(target != this->cend()){
                 var = target->second;
                 return profile_status::finished;
@@ -133,14 +133,14 @@ namespace dicebot::profile{
             return true;
         }
 
-        template <class _profile_Key, class _profile_Val>
-        bool get_var(_profile_Key const & key, _profile_Val & val){
-            return false;
+        template <class _profile_Key_t, class _profile_Val_t>
+        bool get_var(_profile_Key_t const & key, _profile_Val_t & val){
+            return this->get_map<_profile_Key_t,_profile_Val_t>()->get(key,val) == profile_status::finished;
         }
 
-        template <class _profile_Key, class _profile_Val>
-        bool set_var(_profile_Key const & key, _profile_Val const & val){
-            return false;
+        template <class _profile_Key_t, class _profile_Val_t>
+        bool set_var(_profile_Key_t const & key, _profile_Val_t const & val){
+            return this->get_map<_profile_Key_t,_profile_Val_t>()->set(key,val) == profile_status::finished;
         }
         
         template <class _profile_Key, class _profile_Val>
@@ -188,24 +188,10 @@ namespace dicebot::profile{
         }
     }
 
-    #define easy_get_var(_type,_target) template <>\
-    inline bool user_profile::get_var<_type::key_type,_type::mapped_type>(_type::key_type const & key, _type::mapped_type & val){\
-        return _target.get(key,val) == profile_status::finished;}
-
-    #define easy_set_var(_type,_target) template <>\
-    inline bool user_profile::set_var<_type::key_type,_type::mapped_type>(_type::key_type const & key, _type::mapped_type const & val){\
-        return _target.set(key,val) == profile_status::finished;}
-
-    easy_get_var(user_profile::user_var_map_t, user_vars);
-    easy_set_var(user_profile::user_var_map_t, user_vars);
-    easy_get_var(user_profile::def_roll_map_t, def_roll);
-    easy_set_var(user_profile::def_roll_map_t, def_roll);
-    easy_get_var(user_profile::mac_roll_map_t, mac_rolls);
-    easy_set_var(user_profile::mac_roll_map_t, mac_rolls);
-
     #define easy_get_map(_type,_target) template <>\
     inline _type * user_profile::get_map<_type::key_type,_type::mapped_type>(){return &_target;}
 
+    easy_get_map(user_profile::sys_var_map_t, sys_vars);
     easy_get_map(user_profile::user_var_map_t, user_vars);
     easy_get_map(user_profile::mac_roll_map_t, mac_rolls);
     easy_get_map(user_profile::def_roll_map_t, def_roll);
