@@ -110,9 +110,11 @@
         ]
     },
     "gtest-adapter.debugConfig": [
-        "gtest linux64"
+        "roll_test linux64",
+        "protocol_test linux64",
+        "number_test linux64",
+        "interpreter_test linux64"
     ],
     "gtest-adapter.supportLocation": true,
-    "files.eol": "\n",
-    "markdown-toc.depthFrom": 2
+    "files.eol": "\n"
 }

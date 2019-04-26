@@ -16,10 +16,6 @@
 
 #include "dicebot/dicebot.h"
 
-#include "./interpreter_test.h"
-#include "./number_test.h"
-#include "./roll_test.h"
-
 class Protocol_Level_test : public ::testing::Test {
 protected:
     Protocol_Level_test() { dicebot::initialize("./build/test_db/"); }

@@ -44,7 +44,7 @@ find_package(Boost REQUIRED COMPONENTS serialization)
 enable_testing()
 include(GoogleTest)
 
-if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
+if(CMAKE_CI_CONFIG MATCHES "^Appveyor$" OR CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$") 
   find_package(GTest REQUIRED)
   message(STATUS "Using find_package() for Appveyor.")
 endif()
@@ -64,9 +64,10 @@ if(NOT CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   # cotire(${LIB_NAME})
 endif()
 
+set(BASE64SRC src/cqsdk/utils/vendor/cpp-base64/base64.cpp)
 # build test target
 if(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
-  file(GLOB_RECURSE HTEST_SOURCE src/tests/htest.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp)
+  file(GLOB_RECURSE HTEST_SOURCE src/tests/htest.cpp ${BASE64SRC})
   set(HTEST_NAME "dicebot")
   add_executable(${HTEST_NAME} ${HTEST_SOURCE} ${DICEBOT_SOURCE})
   target_link_libraries(${HTEST_NAME} sqlite3)
@@ -75,24 +76,30 @@ if(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
 endif()
 
 # build test
-set(TEST_BUILD_NAME "dicebot.gtest")
-file(GLOB_RECURSE TEST_SOURCE src/tests/test.cpp src/cqsdk/utils/vendor/cpp-base64/base64.cpp)
-add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE}  ${DICEBOT_SOURCE})
-target_link_libraries(${TEST_BUILD_NAME} sqlite3)
-target_link_libraries(${TEST_BUILD_NAME} ${Boost_LIBRARIES})
+set(TEST_NAME_GROUP 
+  roll_test 
+  protocol_test
+  number_test
+  interpreter_test)
+
+foreach(X IN LISTS TEST_NAME_GROUP)
+  set(TEST_BUILD_NAME dicebot.gtest.${X})
+  file(GLOB_RECURSE TEST_SOURCE src/tests/${X}.cpp ${BASE64SRC})
+  add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE}  ${DICEBOT_SOURCE})
+  target_link_libraries(${TEST_BUILD_NAME} sqlite3)
+  target_link_libraries(${TEST_BUILD_NAME} ${Boost_LIBRARIES})  
 
 # link gtest
-if(CMAKE_CI_CONFIG MATCHES "^Appveyor$")
-  target_link_libraries(${TEST_BUILD_NAME} GTest::GTest)
-elseif(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
-  target_link_libraries(${TEST_BUILD_NAME} GTest::GTest)
-else()
-  if(CMAKE_BUILD_TYPE MATCHES "^Debug$")
-    target_link_libraries(${TEST_BUILD_NAME} gtestd)
+  if(CMAKE_CI_CONFIG MATCHES "^Appveyor$" OR CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
+    target_link_libraries(${TEST_BUILD_NAME} GTest::GTest)
   else()
-    target_link_libraries(${TEST_BUILD_NAME} gtest)
+    if(CMAKE_BUILD_TYPE MATCHES "^Debug$")
+      target_link_libraries(${TEST_BUILD_NAME} gtestd)
+    else()
+      target_link_libraries(${TEST_BUILD_NAME} gtest)
+    endif()
   endif()
-endif()
+endforeach(X IN TEST_NAME_GROUP)
 
 gtest_add_tests(TARGET ${TEST_BUILD_NAME}
   TEST_LIST testList

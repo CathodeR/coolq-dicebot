@@ -21,23 +21,28 @@
             ]
         },
         {
-            "name": "gtest linux64",
+            "name": "roll_test linux64",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Debug/dicebot.gtest",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "MIMode": "gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ]
+            "program": "${workspaceFolder}/build/Debug/dicebot.gtest.roll_test",
+        },
+        {
+            "name": "protocol_test linux64",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/dicebot.gtest.protocol_test",
+        },
+        {
+            "name": "number_test linux64",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/dicebot.gtest.number_test",
+        },
+        {
+            "name": "interpreter_test linux64",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Debug/dicebot.gtest.interpreter_test",
         },
         {
             "name": "Debug",

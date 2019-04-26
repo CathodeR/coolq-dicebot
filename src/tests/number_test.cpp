@@ -106,3 +106,8 @@ TEST(NumberTest, Divide_05_MAX_B_UP) { dicebot::test::ceil_check<dicebot::test::
 TEST(NumberTest, Divide_06_MAX_B_DOWN) { dicebot::test::ceil_check<dicebot::test::dvi>(-INT_MAX, 3); }
 TEST(NumberTest, Divide_07_Int_Int) { dicebot::test::case_check<dicebot::test::dvi>(32, 12, false); }
 #pragma endregion
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
