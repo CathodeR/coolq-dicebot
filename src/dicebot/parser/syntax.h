@@ -8,8 +8,8 @@
 namespace dicebot::diceparser {
     enum terminals : uint8_t {
         terminal_number = 0,
-        terminal_lbracket = 1,
-        terminal_rbracket = 2,
+        terminal_lparenthesis = 1,
+        terminal_rparenthesis = 2,
         terminal_mul_dvi = 3,
         terminal_minus = 4,
         terminal_plus = 5,
@@ -43,7 +43,7 @@ namespace dicebot::diceparser {
         acc_rand_expr,
         acc_dicelet_expr,
         const_unit_number,
-        const_unit_lbracket_const_expr_rbracket,
+        const_unit_lparenthesis_const_expr_rparenthesis,
         const_mul_const_unit,
         const_mul_const_mul_muldvi_const_unit,
         const_expr_const_mul,
@@ -54,7 +54,7 @@ namespace dicebot::diceparser {
         rand_unit_const_unit_d_const_unit,
         rand_unit_const_unit_d_const_unit_k_const_unit,
         rand_unit_const_unit_d_const_unit_kl_const_unit,
-        rand_unit_lbracket_rand_expr_rbracket,
+        rand_unit_lparenthesis_rand_expr_rparenthesis,
         rand_mul_rand_unit,
         rand_mul_const_mul_muldvi_rand_unit,
         rand_mul_rand_mul_muldvi_const_unit,
@@ -70,7 +70,7 @@ namespace dicebot::diceparser {
         dicelet_u_const_unit_sharp_const_unit,
         dicelet_u_const_unit_sharp_rand_unit,
         dicelet_u_lbrace_dicelet_ct_rbrace,
-        dicelet_u_lbracket_dicelet_expr_rbracket,
+        dicelet_u_lparenthesis_dicelet_expr_rparenthesis,
         dicelet_ct_const_expr,
         dicelet_ct_rand_expr,
         dicelet_ct_dicelet_ct_comma_const_expr,
@@ -96,7 +96,7 @@ namespace dicebot::diceparser {
     };
 
     class syntax_item {
-       public:
+    public:
         uint8_t type;
         token_t source_token;
         virtual bool is_terminal() const { return false; }
@@ -105,7 +105,7 @@ namespace dicebot::diceparser {
     using p_syntax_item = std::shared_ptr<syntax_item>;
 
     class syntax_terminal : public syntax_item {
-       public:
+    public:
         std::string source;
 
         syntax_terminal(token_t t, uint8_t type, std::string&& src) {
@@ -118,7 +118,7 @@ namespace dicebot::diceparser {
     };
 
     class syntax_nterminal : public syntax_item {
-       public:
+    public:
         size_t source_index;
         size_t end_pos;
         production_type prod_type;
@@ -131,4 +131,4 @@ namespace dicebot::diceparser {
         }
         bool is_terminal() const override { return false; }
     };
-}  // namespace dicebot::diceparser
+} // namespace dicebot::diceparser

@@ -10,6 +10,11 @@ namespace dicebot::diceparser {
 
     enum class dice_macro_class_t { const_macro, rand_macro, dicelet_macro };
 
+    struct tokenizer_flag {
+        bool parse_dicelet : 1;
+        bool parse_macros : 1;
+    };
+
     enum class token_index : uint8_t {
         index_stop,
         index_begin,
@@ -27,8 +32,8 @@ namespace dicebot::diceparser {
         punct_lbrace,
         punct_rbrace,
         punct_comma,
-        punct_lbracket,
-        punct_rbracket,
+        punct_lparenthesis,
+        punct_rparenthesis,
         punct_sharp
     };
 
