@@ -8,8 +8,7 @@ using namespace diceparser;
 static void recurse_dicelet_ct(syntax_item *node, std::vector<p_component> &container) {
     if (!node->is_terminal()) {
         syntax_nterminal *nt_node = dynamic_cast<syntax_nterminal *>(node);
-        if (nt_node->prod_type == production_type::dicelet_ct_const_expr
-            || nt_node->prod_type == production_type::dicelet_ct_rand_expr) {
+        if (nt_node->prod_type == production_type::dicelet_ct_const_expr || nt_node->prod_type == production_type::dicelet_ct_rand_expr) {
             container.push_back(build_component_from_syntax(nt_node->items[0].get()));
         } else if (nt_node->prod_type == production_type::dicelet_ct_dicelet_ct_comma_const_expr
                    || nt_node->prod_type == production_type::dicelet_ct_dicelet_ct_comma_rand_expr) {
@@ -54,10 +53,10 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
         case production_type::dicelet_mul_dicelet_u: {
             return build_component_from_syntax(p_syntax_item->items[0].get());
         }
-        case production_type::const_unit_lbracket_const_expr_rbracket: {
+        case production_type::const_unit_lparenthesis_const_expr_rparenthesis: {
             return build_component_from_syntax(p_syntax_item->items[1].get());
         }
-        case production_type::rand_unit_lbracket_rand_expr_rbracket: {
+        case production_type::rand_unit_lparenthesis_rand_expr_rparenthesis: {
             auto ret = std::make_shared<comp_holder>();
             ret->child = build_component_from_syntax(p_syntax_item->items[1].get());
             return ret;
@@ -172,8 +171,7 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
             auto ret = std::make_shared<dicelet_calculus>();
             ret->lchild = dicelet_from_normal_component(p_syntax_item->items[0].get());
             ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
-            ret->rchild =
-                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
+            ret->rchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
             return std::move(ret);
         }
         case production_type::dicelet_mul_dicelet_mul_muldvi_const_unit:
@@ -183,8 +181,7 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
         case production_type::dicelet_expr_dicelet_expr_plus_const_mul:
         case production_type::dicelet_expr_dicelet_expr_plus_rand_mul: {
             auto ret = std::make_shared<dicelet_calculus>();
-            ret->lchild =
-                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
+            ret->lchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
             ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
             ret->rchild = dicelet_from_normal_component(p_syntax_item->items[2].get());
             return std::move(ret);
@@ -193,11 +190,9 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
         case production_type::dicelet_expr_dicelet_expr_minus_dicelet_mul:
         case production_type::dicelet_expr_dicelet_expr_plus_dicelet_mul: {
             auto ret = std::make_shared<dicelet_calculus>();
-            ret->lchild =
-                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
+            ret->lchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
             ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
-            ret->rchild =
-                std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
+            ret->rchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
             return std::move(ret);
         }
         case production_type::dicelet_expr_minus_dicelet_mul: {
