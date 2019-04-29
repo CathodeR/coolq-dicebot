@@ -1,6 +1,7 @@
 #include "./tokenizer.h"
 
 #include <cctype>
+#include <deque>
 #include <list>
 using namespace dicebot;
 using namespace diceparser;
@@ -27,36 +28,16 @@ struct punct_container {
                                {'{', token_index::punct_lbrace},
                                {'}', token_index::punct_rbrace},
                                {',', token_index::punct_comma},
-                               {'(', token_index::punct_lbracket},
-                               {')', token_index::punct_rbracket},
+                               {'(', token_index::punct_lparenthesis},
+                               {')', token_index::punct_rparenthesis},
                                {'#', token_index::punct_sharp}};
 
-tokenizer::tokenizer(std::deque<token_t>& tokens, std::map<std::string, std::string> const& macros,
-                     std::string const& source)
-    : token_container(tokens), macro_map(macros) {
-    size_t len = this->regulate_brackets(source);
-
-    this->sources.emplace_back(source.substr(0, len));
-    this->rtail = source.substr(len);
-    this->sources_sites.push_back({0, len});
-    this->token_container.push_back({token_index::index_begin, 0, 0, 0});
-    this->ambiguity_flags = 0;
-
-    for (auto const& pair : this->macro_map) {
-        std::string key = pair.first;
-        for (size_t i = 0; i < key.size(); i++) key[i] = std::tolower(key[i]);
-        if (key == "d") this->ambiguity_flags |= ambigui_d;
-        if (key == "k") this->ambiguity_flags |= ambigui_k;
-        if (key == "kl") this->ambiguity_flags |= ambigui_kl;
-    }
-}
-
 /**
- * just ignore useless brackets/braces/commas
+ * just ignore useless parenthesis/braces/commas
  */
-size_t tokenizer::regulate_brackets(std::string const& str) const {
-    using bracket_pair = std::pair<char, size_t>;
-    std::list<bracket_pair> chaser;
+static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
+    using parenthesis_pair = std::pair<char, size_t>;
+    std::deque<parenthesis_pair> chaser;
     bool terminate = false;
     int good_for_comma = 0;
     size_t i = 0;
@@ -64,11 +45,19 @@ size_t tokenizer::regulate_brackets(std::string const& str) const {
         const char& c_here = str[i];
         switch (c_here) {
         case '{':
+            if (no_brace) {
+                terminate = true;
+                break;
+            }
             good_for_comma++;
         case '(':
-            chaser.push_back(bracket_pair(c_here, i));
+            chaser.push_back(parenthesis_pair(c_here, i));
             break;
         case '}':
+            if (no_brace) {
+                terminate = true;
+                break;
+            }
             good_for_comma--;
             if (chaser.size() == 0) {
                 terminate = true;
@@ -90,6 +79,10 @@ size_t tokenizer::regulate_brackets(std::string const& str) const {
                 terminate = true;
             break;
         case ',':
+            if (no_brace) {
+                terminate = true;
+                break;
+            }
             if (good_for_comma == 0) {
                 terminate = true;
             }
@@ -109,28 +102,53 @@ size_t tokenizer::regulate_brackets(std::string const& str) const {
         return i;
 }
 
+tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, std::string const& source,
+                     std::map<std::string, std::string> const* macros) noexcept
+    : token_container(tokens), macro_map(macros) {
+    size_t len = regulate_parenthesis(source, flag.parse_dicelet);
+    this->sources = std::make_unique<sources_container_t>();
+    this->sources->emplace_back(source.substr(0, len));
+    this->rtail = source.substr(len);
+    this->sources_sites = std::make_unique<macro_marker_container_t>();
+    this->sources_sites->push_back({0, len});
+
+    this->token_container.push_back({token_index::index_begin, 0, 0, 0});
+
+    if (flag.parse_macros) {
+        this->do_parse_identifier = true;
+        for (auto const& pair : *(this->macro_map)) {
+            std::string key = pair.first;
+            if (key.size() > 3) continue;
+            for (size_t i = 0; i < key.size(); i++) key[i] = std::tolower(key[i]);
+            if (key == "d") this->ambi_flag.ambiguity_d = true;
+            if (key == "k") this->ambi_flag.ambiguity_k = true;
+            if (key == "kl") this->ambi_flag.ambiguity_kl = true;
+        }
+    } else
+        this->do_parse_identifier = false;
+}
+
 std::string tokenizer::token_string(token_t const& target) const {
     if (target.pos_cur == npos) return "";
-    std::string const& src = this->sources[target.source_index];
+    std::string const& src = (*this->sources)[target.source_index];
     return src.substr(target.pos_cur, target.pos_next - target.pos_cur);
 }
 
 std::string tokenizer::tail(token_t const& target) const {
-    if (target.pos_next == npos) return rtail;
-    std::string const& src = this->sources[target.source_index];
-    std::string p1 = src.substr(target.pos_next);
     if (target.source_index > 0) {
-        size_t next_begin = this->sources_sites[target.source_index].macro_end;
-        if (next_begin == npos) return p1 + rtail;
-        std::string p2 = this->sources[0].substr(next_begin);
-        return p1 + p2 + rtail;
+        size_t next_begin = this->sources_sites->at(target.source_index).macro_end;
+        if (next_begin == npos) return rtail;
+        return this->sources->front().substr(next_begin) + rtail;
+    } else if (target.pos_next == npos)
+        return rtail;
+    else {
+        return this->sources->front().substr(target.pos_next) + rtail;
     }
-    return p1 + rtail;
 }
 
-token_t* tokenizer::cur_token() { return &(this->token_container.back()); }
+token_t* tokenizer::cur_token() const { return &(this->token_container.back()); }
 
-token_t* tokenizer::next_token() {
+token_t* tokenizer::next_token() const {
     token_t temp_token = token_container.back();
     if (this->token_container.back().id == token_index::index_begin)
         this->token_container.pop_back();
@@ -142,33 +160,37 @@ token_t* tokenizer::next_token() {
             this->token_container.emplace_back(std::move(temp_token));
             return &(this->token_container.back());
         } else {
-            temp_token.pos_next = this->sources_sites[temp_token.source_index].macro_end;
+            temp_token.pos_next = (*this->sources_sites)[temp_token.source_index].macro_end;
             temp_token.source_index = 0;
         }
     }
     temp_token.pos_cur = temp_token.pos_next;
 
-    bool has_got = this->get_punctuator(temp_token) || this->get_number(temp_token)
-                   || (temp_token.source_index == 0 && this->resolve_identifier(temp_token))
-                   || this->get_keyword(temp_token);
+    bool has_got = this->get_punctuator(temp_token) || this->get_number(temp_token);
 
-    if (has_got) {
-        if (temp_token.id == token_index::index_macro) {
-            this->sources_sites.push_back({temp_token.pos_cur, temp_token.pos_next});
-            std::string expand_macro = macro_map.find(this->token_string(temp_token))->second;
-            this->sources.emplace_back(std::move(expand_macro));
-            temp_token = {token_index::index_begin, this->sources.size() - 1, 0, 0};
-            this->token_container.emplace_back(std::move(temp_token));
-            return this->next_token();
-        }
-    } else
-        temp_token = {token_index::index_stop, 0, npos, npos};
+    if (!has_got) {
+        if (this->do_parse_identifier && temp_token.source_index == 0)
+            has_got = this->resolve_identifier(temp_token) || this->get_keyword(temp_token);
+        else
+            has_got = this->get_keyword(temp_token);
+    }
+
+    if (has_got && this->do_parse_identifier && temp_token.id == token_index::index_macro) {
+        this->sources_sites->push_back({temp_token.pos_cur, temp_token.pos_next});
+        std::string expand_macro = macro_map->find(this->token_string(temp_token))->second;
+        this->sources->emplace_back(std::move(expand_macro));
+        temp_token = {token_index::index_begin, this->sources->size() - 1, 0, 0};
+        this->token_container.emplace_back(std::move(temp_token));
+        return this->next_token();
+    }
+
+    if (!has_got) temp_token = {token_index::index_stop, 0, npos, npos};
     this->token_container.emplace_back(std::move(temp_token));
     return &(this->token_container.back());
 }
 
 bool tokenizer::get_punctuator(token_t& target) const {
-    char t = this->sources[target.source_index][target.pos_next];
+    char t = this->sources->at(target.source_index)[target.pos_next];
     for (const punct_container& punc : punct_arr) {
         if (punc.name == t) {
             target.id = punc.pc;
@@ -180,7 +202,7 @@ bool tokenizer::get_punctuator(token_t& target) const {
 }
 
 bool tokenizer::get_number(token_t& target) const {
-    std::string const& src = this->sources[target.source_index];
+    std::string const& src = this->sources->at(target.source_index);
 
     bool dotted = false;
 
@@ -213,8 +235,8 @@ bool tokenizer::get_number(token_t& target) const {
     return false;
 }
 
-bool tokenizer::get_keyword(token_t& target) {
-    std::string const& src = this->sources[target.source_index];
+bool tokenizer::get_keyword(token_t& target) const {
+    std::string const& src = this->sources->at(target.source_index);
     size_t max_len = src.size() - target.pos_next;
     for (const keyword_container& keyw : keyword_arr) {
         size_t i = 0;
@@ -238,7 +260,7 @@ bool tokenizer::get_keyword(token_t& target) {
 void tokenizer::move_next_cursor(token_t& src_token, size_t length) const {
     src_token.pos_cur = src_token.pos_next;
     src_token.pos_next = src_token.pos_next + length;
-    std::string const& src = this->sources[src_token.source_index];
+    std::string const& src = this->sources->at(src_token.source_index);
 
     while (src[src_token.pos_next] == ' ') src_token.pos_next++;
 
@@ -290,14 +312,14 @@ bool tokenizer::resolve_identifier(token_t& target) const {
     // no macros inside macro
     if (target.source_index != 0) return 0;
 
-    std::string const& src = this->sources[target.source_index];
+    std::string const& src = this->sources->at(target.source_index);
     bool terminate = false;
 
     // match macro at maximum length
     // thus if there is two macro such as "abc" and "abcde"
     // input "abcdef" would match "abcde"
     // "abcd" still match "abc"
-    size_t len = greed_map_find(src, target.pos_next, this->macro_map);
+    size_t len = greed_map_find(src, target.pos_next, *this->macro_map);
 
     if (len == 0) return false;
 
@@ -308,17 +330,15 @@ bool tokenizer::resolve_identifier(token_t& target) const {
         for (size_t i = 0; i < suppose_macro.size(); i++) suppose_macro[i] = std::tolower(suppose_macro[i]);
 
         do {
-            if ((this->ambiguity_flags & ambigui_d) && suppose_macro == "d"
-                || (this->ambiguity_flags & ambigui_k) && suppose_macro == "k"
-                || (this->ambiguity_flags & ambigui_kl) && suppose_macro == "kl")
+            if ((this->ambi_flag.ambiguity_d) && suppose_macro == "d" || (this->ambi_flag.ambiguity_k) && suppose_macro == "k"
+                || (this->ambi_flag.ambiguity_kl) && suppose_macro == "kl")
                 ;
             else
                 break;
 
             token_t suppose_target = target;
             suppose_target.pos_next += len;
-            if (suppose_target.pos_next >= this->sources[suppose_target.source_index].size())
-                suppose_target.pos_next = npos;
+            if (suppose_target.pos_next >= this->sources->at(suppose_target.source_index).size()) suppose_target.pos_next = npos;
             token_index prev_index;
             if (this->token_container.size() == 0)
                 prev_index = token_index::index_begin;
@@ -331,7 +351,7 @@ bool tokenizer::resolve_identifier(token_t& target) const {
             // them also this is sufficient to decide whether a
             // k/kl is allowed here, for k/kl is always following
             // a unit.
-            if (prev_index == token_index::index_number || prev_index == token_index::punct_rbracket
+            if (prev_index == token_index::index_number || prev_index == token_index::punct_rparenthesis
                 || prev_index == token_index::punct_rbrace) {
                 return false;
             }
@@ -340,15 +360,15 @@ bool tokenizer::resolve_identifier(token_t& target) const {
             // complex. "d d" indicates the last "d" is a macro.
             // "d d d" indicates that the first and last "d" is
             // a maro.
-            if ((ambiguity_flags & ambigui_d) && suppose_macro == "d") {
+            if ((this->ambi_flag.ambiguity_d) && suppose_macro == "d") {
                 if (prev_index == token_index::keyword_d) break;
                 token_t tn = peek_next(suppose_target);
-                if (tn.id == token_index::punct_lbrace || tn.id == token_index::punct_lbracket
-                    || tn.id == token_index::index_number || tn.id == token_index::ambiguity_indentifier)
+                if (tn.id == token_index::punct_lbrace || tn.id == token_index::punct_lparenthesis || tn.id == token_index::index_number
+                    || tn.id == token_index::ambiguity_indentifier)
                     return false;
 
-                if (tn.id == token_index::index_stop || tn.id == token_index::punct_rbrace
-                    || tn.id == token_index::punct_rbracket || tn.id == token_index::punct_comma)
+                if (tn.id == token_index::index_stop || tn.id == token_index::punct_rbrace || tn.id == token_index::punct_rparenthesis
+                    || tn.id == token_index::punct_comma)
                     break;
 
                 if (tn.id == token_index::ambiguity_macro_d) {
@@ -382,15 +402,15 @@ token_t tokenizer::peek_next(token_t const& origin) const {
 
 bool tokenizer::peek_identifier_d(token_t& target) const {
     if (target.source_index != 0) return false;
-    std::string const& src = this->sources[target.source_index];
-    size_t len = greed_map_find(src, target.pos_next, this->macro_map);
+    std::string const& src = this->sources->at(target.source_index);
+    size_t len = greed_map_find(src, target.pos_next, *this->macro_map);
 
-    if (len >= 2) return false;
+    if (len >= 2 || len == 0) return false;
 
     std::string suppose_macro = src.substr(target.pos_next, len);
     for (size_t i = 0; i < suppose_macro.size(); i++) suppose_macro[i] = std::tolower(suppose_macro[i]);
 
-    if ((ambiguity_flags & ambigui_d) && suppose_macro == "d") {
+    if (this->ambi_flag.ambiguity_d && suppose_macro == "d") {
         target.id = token_index::ambiguity_macro_d;
     } else
         target.id = token_index::ambiguity_indentifier;
