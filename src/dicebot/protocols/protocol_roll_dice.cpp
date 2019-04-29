@@ -100,10 +100,12 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     }
 
     auto map = pfm->get_profile(event.user_id)->get_map<std::string, std::string>();
-    diceparser::parser parser(*map);
-    auto pcomp = parser.parse(message_cp, diceparser::oper_constants::oper_default);
+    diceparser::tokenizer::token_container_t tk_cont;
+    diceparser::tokenizer tknz(tk_cont, {true, true}, message_cp, map);
+    diceparser::parser parser(tknz);
+    auto pcomp = parser.parse(message_cp);
+    if (!pcomp) return false;
     auto p_dice = diceparser::build_component_from_syntax(pcomp.get());
-
     if (!p_dice) return false;
 
     std::string str_roll_command;
