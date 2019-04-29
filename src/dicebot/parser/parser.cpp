@@ -1,6 +1,5 @@
 #include "./parser.h"
 #include <iostream>
-#include "./tokenizer.h"
 
 using namespace dicebot;
 using namespace diceparser;
@@ -259,7 +258,7 @@ struct production_item {
                             {production_type::acc_rand_expr, nterminals::nterminal_acc, 1},
                             {production_type::acc_dicelet_expr, nterminals::nterminal_acc, 1},
                             {production_type::const_unit_number, nterminals::nterminal_const_unit, 1},
-                            {production_type::const_unit_lbracket_const_expr_rbracket, nterminals::nterminal_const_unit, 3},
+                            {production_type::const_unit_lparenthesis_const_expr_rparenthesis, nterminals::nterminal_const_unit, 3},
                             {production_type::const_mul_const_unit, nterminals::nterminal_const_mul, 1},
                             {production_type::const_mul_const_mul_muldvi_const_unit, nterminals::nterminal_const_mul, 3},
                             {production_type::const_expr_const_mul, nterminals::nterminal_const_expr, 1},
@@ -270,7 +269,7 @@ struct production_item {
                             {production_type::rand_unit_const_unit_d_const_unit, nterminals::nterminal_rand_unit, 3},
                             {production_type::rand_unit_const_unit_d_const_unit_k_const_unit, nterminals::nterminal_rand_unit, 5},
                             {production_type::rand_unit_const_unit_d_const_unit_kl_const_unit, nterminals::nterminal_rand_unit, 5},
-                            {production_type::rand_unit_lbracket_rand_expr_rbracket, nterminals::nterminal_rand_unit, 3},
+                            {production_type::rand_unit_lparenthesis_rand_expr_rparenthesis, nterminals::nterminal_rand_unit, 3},
                             {production_type::rand_mul_rand_unit, nterminals::nterminal_rand_mul, 1},
                             {production_type::rand_mul_const_mul_muldvi_rand_unit, nterminals::nterminal_rand_mul, 3},
                             {production_type::rand_mul_rand_mul_muldvi_const_unit, nterminals::nterminal_rand_mul, 3},
@@ -286,7 +285,7 @@ struct production_item {
                             {production_type::dicelet_u_const_unit_sharp_const_unit, nterminals::nterminal_dicelet_u, 3},
                             {production_type::dicelet_u_const_unit_sharp_rand_unit, nterminals::nterminal_dicelet_u, 3},
                             {production_type::dicelet_u_lbrace_dicelet_ct_rbrace, nterminals::nterminal_dicelet_u, 3},
-                            {production_type::dicelet_u_lbracket_dicelet_expr_rbracket, nterminals::nterminal_dicelet_u, 3},
+                            {production_type::dicelet_u_lparenthesis_dicelet_expr_rparenthesis, nterminals::nterminal_dicelet_u, 3},
                             {production_type::dicelet_ct_const_expr, nterminals::nterminal_dicelet_ct, 1},
                             {production_type::dicelet_ct_rand_expr, nterminals::nterminal_dicelet_ct, 1},
                             {production_type::dicelet_ct_dicelet_ct_comma_const_expr, nterminals::nterminal_dicelet_ct, 3},
@@ -312,33 +311,50 @@ struct production_item {
 
 terminals translate(token_index what) {
     switch (what) {
-        case token_index::index_stop: return terminals::terminal_end;
-        case token_index::index_number: return terminals::terminal_number;
-        case token_index::keyword_d: return terminals::terminal_roll_d;
-        case token_index::keyword_k: return terminals::terminal_roll_k;
-        case token_index::keyword_kl: return terminals::terminal_roll_kl;
-        case token_index::punct_add: return terminals::terminal_plus;
-        case token_index::punct_sub: return terminals::terminal_minus;
-        case token_index::punct_mul:
-        case token_index::punct_dvi: return terminals::terminal_mul_dvi;
-        case token_index::punct_lbrace: return terminals::terminal_lbrace;
-        case token_index::punct_rbrace: return terminals::terminal_rbrace;
-        case token_index::punct_comma: return terminals::terminal_comma;
-        case token_index::punct_lbracket: return terminals::terminal_lbracket;
-        case token_index::punct_rbracket: return terminals::terminal_rbracket;
-        case token_index::punct_sharp: return terminals::terminal_sharp;
-        default: return terminals::terminal_end;
+    case token_index::index_stop:
+        return terminals::terminal_end;
+    case token_index::index_number:
+        return terminals::terminal_number;
+    case token_index::keyword_d:
+        return terminals::terminal_roll_d;
+    case token_index::keyword_k:
+        return terminals::terminal_roll_k;
+    case token_index::keyword_kl:
+        return terminals::terminal_roll_kl;
+    case token_index::punct_add:
+        return terminals::terminal_plus;
+    case token_index::punct_sub:
+        return terminals::terminal_minus;
+    case token_index::punct_mul:
+    case token_index::punct_dvi:
+        return terminals::terminal_mul_dvi;
+    case token_index::punct_lbrace:
+        return terminals::terminal_lbrace;
+    case token_index::punct_rbrace:
+        return terminals::terminal_rbrace;
+    case token_index::punct_comma:
+        return terminals::terminal_comma;
+    case token_index::punct_lparenthesis:
+        return terminals::terminal_lparenthesis;
+    case token_index::punct_rparenthesis:
+        return terminals::terminal_rparenthesis;
+    case token_index::punct_sharp:
+        return terminals::terminal_sharp;
+    default:
+        return terminals::terminal_end;
     }
 }
 
-parser::parser(macro_map_t const& in_map) : macro_map(in_map) { vec_status = {0}; }
+parser::parser(tokenizer const& tknz) noexcept : tknzer(tknz){};
+p_syntax_item parser::parse(std::string const& source) {
+    std::vector<uint8_t> vec_status = {0};
+    std::list<token_t> tokens;
+    this->vec_symbols = std::make_unique<std::vector<p_syntax_item>>();
 
-p_syntax_item parser::parse(std::string const& source, int mode) {
-    std::deque<token_t> deque_input_tokens;
-    tokenizer tstr(deque_input_tokens, macro_map, source);
-
-    while (tstr.next_token()->id != token_index::index_stop)
+    while (tknzer.next_token()->id != token_index::index_stop)
         ;
+
+    tokenizer::token_container_t& deque_input_tokens = tknzer.token_container;
 
     bool not_finished = true;
     bool err = false;
@@ -348,52 +364,54 @@ p_syntax_item parser::parse(std::string const& source, int mode) {
         terminals next_terminal = translate(next.id);
         action_item const& ai = ACTION[status][next_terminal];
         switch (ai.operation) {
-            case action_t::stack: {
-                this->vec_status.push_back(ai.status);
-                this->vec_symbols.emplace_back(stack(next, tstr.token_string(next)));
-                deque_input_tokens.pop_front();
-                break;
+        case action_t::stack: {
+            vec_status.push_back(ai.status);
+            this->vec_symbols->emplace_back(stack(next, tknzer.token_string(next)));
+            deque_input_tokens.pop_front();
+            break;
+        }
+        case action_t::resolve: {
+            production_item pi = PRODUCTION[ai.status];
+            p_syntax_item p = resolve(ai.status);
+            int lbeta = pi.len;
+            while (lbeta--) {
+                this->vec_symbols->pop_back();
+                vec_status.pop_back();
             }
-            case action_t::resolve: {
-                production_item pi = PRODUCTION[ai.status];
-                p_syntax_item p = resolve(ai.status);
-                int lbeta = pi.len;
-                while (lbeta--) {
-                    vec_symbols.pop_back();
-                    vec_status.pop_back();
-                }
-                uint8_t status_new = *(vec_status.rbegin());
-                vec_symbols.emplace_back(std::move(p));
-                vec_status.push_back(GOTO[status_new][vec_symbols.back()->type].status);
-                break;
-            }
-            case action_t::accept: not_finished = false; break;
-            default: {
-                if (err && vec_symbols.size() > 0) {
-                    vec_symbols.pop_back();
-                    vec_status.pop_back();
-                } else if (!err) {
-                    deque_input_tokens.push_front({token_index::index_stop, 0, npos, npos});
-                    err = true;
-                } else
-                    not_finished = false;
-                break;
-            }
+            uint8_t status_new = *(vec_status.rbegin());
+            this->vec_symbols->emplace_back(std::move(p));
+            vec_status.push_back(GOTO[status_new][this->vec_symbols->back()->type].status);
+            break;
+        }
+        case action_t::accept:
+            not_finished = false;
+            break;
+        default: {
+            if (err && this->vec_symbols->size() > 0) {
+                this->vec_symbols->pop_back();
+                vec_status.pop_back();
+            } else if (!err) {
+                deque_input_tokens.push_front({token_index::index_stop, 0, npos, npos});
+                err = true;
+            } else
+                not_finished = false;
+            break;
+        }
         }
         if (!not_finished) break;
     }
-    if (vec_symbols.size() == 0) return nullptr;
-    this->tail = tstr.tail(vec_symbols.front()->source_token);
-    return vec_symbols.front();
+    if (this->vec_symbols->size() == 0) return nullptr;
+    this->tail = tknzer.tail(this->vec_symbols->front()->source_token);
+    return this->vec_symbols->front();
 }
 
 p_syntax_item parser::resolve(uint8_t prod_index) const {
-    token_t last_pos = vec_symbols.back()->source_token;
+    token_t last_pos = this->vec_symbols->back()->source_token;
 
     auto item = std::make_shared<syntax_nterminal>(last_pos, PRODUCTION[prod_index].ntype, PRODUCTION[prod_index].ptype);
 
     int prodl = PRODUCTION[prod_index].len;
-    auto iter = vec_symbols.rbegin();
+    auto iter = this->vec_symbols->rbegin();
 
     while (--prodl >= 0) {
         item->items[prodl] = *iter;
