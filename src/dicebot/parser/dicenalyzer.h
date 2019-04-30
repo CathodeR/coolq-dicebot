@@ -9,25 +9,24 @@ namespace dicebot::diceparser {
     enum class cal_err { fine, negative_dice, dice_num_exceed, dice_face_exceed, div_zero };
 
     class component {
-       public:
+    public:
         using str_container = std::list<std::string>;
         using result_container = std::list<number>;
-        cal_err errno;
-        virtual number roll_the_dice(str_container &) const { return false; }
+        virtual number roll_the_dice(str_container &) const { return 0; }
         virtual void print(str_container &) const noexcept {};
     };
 
     using p_component = std::shared_ptr<component>;
 
     class comp_number : public component {
-       public:
+    public:
         number what;
         number roll_the_dice(str_container &) const override;
         void print(str_container &) const noexcept override;
     };
 
     class comp_holder : public component {
-       public:
+    public:
         p_component child;
         number roll_the_dice(str_container &) const override;
         void print(str_container &) const noexcept override;
@@ -36,7 +35,7 @@ namespace dicebot::diceparser {
     enum class dice_rdk_mode { single_d, numbered_d, numbered_d_k, numbered_d_kl };
 
     class comp_dice_rdk : public component {
-       public:
+    public:
         dice_rdk_mode mode;
         uint32_t dice, face, keep;
         number roll_the_dice(str_container &) const override;
@@ -44,7 +43,7 @@ namespace dicebot::diceparser {
     };
 
     class comp_calculus : public component {
-       public:
+    public:
         p_component lchild;
         p_component rchild;
         char what;
@@ -53,27 +52,27 @@ namespace dicebot::diceparser {
     };
 
     class comp_calculus_reverse : public component {
-       public:
+    public:
         p_component child;
         number roll_the_dice(str_container &) const override;
         void print(str_container &) const noexcept override;
     };
 
     class dicelet : public component {
-       public:
+    public:
         using p_dicelet = std::shared_ptr<dicelet>;
         virtual void roll_dicelet(result_container &, str_container &) const {};
     };
 
     class dicelet_unit : public dicelet {
-       public:
+    public:
         std::vector<p_component> dicelets;
         void roll_dicelet(result_container &, str_container &) const override;
         void print(str_container &) const noexcept override;
     };
 
     class dicelet_calculus : public dicelet {
-       public:
+    public:
         p_dicelet lchild;
         p_dicelet rchild;
         char what;
@@ -82,14 +81,14 @@ namespace dicebot::diceparser {
     };
 
     class dicelet_holder : public dicelet {
-       public:
+    public:
         p_dicelet child;
         void roll_dicelet(result_container &, str_container &) const override;
         void print(str_container &) const noexcept override;
     };
 
     class dicelet_calculus_reverse : public dicelet {
-       public:
+    public:
         p_dicelet child;
         char what;
         void roll_dicelet(result_container &, str_container &) const override;
@@ -97,4 +96,4 @@ namespace dicebot::diceparser {
     };
 
     p_component build_component_from_syntax(const syntax_item *root);
-}  // namespace dicebot::diceparser
+} // namespace dicebot::diceparser

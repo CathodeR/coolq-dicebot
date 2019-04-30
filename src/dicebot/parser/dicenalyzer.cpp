@@ -26,8 +26,64 @@ static inline char operator_from_syntax_item(const syntax_item *from) {
 static inline dicelet::p_dicelet dicelet_from_normal_component(const syntax_item *root) {
     auto ret = std::make_shared<dicelet_unit>();
     ret->dicelets.resize(1, build_component_from_syntax(root));
-    return std::move(std::dynamic_pointer_cast<dicelet>(ret));
+    return std::dynamic_pointer_cast<dicelet>(ret);
 }
+
+static auto const_calcucation = [](const syntax_nterminal *p_syntax_item) -> auto {
+    auto ret = std::make_shared<comp_number>();
+    auto p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+    auto p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+    char oper = operator_from_syntax_item(p_syntax_item->items[1].get());
+    auto what1 = std::dynamic_pointer_cast<comp_number>(p1)->what;
+    auto what2 = std::dynamic_pointer_cast<comp_number>(p2)->what;
+    switch (oper) {
+    case '+':
+        ret->what = what1 + what2;
+        break;
+    case '-':
+        ret->what = what1 - what2;
+        break;
+    case '*':
+        ret->what = what1 * what2;
+        break;
+    case '/':
+        ret->what = what1 / what2;
+        break;
+    }
+    return ret;
+};
+
+static auto build_rdk = [](dice_rdk_mode mode, const syntax_nterminal *p_syntax_item) -> auto {
+    auto ret = std::make_shared<comp_dice_rdk>();
+    ret->mode = mode;
+    switch (mode) {
+    case dice_rdk_mode::single_d: {
+        p_component p1 = build_component_from_syntax(p_syntax_item->items[1].get());
+        ret->face = std::dynamic_pointer_cast<comp_number>(p1)->what.force_positive_int();
+        break;
+    }
+    case dice_rdk_mode::numbered_d: {
+        p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+        p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+        ret->dice = std::dynamic_pointer_cast<comp_number>(p1)->what.force_positive_int();
+        ret->face = std::dynamic_pointer_cast<comp_number>(p2)->what.force_positive_int();
+        break;
+    }
+    case dice_rdk_mode::numbered_d_k:
+    case dice_rdk_mode::numbered_d_kl: {
+        p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
+        p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
+        ret->dice = std::dynamic_pointer_cast<comp_number>(p1)->what.force_positive_int();
+        ret->face = std::dynamic_pointer_cast<comp_number>(p2)->what.force_positive_int();
+        p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
+        ret->keep = std::dynamic_pointer_cast<comp_number>(p3)->what.force_positive_int();
+        break;
+    }
+    default:
+        return p_component();
+    }
+    return ret;
+};
 
 p_component diceparser::build_component_from_syntax(const syntax_item *root) {
     if (root->is_terminal()) {
@@ -35,7 +91,7 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
             const syntax_terminal *p_syntax_item = dynamic_cast<const syntax_terminal *>(root);
             auto ret = std::make_shared<comp_number>();
             ret->what = p_syntax_item->source;
-            return std::move(ret);
+            return ret;
         } else
             return nullptr;
     } else {
@@ -63,71 +119,25 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
         }
         case production_type::const_expr_minus_const_mul: {
             auto p1 = build_component_from_syntax(p_syntax_item->items[1].get());
-            dynamic_cast<comp_number *>(p1.get())->what = dicebot::zero - dynamic_cast<comp_number *>(p1.get())->what;
+            std::dynamic_pointer_cast<comp_number>(p1)->what = dicebot::zero - std::dynamic_pointer_cast<comp_number>(p1)->what;
             return p1;
         }
         case production_type::const_mul_const_mul_muldvi_const_unit:
         case production_type::const_expr_const_expr_minus_const_mul:
         case production_type::const_expr_const_expr_plus_const_mul: {
-            auto ret = std::make_shared<comp_number>();
-            auto p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-            auto p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-            char oper = operator_from_syntax_item(p_syntax_item->items[1].get());
-            auto what1 = dynamic_cast<comp_number *>(p1.get())->what;
-            auto what2 = dynamic_cast<comp_number *>(p2.get())->what;
-            switch (oper) {
-            case '+':
-                ret->what = what1 + what2;
-                break;
-            case '-':
-                ret->what = what1 - what2;
-                break;
-            case '*':
-                ret->what = what1 * what2;
-                break;
-            case '/':
-                ret->what = what1 / what2;
-                break;
-            }
-            return ret;
+            return const_calcucation(p_syntax_item);
         }
         case production_type::rand_unit_d_const_unit: {
-            auto ret = std::make_shared<comp_dice_rdk>();
-            ret->mode = dice_rdk_mode::single_d;
-            p_component p1 = build_component_from_syntax(p_syntax_item->items[1].get());
-            ret->face = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-            return ret;
+            return build_rdk(dice_rdk_mode::single_d, p_syntax_item);
         }
         case production_type::rand_unit_const_unit_d_const_unit: {
-            auto ret = std::make_shared<comp_dice_rdk>();
-            ret->mode = dice_rdk_mode::numbered_d;
-            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-            p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-            ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-            ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
-            return ret;
+            return build_rdk(dice_rdk_mode::numbered_d, p_syntax_item);
         }
         case production_type::rand_unit_const_unit_d_const_unit_k_const_unit: {
-            auto ret = std::make_shared<comp_dice_rdk>();
-            ret->mode = dice_rdk_mode::numbered_d_k;
-            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-            p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-            ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-            ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
-            p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
-            ret->keep = dynamic_cast<comp_number *>(p3.get())->what.force_positive_int();
-            return ret;
+            return build_rdk(dice_rdk_mode::numbered_d_k, p_syntax_item);
         }
         case production_type::rand_unit_const_unit_d_const_unit_kl_const_unit: {
-            auto ret = std::make_shared<comp_dice_rdk>();
-            ret->mode = dice_rdk_mode::numbered_d_kl;
-            p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-            p_component p2 = build_component_from_syntax(p_syntax_item->items[2].get());
-            ret->dice = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
-            ret->face = dynamic_cast<comp_number *>(p2.get())->what.force_positive_int();
-            p_component p3 = build_component_from_syntax(p_syntax_item->items[4].get());
-            ret->keep = dynamic_cast<comp_number *>(p3.get())->what.force_positive_int();
-            return ret;
+            return build_rdk(dice_rdk_mode::numbered_d_kl, p_syntax_item);
         }
         case production_type::rand_expr_minus_rand_mul: {
             auto ret = std::make_shared<comp_calculus_reverse>();
@@ -153,14 +163,14 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
         case production_type::dicelet_u_const_unit_sharp_rand_unit: {
             auto ret = std::make_shared<dicelet_unit>();
             p_component p1 = build_component_from_syntax(p_syntax_item->items[0].get());
-            uint16_t count = dynamic_cast<comp_number *>(p1.get())->what.force_positive_int();
+            uint16_t count = std::dynamic_pointer_cast<comp_number>(p1)->what.force_positive_int();
             ret->dicelets.resize(count, build_component_from_syntax(p_syntax_item->items[2].get()));
-            return std::move(ret);
+            return ret;
         }
         case production_type::dicelet_u_lbrace_dicelet_ct_rbrace: {
             auto ret = std::make_shared<dicelet_unit>();
             recurse_dicelet_ct(p_syntax_item->items[1].get(), ret->dicelets);
-            return std::move(ret);
+            return ret;
         }
         case production_type::dicelet_mul_const_mul_muldvi_dicelet_u:
         case production_type::dicelet_mul_rand_mul_muldvi_dicelet_u:
@@ -172,7 +182,7 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
             ret->lchild = dicelet_from_normal_component(p_syntax_item->items[0].get());
             ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
             ret->rchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
-            return std::move(ret);
+            return ret;
         }
         case production_type::dicelet_mul_dicelet_mul_muldvi_const_unit:
         case production_type::dicelet_mul_dicelet_mul_muldvi_rand_unit:
@@ -184,7 +194,7 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
             ret->lchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
             ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
             ret->rchild = dicelet_from_normal_component(p_syntax_item->items[2].get());
-            return std::move(ret);
+            return ret;
         }
         case production_type::dicelet_mul_dicelet_mul_muldvi_dicelet_u:
         case production_type::dicelet_expr_dicelet_expr_minus_dicelet_mul:
@@ -193,12 +203,12 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
             ret->lchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[0].get()));
             ret->what = operator_from_syntax_item(p_syntax_item->items[1].get());
             ret->rchild = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
-            return std::move(ret);
+            return ret;
         }
         case production_type::dicelet_expr_minus_dicelet_mul: {
             auto ret = std::make_shared<dicelet_calculus_reverse>();
             ret->child = std::dynamic_pointer_cast<dicelet>(build_component_from_syntax(p_syntax_item->items[2].get()));
-            return std::move(ret);
+            return ret;
         }
         default:
             return nullptr;
@@ -216,7 +226,7 @@ number comp_holder::roll_the_dice(str_container &out) const {
     out.emplace_back("(");
     number ret = this->child->roll_the_dice(out);
     out.emplace_back(")");
-    return std::move(ret);
+    return ret;
 }
 void comp_holder::print(str_container &strlist) const noexcept {
     strlist.emplace_back("(");
