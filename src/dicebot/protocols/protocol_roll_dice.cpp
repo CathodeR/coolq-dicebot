@@ -39,23 +39,6 @@ protocol_roll_dice::protocol_roll_dice() {
         "nO+8jOS7jeeEtuaYvuekuuivpue7hue7k+aenA==");
 }
 
-template <class container_t, class item_t = typename container_t::value_type>
-static auto result_builder = [](const char* prefix, container_t& src, std::function<std::string(const item_t&)> strconv,
-                                const char* separater, const char* suffix) -> std::string {
-    std::string ret;
-    ret.assign(prefix);
-    bool is_first = true;
-    for (const auto& item : src) {
-        if (is_first)
-            is_first = false;
-        else
-            ret.append(separater);
-        ret.append(strconv(item));
-    }
-    ret.append(suffix);
-    return ret;
-};
-
 bool protocol_roll_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     bool detailed_roll_message = false;
     std::smatch match_list_command_detail;
@@ -111,7 +94,7 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     std::string str_roll_command;
     std::string str_roll_detail;
     std::string str_result;
-    diceparser::component::str_container strs_command;
+    diceparser::str_container strs_command;
 
     p_dice->print(strs_command);
     for (const auto& str : strs_command) str_roll_command.append(str);
@@ -119,21 +102,22 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     auto p_dicelet = std::dynamic_pointer_cast<diceparser::dicelet>(p_dice);
 
     if (p_dicelet) {
-        diceparser::component::str_container strs_detail;
-        diceparser::dicelet::result_container results;
+        diceparser::str_container strs_detail;
+        diceparser::result_container results;
         p_dicelet->roll_dicelet(results, strs_detail);
-        str_result.assign(result_builder<diceparser::dicelet::result_container>(
+
+        str_result.assign(diceparser::result_builder<diceparser::result_container>(
             "{", results, [](const number& n) -> std::string { return n.str(); }, ", ", "}"));
         if (detailed_roll_message)
-            str_roll_detail.assign(result_builder<diceparser::component::str_container>(
-                "", strs_detail, [](const std::string& s) -> std::string { return s; }, "", ""));
+            str_roll_detail.assign(diceparser::result_builder<diceparser::str_container>(
+                "", strs_detail, [](const std::string& s) -> decltype(s) { return s; }, "", ""));
     } else {
-        diceparser::component::str_container strs_detail;
+        diceparser::str_container strs_detail;
         number result = p_dice->roll_the_dice(strs_detail);
         str_result.append(result.str());
         if (detailed_roll_message)
-            str_roll_detail.assign(result_builder<diceparser::component::str_container>(
-                "", strs_detail, [](const std::string& s) -> std::string { return s; }, "", ""));
+            str_roll_detail.assign(diceparser::result_builder<diceparser::str_container>(
+                "", strs_detail, [](const std::string& s) -> decltype(s) { return s; }, "", ""));
     }
 
     output_constructor oc(event.nickname);
