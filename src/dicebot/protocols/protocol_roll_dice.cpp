@@ -53,7 +53,7 @@ static auto result_builder = [](const char* prefix, container_t& src, std::funct
         ret.append(strconv(item));
     }
     ret.append(suffix);
-    return std::move(ret);
+    return ret;
 };
 
 bool protocol_roll_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
