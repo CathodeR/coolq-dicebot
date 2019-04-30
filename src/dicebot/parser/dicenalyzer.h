@@ -8,10 +8,11 @@
 namespace dicebot::diceparser {
     enum class cal_err { fine, negative_dice, dice_num_exceed, dice_face_exceed, div_zero };
 
+    using str_container = std::list<std::string>;
+    using result_container = std::list<number>;
+
     class component {
     public:
-        using str_container = std::list<std::string>;
-        using result_container = std::list<number>;
         virtual number roll_the_dice(str_container &) const { return 0; }
         virtual void print(str_container &) const noexcept {};
     };
