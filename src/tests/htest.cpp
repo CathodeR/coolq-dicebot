@@ -21,7 +21,7 @@ int main(int argc, char const *argv[]) {
         clock_t start = clock();
         dicebot::message_pipeline(in, ei, out);
         clock_t end = clock();
-        std::cout << " <" << end - start << "> " << out << std::endl;
+        std::cout << out << std::endl;
     }
 
     dicebot::salvage();
