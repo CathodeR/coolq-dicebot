@@ -80,7 +80,7 @@ static auto build_rdk = [](dice_rdk_mode mode, const syntax_nterminal *p_syntax_
         break;
     }
     default:
-        return p_component();
+        return decltype(ret)();
     }
     return ret;
 };
