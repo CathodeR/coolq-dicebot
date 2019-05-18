@@ -112,117 +112,9 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
 }
 #pragma endregion
 
-#pragma region set var
-protocol_set_var::protocol_set_var() {
-    this->is_stand_alone = false;
-    this->filter_var = std::regex("^ *(\\+|-)? *(\\d+) *");
-    this->filter_command = std::regex("^ *reset");
-    this->identifier_regex = "v(?:ar)?";
-    this->identifier_list = {"var", "v"};
-    this->filter_name = "^([^\\+\\-\\*/\\(\\)\\s]+)";
-
-    this->help_message = base64_decode(
-        "6K6+572u5Y+Y6YePKC52YXLmiJbogIUudikK5oyH"
-        "5LukLnYgMTIg55Sf5ZG977ya6K6+5a6a5LiA5Liq"
-        "5ZCN56ew5Li64oCc55Sf5ZG94oCd55qE5Y+Y6YeP"
-        "77yM5Yid5aeL5YC85Li6MTIK5oyH5LukLnYgLTQg"
-        "55Sf5ZG977ya5L+u5pS55ZCN56ew5Li64oCc55Sf"
-        "5ZG94oCd55qE5Y+Y6YeP77yM5YW25pWw5YC8LTQK"
-        "5oyH5LukLnYgKzQg55Sf5ZG977ya5L+u5pS55ZCN"
-        "56ew5Li64oCc55Sf5ZG94oCd55qE5Y+Y6YeP77yM"
-        "5YW25pWw5YC8KzQK5oyH5LukLnYgcmVzZXTvvJrp"
-        "h43nva7miYDmnInlj5jph4/kuLrliJ3lp4vlgLw=");
-}
-
-bool protocol_set_var::resolve_request(std::string const& message, event_info& event, std::string& response) {
-    profile::profile_manager* pfm = profile::profile_manager::get_instance();
-
-    std::string message_cp;
-
-    std::smatch m_cmd;
-    std::regex_search(message, m_cmd, filter_command);
-    if (m_cmd.size() > 0) {
-        if (pfm->reset_var(event.user_id)) {
-            output_constructor oc(event.nickname);
-            oc.append_message(u8"重置所有值。");
-            response = oc.str();
-            return true;
-        }
-        return false;
-    }
-
-    std::smatch m;
-    std::regex_search(message, m, filter_var);
-    if (m.size() == 0) return false;
-
-    if (m[1].matched) {
-        std::string s_oper = m[1];
-        int oper = 1;
-        if (s_oper[0] == '-') oper = -1;
-
-        profile::var_pair val;
-
-        message_cp = m.suffix();
-        if (message_cp.length() == 0) return false;
-
-        int mod_val = stoi(m[2]);
-
-        if (pfm->get_value<std::string, profile::var_pair>(message_cp, val, event.user_id)) {
-            val.second += oper * mod_val;
-            pfm->set_value<std::string, profile::var_pair>(message_cp, val, event.user_id);
-
-            output_constructor oc(event.nickname);
-            oc.append_message(u8"修改:");
-            oc.append_message(message_cp);
-            oc.append_message(u8"值为");
-            oc.append_message(val.second);
-
-            response = oc.str();
-            return true;
-        }
-    } else {
-        int i_val = stoi(m[2]);
-        profile::var_pair val(i_val, i_val);
-
-        std::smatch m_name;
-        message_cp = m.suffix();
-        std::regex_search(message_cp, m_name, this->filter_name);
-        if (!m_name[1].matched) return false;
-        message_cp = m_name[1];
-
-        pfm->set_value<std::string, profile::var_pair>(message_cp, val, event.user_id);
-
-        output_constructor oc(event.nickname);
-        oc.append_message(u8"设置:");
-        oc.append_message(message_cp);
-        oc.append_message(u8"值为");
-        oc.append_message(val.second);
-
-        response = oc.str();
-        return true;
-    }
-    return false;
-}
-#pragma endregion
-
 #pragma region list
-protocol_list::gen_var_t protocol_list::var_msg = [](profile::user_profile::user_var_map_t const& map, std::string const& head,
-                                                     std::string const& message, output_constructor& out) {
-    if (map.size() == 0) return;
-    out.append_message("\r\n" + head);
-    for (auto const& pair : map) {
-        if (message.size() > 0 && pair.first.find(message) == std::string::npos) continue;
-        out.append_message(u8"\r\n>");
-        out.append_message(pair.first);
-        out.append_message(u8":");
-        out.append_message(pair.second.second);
-        out.append_message(u8"/");
-        out.append_message(pair.second.first);
-    }
-};
-
 protocol_list::gen_defr_t protocol_list::defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head,
-                                                       output_constructor& out) {
+                                                       std::string const& message, output_constructor& out) {
     if (map.size() == 0) return;
     out.append_message("\r\n" + head);
     for (auto const& pair : map) {
@@ -246,7 +138,7 @@ protocol_list::gen_macro_t protocol_list::macro_msg = [](profile::user_profile::
 
 protocol_list::protocol_list() {
     this->is_stand_alone = true;
-    this->filter_command = std::regex("^(all|v(?:ar)?|r(?:oll)?) *");
+    this->filter_command = std::regex("^(a(?:ll)?|r(?:oll)?)? *");
     this->identifier_regex = "l(?:ist)?";
     this->identifier_list = {"list", "l"};
 
@@ -279,13 +171,13 @@ protocol_list::protocol_list() {
 
         output_constructor oc(event.nickname);
         oc.append_message(u8"的个人信息如下:");
-        self.defr_msg(*def_rolls, u8"默认骰子:", oc);
+        self.defr_msg(*def_rolls, u8"默认骰子:", "", oc);
         self.macro_msg(*macro_rolls, u8"已设置下列骰子指令:", "", oc);
-        self.var_msg(*user_vars, u8"已设置下列变量:", "", oc);
         response = oc.str();
         return true;
     };
     this->call_map.insert(call_map_value_t("all", list_all));
+    this->call_map.insert(call_map_value_t("a", list_all));
 
     list_call_t list_roll =
         [](protocol_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
@@ -296,39 +188,26 @@ protocol_list::protocol_list() {
 
         output_constructor oc(event.nickname);
         oc.append_message(u8"的个人信息如下:");
-        self.defr_msg(*def_rolls, u8"默认骰子:", oc);
         self.macro_msg(*macro_rolls, u8"已设置下列骰子指令:", message, oc);
         response = oc.str();
         return true;
     };
     this->call_map.insert(call_map_value_t("roll", list_roll));
     this->call_map.insert(call_map_value_t("r", list_roll));
-
-    list_call_t list_var =
-        [](protocol_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
-
-        auto user_vars = upf->get_map<std::string, profile::var_pair>();
-
-        output_constructor oc(event.nickname);
-        oc.append_message(u8"的个人信息如下:");
-        self.var_msg(*user_vars, u8"已设置下列变量:", message, oc);
-        response = oc.str();
-        return true;
-    };
-    this->call_map.insert(call_map_value_t("var", list_var));
-    this->call_map.insert(call_map_value_t("v", list_var));
 }
 
 bool protocol_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
     if (m.size() > 0) {
-        std::string message_cp = m[1];
+        std::string message_cp;
         std::string args = m.suffix();
-
-        std::transform(message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
-
+        if (m[1].matched) {
+            message_cp = m[1];
+            std::transform(message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
+        } else {
+            message_cp = "a";
+        }
         auto iter = this->call_map.find(message_cp);
         if (iter != this->call_map.end()) return iter->second(*this, args, event, response);
     }
