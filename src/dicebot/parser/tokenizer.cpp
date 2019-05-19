@@ -102,8 +102,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
         return i;
 }
 
-tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, std::string const& source,
-                     std::map<std::string, std::string> const* macros) noexcept
+tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, std::string const& source, macro_map_t const* macros) noexcept
     : token_container(tokens), macro_map(macros) {
     size_t len = regulate_parenthesis(source, flag.parse_dicelet);
     this->sources = std::make_unique<sources_container_t>();
@@ -269,7 +268,7 @@ void tokenizer::move_next_cursor(token_t& src_token, size_t length) const {
     }
 }
 
-size_t greed_map_find(std::string const& source, size_t start_pos, std::map<std::string, std::string> const& map) {
+size_t greed_map_find(std::string const& source, size_t start_pos, tokenizer::macro_map_t const& map) {
     size_t i = 0;
     size_t max_len = 0;
     size_t counter = map.size();

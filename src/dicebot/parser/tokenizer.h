@@ -1,8 +1,8 @@
 #include <cstdint>
 #include <deque>
-#include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 #include "./token.h"
 
@@ -22,10 +22,12 @@ namespace dicebot::diceparser {
     };
 
     class tokenizer {
-    private:
-        using macro_map_t = std::map<std::string, std::string>;
-        using macro_map_pair_t = typename macro_map_t::node_type;
+    public:
+        using macro_map_t = std::unordered_map<std::string, std::string>;
+        using macro_map_pair_t = typename macro_map_t::value_type;
         using sources_container_t = std::deque<std::string>;
+
+    private:
         // string source, sources[0] is original source, the others are expanded macros, ordered by the sequence where it presents in the
         // original input
         std::unique_ptr<sources_container_t> sources;
@@ -54,8 +56,7 @@ namespace dicebot::diceparser {
     public:
         using token_container_t = std::deque<token_t>;
         token_container_t &token_container;
-        tokenizer(token_container_t &, tokenizer_flag const &, std::string const &,
-                  std::map<std::string, std::string> const * = nullptr) noexcept;
+        tokenizer(token_container_t &, tokenizer_flag const &, std::string const &, macro_map_t const * = nullptr) noexcept;
 
         token_t *cur_token() const;
         token_t *next_token() const;

@@ -48,15 +48,15 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     profile::profile_manager* pfm = profile::profile_manager::get_instance();
 
     profile::var_pair var;
-    if (pfm->get_value(profile::sys_var_type::rs_on, var, event.user_id)) {
+    if (pfm->get_profile(event.user_id)->sys_vars.get(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
         detailed_roll_message = var.second != 0;
     }
 
     if (match_list_command_detail.size() > 0) {
         message_cp = match_list_command_detail.suffix().str();
         if (message_cp == "on") {
-            var.second = var.first;
-            if (pfm->set_value(profile::sys_var_type::rs_on, var, event.user_id)) {
+            var.second = true;
+            if (pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
                 output_constructor oc(event.nickname);
                 oc.append_message(u8"启用骰子详细输出");
                 response = oc.str();
@@ -64,8 +64,8 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
             } else
                 return false;
         } else if (message_cp == "off") {
-            var.second = !var.first;
-            if (pfm->set_value(profile::sys_var_type::rs_on, var, event.user_id)) {
+            var.second = false;
+            if (pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
                 output_constructor oc(event.nickname);
                 oc.append_message(u8"关闭骰子详细输出");
                 response = oc.str();
@@ -78,13 +78,14 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     } else
         message_cp = message;
 
-    if (message_cp.size() == 0) {
-        if (!pfm->get_value(profile::def_roll_type::def_roll, message_cp, event.user_id)) return false;
+    if (message_cp.empty()) {
+        if (pfm->get_profile(event.user_id)->def_roll.set(profile::def_roll_type::def_roll, message_cp)
+            != profile::profile_status::finished)
+            return false;
     }
 
-    auto map = pfm->get_profile(event.user_id)->get_map<std::string, std::string>();
     diceparser::tokenizer::token_container_t tk_cont;
-    diceparser::tokenizer tknz(tk_cont, {true, true}, message_cp, map);
+    diceparser::tokenizer tknz(tk_cont, {true, true}, message_cp, &pfm->get_profile(event.user_id)->mac_rolls);
     diceparser::parser parser(tknz);
     auto pcomp = parser.parse(message_cp);
     if (!pcomp) return false;
