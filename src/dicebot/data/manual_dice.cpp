@@ -76,7 +76,7 @@ namespace dicebot::manual {
             this->status = roll::roll_status::DICE_NOT_AVAILABLE;
             std::string str_source_copy(source);
             std::smatch smatch_single;
-            while (str_source_copy.size() > 0) {
+            while (!str_source_copy.empty()) {
                 std::regex_search(str_source_copy, smatch_single, regex_manual_part);
                 if (smatch_single.begin() == smatch_single.end()) return;
                 int i_dice = 1;

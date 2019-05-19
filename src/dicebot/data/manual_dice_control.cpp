@@ -151,18 +151,13 @@ namespace dicebot::manual {
     }
 
     bool manual_dice_control::insert_database(manual_kpair manual_dice_key, p_manual manual_dice_target) const {
-        sqlite3 *database = database::database_manager::get_database();
-        char *pchar_err_message = nullptr;
+        sqlite3 *database = database::database_manager::get_instance()->get_database();
         std::string str_encoded_manualdice(manual_dice_target->encode());
         ostrs ostrs_sql_command(ostrs::ate);
-        ostrs_sql_command.str("insert into " MANUALDICE_TABLE_NAME " values ( ");
+        ostrs_sql_command.str("insert into " MANUALDICE_TABLE_NAME " (qqid, groupid, source) values ( ");
         ostrs_sql_command << manual_dice_key.first << ", " << manual_dice_key.second << ", '" << str_encoded_manualdice << "'"
                           << ");";
-        int ret_code_2 = sqlite3_exec(database,
-                                      ostrs_sql_command.str().c_str(),
-                                      &database::sqlite3_callback_general,
-                                      (void *)&database::oper_update,
-                                      &pchar_err_message);
+        int ret_code_2 = database::sqlite3_exec_noquery(database, ostrs_sql_command.str().c_str());
 #ifdef _DEBUG
         if (ret_code_2 != SQLITE_OK) {
             logger::log("dicebot insert_database", std::string(sqlite3_errmsg(database)));
@@ -172,19 +167,14 @@ namespace dicebot::manual {
     }
 
     bool manual_dice_control::update_database(manual_kpair manual_dice_key, p_manual manual_dice_target) const {
-        sqlite3 *database = database::database_manager::get_database();
-        char *pchar_err_message = nullptr;
+        sqlite3 *database = database::database_manager::get_instance()->get_database();
         std::string str_encoded_manualdice(manual_dice_target->encode());
 
         ostrs ostrs_sql_command(ostrs::ate);
         ostrs_sql_command.str("update " MANUALDICE_TABLE_NAME " set ");
         ostrs_sql_command << " source ='" << str_encoded_manualdice << "'";
         ostrs_sql_command << " where qqid =" << manual_dice_key.first << " and groupid =" << manual_dice_key.second;
-        int ret_code_2 = sqlite3_exec(database,
-                                      ostrs_sql_command.str().c_str(),
-                                      &database::sqlite3_callback_general,
-                                      (void *)&database::oper_update,
-                                      &pchar_err_message);
+        int ret_code_2 = database::sqlite3_exec_noquery(database, ostrs_sql_command.str().c_str());
 #ifdef _DEBUG
         if (ret_code_2 != SQLITE_OK) {
             logger::log("dicebot update_database", std::string(sqlite3_errmsg(database)));
@@ -194,16 +184,23 @@ namespace dicebot::manual {
     }
 
     bool manual_dice_control::read_database(manual_kpair manual_dice_key, p_manual manual_dice_target) {
-        sqlite3 *database = database::database_manager::get_database();
+        sqlite3 *database = database::database_manager::get_instance()->get_database();
         std::string str_encoded_manualdice(manual_dice_target->encode());
         ostrs ostrs_sql_command(ostrs::ate);
-        ostrs_sql_command << "SELECT * FROM " MANUALDICE_TABLE_NAME " where qqid =" << manual_dice_key.first
+        ostrs_sql_command << "SELECT source FROM " MANUALDICE_TABLE_NAME " where qqid =" << manual_dice_key.first
                           << " and groupid =" << manual_dice_key.second;
         std::string str_manualdice_read;
         char *pchar_err_message = nullptr;
         int ret_code = sqlite3_exec(database,
                                     ostrs_sql_command.str().c_str(),
-                                    &sqlite3_callback_query_manualdice,
+                                    [](void *data, int argc, char **argv, char **azColName) -> int {
+                                        if (argc == 1) {
+                                            std::string *pstr_ret = (std::string *)data;
+                                            pstr_ret->assign(argv[0]);
+                                            return SQLITE_OK;
+                                        }
+                                        return SQLITE_ABORT;
+                                    },
                                     (void *)(&str_manualdice_read),
                                     &pchar_err_message);
         if (ret_code == SQLITE_OK) {
@@ -222,20 +219,8 @@ namespace dicebot::manual {
     }
 
     bool manual_dice_control::exist_database(manual_kpair manual_dice_key) const {
-        sqlite3 *database = database::database_manager::get_database();
-        ostrs ostrs_sql_command(ostrs::ate);
-        ostrs_sql_command << "SELECT count(*) FROM " MANUALDICE_TABLE_NAME " where qqid =" << manual_dice_key.first
-                          << " and groupid =" << manual_dice_key.second;
-        std::string str_manualdice_read;
-        char *pchar_err_message = nullptr;
-        int count = 0;
-        int ret_code =
-            sqlite3_exec(database, ostrs_sql_command.str().c_str(), &database::sqlite3_callback_exist, (void *)&count, &pchar_err_message);
-#ifdef _DEBUG
-        if (ret_code != SQLITE_OK) {
-            logger::log("dicebot exist_database", std::string(sqlite3_errmsg(database)));
-        }
-#endif
-        return count > 0;
+        bool ret = false;
+        int ret_code = database::database_manager::get_instance()->is_table_exist(MANUALDICE_TABLE_NAME, ret);
+        return ret;
     }
 } // namespace dicebot::manual

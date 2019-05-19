@@ -11,8 +11,10 @@ namespace dicebot::profile {
     namespace profile_db {
         bool read_database(user_profile& profile, int64_t const user_id);
         bool write_database(user_profile const& profile, int64_t const user_id);
-        bool insert_database(user_profile const& profile, int64_t const user_id);
-        bool update_database(user_profile const& profile, int64_t const user_id);
+        bool insert_database(user_profile const& profile,
+                             int64_t const user_id);
+        bool update_database(user_profile const& profile,
+                             int64_t const user_id);
         bool exist_database(int64_t const user_id);
     } // namespace profile_db
 
@@ -20,11 +22,11 @@ namespace dicebot::profile {
         static std::unique_ptr<profile_manager> instance;
 
     public:
-        static profile_manager* initialize() noexcept;
+        static profile_manager* create_instance() noexcept;
 
         static profile_manager* get_instance() {
             if (!profile_manager::instance) {
-                return profile_manager::initialize();
+                return profile_manager::create_instance();
             }
             return profile_manager::instance.get();
         }

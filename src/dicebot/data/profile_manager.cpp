@@ -1,12 +1,13 @@
 #include "./profile_manager.h"
 
-#include "./sqlite3_wrapper.hpp"
-
 #include "./database_manager.h"
 #include "./profile.h"
 
 using namespace dicebot;
 using namespace dicebot::profile;
+using namespace dicebot::database;
+
+using db_manager = dicebot::database::database_manager;
 
 #define PROFILE_TABLE_NAME "user_profile"
 #define PROFILE_TABLE_DEFINE              \
@@ -22,45 +23,39 @@ using profile_pair = std::pair<int64_t, user_profile>;
 
 std::unique_ptr<profile_manager> profile_manager::instance = nullptr;
 
-profile_manager *profile_manager::initialize() noexcept {
-    database::database_manager *databaseControl = database::database_manager::get_instance();
-    int i_ret_code = databaseControl->register_table(PROFILE_TABLE_NAME, PROFILE_TABLE_DEFINE);
-    is_no_sql_mode = i_ret_code != SQLITE_OK;
+profile_manager *profile_manager::create_instance() noexcept {
+    database_manager *databaseControl = db_manager::get_instance();
+    databaseControl->register_table(PROFILE_TABLE_NAME, PROFILE_TABLE_DEFINE);
 
-    if (!profile_manager::instance) profile_manager::instance = std::make_unique<profile_manager>();
+    if (!profile_manager::instance)
+        profile_manager::instance = std::make_unique<profile_manager>();
     return profile_manager::instance.get();
 }
 
-bool profile::profile_db::read_database(user_profile &profile, int64_t const user_id) {
-    sqlite3 *database = database::database_manager::get_database();
+bool profile::profile_db::read_database(user_profile &profile,
+                                        int64_t const user_id) {
     ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command << "SELECT system_variables, default_roll, macro_roll FROM " PROFILE_TABLE_NAME " where qqid =" << user_id;
-    char *pchar_err_message = nullptr;
-    int ret_code = sqlite3_exec(database,
-                                ostrs_sql_command.str().c_str(),
-                                [](void *data, int argc, char **argv, char **azColName) -> int {
-                                    user_profile *profile = (user_profile *)data;
-                                    bool good_query = profile->sys_vars.decode(argv[0]) && profile->def_roll.decode(argv[1])
-                                                      && profile->mac_rolls.decode(argv[2]);
-                                    if (good_query)
-                                        return SQLITE_OK;
-                                    else
-                                        return SQLITE_ABORT;
-                                },
-                                (void *)(&profile),
-                                &pchar_err_message);
-    if (ret_code == SQLITE_OK)
-        return true;
-    else {
-#ifdef _DEBUG
-        logger::log("dicebot read_database", std::string(sqlite3_errmsg(database)));
-#endif
-        is_no_sql_mode = true;
-        return false;
-    }
+    ostrs_sql_command << "SELECT system_variables, default_roll, macro_roll "
+                         "FROM " PROFILE_TABLE_NAME " where qqid ="
+                      << user_id;
+
+    return db_manager::get_instance()->exec(
+        ostrs_sql_command.str().c_str(),
+        [](void *data, int argc, char **argv, char **azColName) -> int {
+            user_profile *profile = (user_profile *)data;
+            bool good_query = profile->sys_vars.decode(argv[0])
+                              && profile->def_roll.decode(argv[1])
+                              && profile->mac_rolls.decode(argv[2]);
+            if (good_query)
+                return SQLITE_OK;
+            else
+                return SQLITE_ABORT;
+        },
+        (void *)(&profile));
 }
 
-bool profile::profile_db::write_database(user_profile const &profile, int64_t const user_id) {
+bool profile::profile_db::write_database(user_profile const &profile,
+                                         int64_t const user_id) {
     if (is_no_sql_mode)
         return false;
     else if (exist_database(user_id)) {
@@ -71,73 +66,52 @@ bool profile::profile_db::write_database(user_profile const &profile, int64_t co
 }
 
 bool profile::profile_db::exist_database(int64_t const user_id) {
-    sqlite3 *database = database::database_manager::get_database();
     ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command << "SELECT count(*) FROM " PROFILE_TABLE_NAME " where qqid =" << user_id;
-    char *pchar_err_message = nullptr;
+    ostrs_sql_command << "SELECT count(*) FROM " PROFILE_TABLE_NAME
+                         " where qqid ="
+                      << user_id;
 
     int count = 0;
 
-    int ret_code = sqlite3_exec(
-        database,
+    db_manager::get_instance()->exec(
         ostrs_sql_command.str().c_str(),
-        [](void *data, int argc, char **argv, char **azColName) -> int { *reinterpret_cast<int *>(data) = std::stoi(argv[0]); },
-        (void *)&count,
-        &pchar_err_message);
+        [](void *data, int argc, char **argv, char **azColName) -> int {
+            *reinterpret_cast<int *>(data) = std::stoi(argv[0]);
+        },
+        (void *)&count);
 
-    if (ret_code != SQLITE_OK) {
-#ifdef _DEBUG
-        logger::log("dicebot exist_database", std::string(sqlite3_errmsg(database)));
-#endif
-        is_no_sql_mode = true;
-    }
     return count > 0;
 }
 
-bool profile::profile_db::insert_database(user_profile const &profile, int64_t const user_id) {
-    sqlite3 *database = database::database_manager::get_database();
-    char *pchar_err_message = nullptr;
-
-    std::vector<std::string> vecs;
-    profile.encode(vecs);
-
+bool profile::profile_db::insert_database(user_profile const &profile,
+                                          int64_t const user_id) {
     ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command.str("insert into " PROFILE_TABLE_NAME " (system_variables,default_roll,macro_roll) values ( ");
-    ostrs_sql_command << user_id;
-    ostrs_sql_command << " system_variables ='" << profile.sys_vars.encode() << "'";
-    ostrs_sql_command << ", default_roll ='" << profile.def_roll.encode() << "'";
-    ostrs_sql_command << ", macro_roll ='" << profile.mac_rolls.encode() << "'";
-    ostrs_sql_command << ");";
+    ostrs_sql_command.str(
+        "insert into " PROFILE_TABLE_NAME
+        " (system_variables,default_roll,macro_roll) values ( ");
+    ostrs_sql_command << user_id << " system_variables ='"
+                      << profile.sys_vars.encode() << "'"
+                      << ", default_roll ='" << profile.def_roll.encode() << "'"
+                      << ", macro_roll ='" << profile.mac_rolls.encode() << "'"
+                      << ");";
 
-    int ret_code = sqlite3_exec_noquery(database, ostrs_sql_command.str().c_str());
-
-    if (ret_code != SQLITE_OK) {
-#ifdef _DEBUG
-        logger::log("dicebot insert_database", std::string(sqlite3_errmsg(database)));
-#endif
-        is_no_sql_mode = true;
-    }
-    return ret_code == SQLITE_OK;
+    return db_manager::get_instance()->exec_noquery(
+        ostrs_sql_command.str().c_str());
 }
 
-bool profile::profile_db::update_database(user_profile const &profile, int64_t const user_id) {
-    sqlite3 *database = database::database_manager::get_database();
+bool profile::profile_db::update_database(user_profile const &profile,
+                                          int64_t const user_id) {
+    sqlite3 *database = db_manager::get_instance()->get_database();
     char *pchar_err_message = nullptr;
 
     ostrs ostrs_sql_command(ostrs::ate);
     ostrs_sql_command.str("update " PROFILE_TABLE_NAME " set ");
-    ostrs_sql_command << " system_variables ='" << profile.sys_vars.encode() << "'";
-    ostrs_sql_command << ", default_roll ='" << profile.def_roll.encode() << "'";
-    ostrs_sql_command << ", macro_roll ='" << profile.mac_rolls.encode() << "'";
-    ostrs_sql_command << " where qqid = " << user_id;
+    ostrs_sql_command << " system_variables ='" << profile.sys_vars.encode()
+                      << "'"
+                      << ", default_roll ='" << profile.def_roll.encode() << "'"
+                      << ", macro_roll ='" << profile.mac_rolls.encode() << "'"
+                      << " where qqid = " << user_id;
 
-    int ret_code = sqlite3_exec_noquery(database, ostrs_sql_command.str().c_str());
-
-    if (ret_code != SQLITE_OK) {
-#ifdef _DEBUG
-        logger::log("dicebot insert_database", std::string(sqlite3_errmsg(database)));
-#endif
-        is_no_sql_mode = true;
-    }
-    return ret_code == SQLITE_OK;
+    return db_manager::get_instance()->exec_noquery(
+        ostrs_sql_command.str().c_str());
 }
