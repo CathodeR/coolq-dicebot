@@ -77,9 +77,10 @@ namespace dicebot {
         bool add_operation(operation_mode mode, std::string str_oper, std::string source);
         void gen_tail();
         bool calculate();
-        size_t size();
+        size_t size() const noexcept;
+        bool empty() const noexcept;
     };
 
-    bool binary_tree_split_dice(std::string const& str_input, std::string& str_roll_command,
-                                std::string& str_roll_detail, std::string& str_roll_result, std::string& message);
+    bool binary_tree_split_dice(std::string const& str_input, std::string& str_roll_command, std::string& str_roll_detail,
+                                std::string& str_roll_result, std::string& message);
 } // namespace dicebot

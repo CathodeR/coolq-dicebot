@@ -52,7 +52,7 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
         detailed_roll_message = var.second != 0;
     }
 
-    if (match_list_command_detail.size() > 0) {
+    if (!match_list_command_detail.empty()) {
         message_cp = match_list_command_detail.suffix().str();
         if (message_cp == "on") {
             var.second = true;
@@ -122,7 +122,7 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     }
 
     output_constructor oc(event.nickname);
-    if (parser.tail.size() > 0) oc.append_message(parser.tail);
+    if (!parser.tail.empty()) oc.append_message(parser.tail);
     if (detailed_roll_message)
         oc.append_roll(str_roll_command, str_roll_detail, str_result);
     else

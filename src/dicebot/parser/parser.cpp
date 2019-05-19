@@ -387,7 +387,7 @@ p_syntax_item parser::parse(std::string const& source) {
             not_finished = false;
             break;
         default: {
-            if (err && this->vec_symbols->size() > 0) {
+            if (err && !this->vec_symbols->empty()) {
                 this->vec_symbols->pop_back();
                 vec_status.pop_back();
             } else if (!err) {
@@ -400,7 +400,7 @@ p_syntax_item parser::parse(std::string const& source) {
         }
         if (!not_finished) break;
     }
-    if (this->vec_symbols->size() == 0) return nullptr;
+    if (this->vec_symbols->empty()) return nullptr;
     this->tail = tknzer.tail(this->vec_symbols->front()->source_token);
     return this->vec_symbols->front();
 }

@@ -59,7 +59,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
                 break;
             }
             good_for_comma--;
-            if (chaser.size() == 0) {
+            if (chaser.empty()) {
                 terminate = true;
                 break;
             }
@@ -69,7 +69,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
                 terminate = true;
             break;
         case ')':
-            if (chaser.size() == 0) {
+            if (chaser.empty()) {
                 terminate = true;
                 break;
             }
@@ -96,7 +96,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
         if (terminate) break;
     }
 
-    if (chaser.size() > 0)
+    if (!chaser.empty())
         return chaser.front().second;
     else
         return i;
@@ -339,7 +339,7 @@ bool tokenizer::resolve_identifier(token_t& target) const {
             suppose_target.pos_next += len;
             if (suppose_target.pos_next >= this->sources->at(suppose_target.source_index).size()) suppose_target.pos_next = npos;
             token_index prev_index;
-            if (this->token_container.size() == 0)
+            if (this->token_container.empty())
                 prev_index = token_index::index_begin;
             else
                 prev_index = token_container.back().id;

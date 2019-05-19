@@ -100,7 +100,7 @@ bool protocol_help::resolve_request(std::string const& message, event_info& even
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
 
-    if (m.size() == 0) {
+    if (m.empty()) {
         response.assign(this->help_message);
         return true;
     } else {

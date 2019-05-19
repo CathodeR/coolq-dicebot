@@ -78,7 +78,7 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
         cont.clear();
         p_const->print(cont);
 
-        if (parser.tail.size() > 0) {
+        if (!parser.tail.empty()) {
             return set_named(result.str(), parser.tail);
         } else {
             return set_default(result.str());
@@ -92,7 +92,7 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
 
     auto p_dicelet = std::dynamic_pointer_cast<diceparser::dicelet>(p_dice);
     if (p_dicelet) {
-        if (parser.tail.size() > 0) return false;
+        if (!parser.tail.empty()) return false;
         diceparser::str_container cont;
         p_dicelet->print(cont);
         return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
@@ -101,7 +101,7 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
     if (p_dice) {
         diceparser::str_container cont;
         p_dice->print(cont);
-        if (parser.tail.size() > 0) {
+        if (!parser.tail.empty()) {
             return set_named(diceparser::result_builder("(", cont, return_same, "", ")"), parser.tail);
         } else {
             return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
@@ -127,7 +127,7 @@ protocol_list::gen_macro_t protocol_list::macro_msg = [](profile::user_profile::
     if (map.empty()) return;
     out.append_message("\r\n" + head);
     for (auto const& pair : map) {
-        if (message.size() > 0 && pair.first.find(message) == std::string::npos) continue;
+        if (!message.empty() && pair.first.find(message) == std::string::npos) continue;
         out.append_message(u8"\r\n>");
         out.append_message(pair.first);
         out.append_message(u8":");
@@ -190,7 +190,7 @@ protocol_list::protocol_list() {
 bool protocol_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
-    if (m.size() > 0) {
+    if (!m.empty()) {
         std::string message_cp;
         std::string args = m.suffix();
         if (m[1].matched) {
@@ -251,7 +251,7 @@ protocol_delete::protocol_delete() {
         profile::profile_manager* pfm = profile::profile_manager::get_instance();
         profile::sptr_user_profile upf = pfm->get_profile(event.user_id);
 
-        if (message.size() > 0) {
+        if (!message.empty()) {
             auto iter = upf->mac_rolls.find(message);
             if (iter == upf->mac_rolls.end()) return false;
             upf->mac_rolls.erase(iter);
@@ -279,7 +279,7 @@ protocol_delete::protocol_delete() {
 bool protocol_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
-    if (m.size() > 0) {
+    if (!m.empty()) {
         std::string message_cp = m[1];
         std::string args = m.suffix();
 

@@ -23,13 +23,12 @@ namespace dicebot {
     std::unique_ptr<protocol_manager> dice_protocols;
     // protocol_manager* dice_protocols;
     nickname::nickname_manager* nick_ctrl;
-    database::database_manager* db_ctrl;
     manual::manual_dice_control* md_ctrl;
     profile::profile_manager* pf_ctrl;
 
-    void initialize(std::string app_dir) {
+    void initialize(const char* app_dir) {
         is_no_sql_mode = false;
-        db_ctrl = new database::database_manager(app_dir);
+        database::database_manager::create_instance(app_dir);
         nick_ctrl = new nickname::nickname_manager();
         md_ctrl = new manual::manual_dice_control();
         pf_ctrl = new profile::profile_manager();
@@ -49,10 +48,10 @@ namespace dicebot {
     }
 
     void salvage() {
-        if (dice_protocols) dice_protocols.release();
+        if (dice_protocols) dice_protocols = nullptr;
         if (nick_ctrl) delete nick_ctrl;
-        if (db_ctrl) delete db_ctrl;
         if (md_ctrl) delete md_ctrl;
+        database::database_manager::destroy_instance();
     }
 
     void set_logger(std::function<void(std::string, std::string)> varlog) { logger::_log = varlog; }

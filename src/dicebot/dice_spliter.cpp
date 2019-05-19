@@ -10,8 +10,8 @@ static std::regex const regex_num("^ *(\\d*\\.?\\d+%?)");
 static std::regex const regex_operator("^ *(\\+|-|\\*|/)");
 static std::regex const regex_bracket("^ *(\\(|\\))");
 
-bool dicebot::binary_tree_split_dice(std::string const& str_input, std::string& str_roll_command,
-                                     std::string& str_roll_detail, std::string& str_roll_result, std::string& message) {
+bool dicebot::binary_tree_split_dice(std::string const& str_input, std::string& str_roll_command, std::string& str_roll_detail,
+                                     std::string& str_roll_result, std::string& message) {
     std::smatch smatch_split_dice;
     std::string source(str_input);
     std::list<std::string> strlist_equation;
@@ -19,33 +19,29 @@ bool dicebot::binary_tree_split_dice(std::string const& str_input, std::string& 
     operation oper_target;
     while (true) {
         std::regex_search(source, smatch_split_dice, regex_dice);
-        if (smatch_split_dice.size() > 0) {
-            bool oper_state =
-                oper_target.add_operation(operation_mode::DICE, smatch_split_dice[1].str(), smatch_split_dice.str());
+        if (!smatch_split_dice.empty()) {
+            bool oper_state = oper_target.add_operation(operation_mode::DICE, smatch_split_dice[1].str(), smatch_split_dice.str());
             if (!oper_state) break;
             source.assign(smatch_split_dice.suffix().str());
             continue;
         }
         std::regex_search(source, smatch_split_dice, regex_num);
-        if (smatch_split_dice.size() > 0) {
-            bool oper_state =
-                oper_target.add_operation(operation_mode::NUMBER, smatch_split_dice[1].str(), smatch_split_dice.str());
+        if (!smatch_split_dice.empty()) {
+            bool oper_state = oper_target.add_operation(operation_mode::NUMBER, smatch_split_dice[1].str(), smatch_split_dice.str());
             if (!oper_state) break;
             source.assign(smatch_split_dice.suffix().str());
             continue;
         }
         std::regex_search(source, smatch_split_dice, regex_operator);
-        if (smatch_split_dice.size() > 0) {
-            bool oper_state = oper_target.add_operation(
-                operation_mode::OPERATOR, smatch_split_dice[1].str(), smatch_split_dice.str());
+        if (!smatch_split_dice.empty()) {
+            bool oper_state = oper_target.add_operation(operation_mode::OPERATOR, smatch_split_dice[1].str(), smatch_split_dice.str());
             if (!oper_state) break;
             source.assign(smatch_split_dice.suffix().str());
             continue;
         }
         std::regex_search(source, smatch_split_dice, regex_bracket);
-        if (smatch_split_dice.size() > 0) {
-            bool oper_state =
-                oper_target.add_operation(operation_mode::BRACKET, smatch_split_dice[1].str(), smatch_split_dice.str());
+        if (!smatch_split_dice.empty()) {
+            bool oper_state = oper_target.add_operation(operation_mode::BRACKET, smatch_split_dice[1].str(), smatch_split_dice.str());
             if (!oper_state) break;
             source.assign(smatch_split_dice.suffix().str());
             continue;
@@ -55,13 +51,13 @@ bool dicebot::binary_tree_split_dice(std::string const& str_input, std::string& 
     }
 
     bool oper_cal_successfule = false;
-    if (oper_target.size() > 0) {
+    if (!oper_target.empty()) {
         oper_cal_successfule = oper_target.calculate();
         oper_target.gen_tail();
     }
-    if (oper_target.tail.size() > 0 || source.size() > 0) {
+    if (!oper_target.tail.empty() || !source.empty()) {
         std::string t_message = oper_target.tail + source;
-        if (t_message.size() > 0) {
+        if (!t_message.empty()) {
             int p = t_message.find_first_not_of(" \t");
             if (p == std::string::npos) {
                 t_message.assign("");
@@ -128,9 +124,7 @@ operation_item::operation_item(const operation_item& copy) {
 
 operation_item::~operation_item() {}
 
-bool operation_item::is_num_like() {
-    return this->mode == operation_mode::NUMBER || this->mode == operation_mode::DICE;
-}
+bool operation_item::is_num_like() { return this->mode == operation_mode::NUMBER || this->mode == operation_mode::DICE; }
 
 bool operation_item::is_operation() { return this->mode == operation_mode::OPERATOR; }
 
@@ -305,8 +299,7 @@ operation::~operation() {
 bool operation::add_operation(operation_mode mode, std::string str_oper, std::string source) {
     switch (mode) {
     case operation_mode::DICE: {
-        if (list_operations->size() > 0
-            && (list_operations->back()->is_num_like() || list_operations->back()->is_right_bracket()))
+        if (!list_operations->empty() && (list_operations->back()->is_num_like() || list_operations->back()->is_right_bracket()))
             return false;
         operation_item* oper_item = new operation_item(operation_mode::DICE, str_oper, source);
         p_item p_oper_item(oper_item);
@@ -317,8 +310,7 @@ bool operation::add_operation(operation_mode mode, std::string str_oper, std::st
         return true;
     } break;
     case operation_mode::NUMBER: {
-        if (list_operations->size() > 0
-            && (list_operations->back()->is_num_like() || list_operations->back()->is_right_bracket()))
+        if (!list_operations->empty() && (list_operations->back()->is_num_like() || list_operations->back()->is_right_bracket()))
             return false;
         operation_item* oper_item = new operation_item(operation_mode::NUMBER, str_oper, source);
         p_item p_oper_item(oper_item);
@@ -330,16 +322,14 @@ bool operation::add_operation(operation_mode mode, std::string str_oper, std::st
     } break;
     case operation_mode::OPERATOR: {
         operation_item* oper_item = new operation_item(operation_mode::OPERATOR, str_oper, source);
-        if (list_operations->size() > 0 && list_operations->back()->is_operation()
-            && oper_item->mode_oper_like_operator != '-')
-            return false;
+        if (!list_operations->empty() && list_operations->back()->is_operation() && oper_item->mode_oper_like_operator != '-') return false;
 
-        if (list_operations->size() == 0 || list_operations->back()->is_operation()) {
+        if (list_operations->empty() || list_operations->back()->is_operation()) {
             oper_item->is_unary_operator = true;
             oper_item->mode_oper_priority = 2;
         }
 
-        while (stack_temp->size() > 0 && stack_temp->top()->is_operation()
+        while (!stack_temp->empty() && stack_temp->top()->is_operation()
                && stack_temp->top()->mode_oper_priority >= oper_item->mode_oper_priority) {
             this->list_output->push_back(stack_temp->top());
             this->stack_temp->pop();
@@ -354,8 +344,7 @@ bool operation::add_operation(operation_mode mode, std::string str_oper, std::st
     case operation_mode::BRACKET: {
         operation_item* oper_item = new operation_item(operation_mode::BRACKET, str_oper, source);
         if (oper_item->is_left_bracket()) {
-            if (list_operations->size() > 0
-                && (list_operations->back()->is_num_like() || list_operations->back()->is_right_bracket()))
+            if (!list_operations->empty() && (list_operations->back()->is_num_like() || list_operations->back()->is_right_bracket()))
                 return false;
 
             this->left_bracket_location->push_back(this->list_output->size());
@@ -364,7 +353,7 @@ bool operation::add_operation(operation_mode mode, std::string str_oper, std::st
             this->list_operations->push_back(p_oper_item);
             return true;
         } else {
-            if (this->left_bracket_location->size() == 0) return false;
+            if (this->left_bracket_location->empty()) return false;
             this->left_bracket_location->pop_back();
             bool is_empty_bracket = true;
             while (!this->stack_temp->top()->is_left_bracket()) {
@@ -401,7 +390,7 @@ void operation::gen_tail() {
 }
 
 bool operation::calculate() {
-    if (this->left_bracket_location->size() > 0) {
+    if (!this->left_bracket_location->empty()) {
         size_t pos_of_ire_blacket = this->left_bracket_location->front();
         while (this->list_output->size() > pos_of_ire_blacket) {
             if (this->list_output->back()->is_num_like())
@@ -411,30 +400,29 @@ bool operation::calculate() {
             this->list_output->pop_back();
         }
 
-        while (this->left_bracket_location->size() > 0) {
+        while (!this->left_bracket_location->empty()) {
             if (this->stack_temp->top()->is_left_bracket()) this->left_bracket_location->pop_back();
 
-            if (this->stack_temp->size() > 0 && this->stack_temp->top()->is_operation()
-                && !this->stack_temp->top()->is_unary_operator)
+            if (!this->stack_temp->empty() && this->stack_temp->top()->is_operation() && !this->stack_temp->top()->is_unary_operator)
                 this->i_binary_operator_count--;
             this->stack_temp->pop();
         }
     }
 
-    if (this->stack_temp->size() > 0 && this->i_binary_operator_count > (this->i_num_like_count - 1)) {
+    if (!this->stack_temp->empty() && this->i_binary_operator_count > (this->i_num_like_count - 1)) {
         this->stack_temp->pop();
     }
 
-    while (this->stack_temp->size() > 0) {
+    while (!this->stack_temp->empty()) {
         this->list_output->push_back(stack_temp->top());
         this->stack_temp->pop();
     }
 
-    if (this->list_output->size() == 0) return false;
+    if (this->list_output->empty()) return false;
 
     std::list<p_item> list_vals;
 
-    while (this->list_output->size() > 0) {
+    while (!this->list_output->empty()) {
         if (this->list_output->front()->is_num_like()) {
             list_vals.push_back(list_output->front());
             list_output->pop_front();
@@ -455,7 +443,7 @@ bool operation::calculate() {
         }
     }
 
-    if (list_vals.size() > 0) {
+    if (!list_vals.empty()) {
         if (list_vals.front()->calculate()) {
             this->str_roll_command.assign(list_vals.front()->str_cal_command);
             this->str_roll_detail.assign(list_vals.front()->str_cal_detail);
@@ -467,4 +455,5 @@ bool operation::calculate() {
     return false;
 }
 
-size_t operation::size() { return this->list_operations->size(); }
+size_t operation::size() const noexcept { return this->list_operations->size(); }
+bool operation::empty() const noexcept { return this->list_operations->empty(); }
