@@ -75,19 +75,53 @@ if(CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
   # cotire(${LIB_NAME})
 endif()
 
-# build test
+# build tests
 set(TEST_NAME_GROUP 
   roll_test 
   protocol_test
   number_test
   interpreter_test)
 
+# roll test
+set(X roll_test)
+set(TEST_BUILD_NAME dicebot.gtest.${X})
+file(GLOB_RECURSE TEST_SOURCE_ROLL_TEST
+  src/tests/${X}.cpp 
+  src/dicebot/data/manual_dice.cpp
+  src/dicebot/dice_roller.cpp
+  src/dicebot/utils/dice_utils.cpp
+  src/dicebot/common.cpp
+  ${BASE64SRC})
+add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE_ROLL_TEST})
+
+# protocol test
+set(X protocol_test)
+set(TEST_BUILD_NAME dicebot.gtest.${X})
+add_executable(${TEST_BUILD_NAME}
+  src/tests/${X}.cpp 
+  ${BASE64SRC} 
+  ${DICEBOT_SOURCE})
+
+# number test
+set(X number_test)
+set(TEST_BUILD_NAME dicebot.gtest.${X})
+add_executable(${TEST_BUILD_NAME} 
+  src/dicebot/common.cpp
+  src/tests/${X}.cpp)
+
+# interpreter test
+set(X interpreter_test)
+set(TEST_BUILD_NAME dicebot.gtest.${X})
+add_executable(${TEST_BUILD_NAME} 
+  src/tests/${X}.cpp
+  src/dicebot/common.cpp
+  src/dicebot/parser/tokenizer.cpp
+  src/dicebot/parser/parser.cpp)
+
 foreach(X IN LISTS TEST_NAME_GROUP)
   set(TEST_BUILD_NAME dicebot.gtest.${X})
-  file(GLOB_RECURSE TEST_SOURCE src/tests/${X}.cpp ${BASE64SRC})
-  add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE}  ${DICEBOT_SOURCE})
   target_link_libraries(${TEST_BUILD_NAME} sqlite3)
-  target_link_libraries(${TEST_BUILD_NAME} ${Boost_LIBRARIES})  
+  target_link_libraries(${TEST_BUILD_NAME} ${Boost_LIBRARIES}) 
 
 # link gtest
   if(CMAKE_CI_CONFIG MATCHES "^Appveyor$" OR CMAKE_TEST_SIGNATURE MATCHES "^linux64_test$")
