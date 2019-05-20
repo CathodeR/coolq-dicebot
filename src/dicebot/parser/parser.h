@@ -25,8 +25,12 @@ namespace dicebot::diceparser {
         p_syntax_item stack(token_t, std::string&&) const;
     };
 
-    template <class container_t, class excutable_t, class item_t = typename container_t::value_type>
-    inline std::string result_builder(const char* prefix, const container_t& src, excutable_t strconv, const char* separater,
+    template <class container_t, class excutable_t,
+              class item_t = typename container_t::value_type>
+    inline std::string result_builder(const char* prefix,
+                                      const container_t& src,
+                                      excutable_t strconv,
+                                      const char* separater,
                                       const char* suffix) {
         std::string ret;
         ret.assign(prefix);

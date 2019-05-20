@@ -12,7 +12,9 @@ namespace dicebot::manual {
 
     manual_dice::manual_dice() { i_sum_result = 0; }
 
-    manual_dice::operator bool() const noexcept { return this->status == roll::roll_status::FINISHED; }
+    manual_dice::operator bool() const noexcept {
+        return this->status == roll::roll_status::FINISHED;
+    }
 
     manual_dice::manual_dice(const std::string& source) {
         i_sum_result = 0;
@@ -61,7 +63,8 @@ namespace dicebot::manual {
             vec_mdice::iterator iter_list = (this->begin()) + target;
             i_sum_result -= (*iter_list).second;
             this->erase((iter_list));
-            if (this->status == roll::roll_status::UNINITIALIZED) this->status = roll::roll_status::FINISHED;
+            if (this->status == roll::roll_status::UNINITIALIZED)
+                this->status = roll::roll_status::FINISHED;
         } catch (const std::invalid_argument& ia) {
 #ifdef _DEBUG
             logger::log("manual_dice", ia.what());
@@ -77,10 +80,12 @@ namespace dicebot::manual {
             std::string str_source_copy(source);
             std::smatch smatch_single;
             while (!str_source_copy.empty()) {
-                std::regex_search(str_source_copy, smatch_single, regex_manual_part);
+                std::regex_search(
+                    str_source_copy, smatch_single, regex_manual_part);
                 if (smatch_single.begin() == smatch_single.end()) return;
                 int i_dice = 1;
-                if (smatch_single[1].matched) i_dice = std::stoi(smatch_single[1].str());
+                if (smatch_single[1].matched)
+                    i_dice = std::stoi(smatch_single[1].str());
                 int i_face = std::stoi(smatch_single[2].str());
 
                 if (!CHECK_LIMITS((this->size() + i_dice), i_face)) {
@@ -115,7 +120,8 @@ namespace dicebot::manual {
         try {
             this->clear();
             this->i_sum_result = 0;
-            if (this->status == roll::roll_status::UNINITIALIZED) this->status = roll::roll_status::FINISHED;
+            if (this->status == roll::roll_status::UNINITIALIZED)
+                this->status = roll::roll_status::FINISHED;
         } catch (const std::invalid_argument& ia) {
 #ifdef _DEBUG
             logger::log("manual_dice", ia.what());
@@ -133,10 +139,11 @@ namespace dicebot::manual {
             oa << ((*iter_list).first);
             oa << ((*iter_list).second);
         }
-        return base64_encode((const unsigned char*)(strs.str().c_str()), strs.str().size());
+        return base64_encode((const unsigned char*)(strs.str().c_str()),
+                             strs.str().size());
     }
 
-    void manual_dice::decode(std::string& source) {
+    void manual_dice::decode(const std::string& source) {
         this->clear();
         std::string source_copy(source);
         source_copy = base64_decode(source_copy);
@@ -166,7 +173,8 @@ namespace dicebot::manual {
             if (iter_list != this->begin()) {
                 ostrs_result << " + ";
             }
-            ostrs_result << (*iter_list).second << "(" << (*iter_list).first << ")";
+            ostrs_result << (*iter_list).second << "(" << (*iter_list).first
+                         << ")";
             i_sum_result += (*iter_list).second;
         }
         if (!hasDice)

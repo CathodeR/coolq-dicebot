@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <list>
-#include <map>
 #include <memory>
 #include <regex>
 #include <sstream>
@@ -13,7 +12,13 @@ namespace dicebot {
     using ostrs = std::ostringstream;
 
     namespace roll {
-        enum class roll_status { FINISHED = 0, GENERAL_ERR = 1, DICE_NOT_AVAILABLE = 2, UNINITIALIZED = -1, TOO_MANY_DICE = 3 };
+        enum class roll_status {
+            FINISHED = 0,
+            GENERAL_ERR = 1,
+            DICE_NOT_AVAILABLE = 2,
+            UNINITIALIZED = -1,
+            TOO_MANY_DICE = 3
+        };
         enum class roll_mode { DND_DK = 1, COC_PB = 2, WOD_WA = 3 };
     } // namespace roll
 
@@ -24,7 +29,9 @@ namespace dicebot {
     } // namespace profile
 
     namespace logger {
-        extern std::function<void(std::string const& scope, std::string const& content)> _log;
+        extern std::function<void(std::string const& scope,
+                                  std::string const& content)>
+            _log;
         extern void log(std::string const& scope, std::string const& content);
     } // namespace logger
 
@@ -49,7 +56,9 @@ namespace dicebot {
             this->type = event_type::pmessage;
         }
 
-        const auto pair() const { return std::pair<int64_t, int64_t>(user_id, group_id); };
+        const auto pair() const {
+            return std::pair<int64_t, int64_t>(user_id, group_id);
+        };
     };
 
 #define MAX_DICE_UNIT_COUNT 10
