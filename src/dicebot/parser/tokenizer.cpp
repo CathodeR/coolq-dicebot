@@ -148,7 +148,9 @@ std::string tokenizer::tail(token_t const& target) const {
     } else if (target.pos_next == npos)
         return rtail;
     else {
-        return src.substr(target.pos_next) + rtail;
+        size_t tail_start = target.pos_next;
+        while (src[tail_start] == ' ' && src[tail_start]) tail_start++;
+        return src.substr(tail_start) + rtail;
     }
 }
 
