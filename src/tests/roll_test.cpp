@@ -43,8 +43,9 @@ namespace dicebot::test {
         return chi_square;
     }
 
-    void generate_roll_result(std::vector<int>& result_container, int sample_size, int max_val, int min_val,
-                              std::function<void(dicebot::roll::dice_roll&)> func) {
+    void generate_roll_result(
+        std::vector<int>& result_container, int sample_size, int max_val,
+        int min_val, std::function<void(dicebot::roll::dice_roll&)> func) {
         result_container.assign(max_val - min_val + 1, 0);
         int repeat = sample_size;
         while (repeat--) {
@@ -87,9 +88,13 @@ namespace dicebot::test {
         int max_val = 100;
 
         std::vector<int> result;
-        generate_roll_result(result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) {
-            dicebot::roll::roll_base(dr, 1, 100);
-        });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_base(dr, 1, 100);
+                             });
 
         std::vector<int> compare;
         compare.assign(result.size(), 1);
@@ -107,9 +112,13 @@ namespace dicebot::test {
         int max_val = 12;
 
         std::vector<int> result;
-        generate_roll_result(result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) {
-            dicebot::roll::roll_base(dr, 2, 6);
-        });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_base(dr, 2, 6);
+                             });
 
         std::vector<int> compare;
         compare.assign(result.size(), 0);
@@ -132,9 +141,13 @@ namespace dicebot::test {
         int max_val = 18;
 
         std::vector<int> result;
-        generate_roll_result(result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) {
-            dicebot::roll::roll_rdk(dr, 4, 6, 3);
-        });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_rdk(dr, 4, 6, 3);
+                             });
 
         std::vector<int> compare;
         compare.assign(result.size(), 0);
@@ -165,9 +178,13 @@ namespace dicebot::test {
         int max_val = 18;
 
         std::vector<int> result;
-        generate_roll_result(result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) {
-            dicebot::roll::roll_rdk(dr, 4, 6, -3);
-        });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_rdk(dr, 4, 6, -3);
+                             });
 
         std::vector<int> compare;
         compare.assign(result.size(), 0);
@@ -198,8 +215,13 @@ namespace dicebot::test {
         int max_val = 100;
 
         std::vector<int> result;
-        generate_roll_result(
-            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_coc(dr, 0); });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_coc(dr, 0);
+                             });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 1);
@@ -216,8 +238,13 @@ namespace dicebot::test {
         int min_val = 1;
 
         std::vector<int> result;
-        generate_roll_result(
-            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_coc(dr, 2); });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_coc(dr, 2);
+                             });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 0);
@@ -283,9 +310,13 @@ namespace dicebot::test {
         int max_val = 5;
 
         std::vector<int> result;
-        generate_roll_result(result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) {
-            dicebot::roll::roll_owod(dr, "5D8");
-        });
+        generate_roll_result(result,
+                             sample_sum,
+                             max_val,
+                             min_val,
+                             [](dicebot::roll::dice_roll& dr) {
+                                 dicebot::roll::roll_owod(dr, "5D8");
+                             });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 0);
@@ -293,7 +324,8 @@ namespace dicebot::test {
         while (drs.increase()) {
             int result = 0;
             for (uint16_t i = 0; i < drs.d_vals.size(); i++) {
-                int t_r = drs.d_vals[i] >= 8 ? 1 : (drs.d_vals[i] == 1 ? -1 : 0);
+                int t_r =
+                    drs.d_vals[i] >= 8 ? 1 : (drs.d_vals[i] == 1 ? -1 : 0);
                 result += t_r;
             }
             if (result < 0) result = 0;
@@ -336,89 +368,6 @@ namespace dicebot::test {
         double chi_square = fun_chi_square(result, compare);
         // chi-square check with 0.1% of coherence
         double chi_01_percent = 16.2662361962381;
-        ASSERT_LT(chi_square, chi_01_percent);
-    }
-
-    TEST(DiceSpliter, TEST_01_2d6_1d4_1d8) {
-        int sample_sum = (2000);
-
-        int max_val = 24;
-        int min_val = 4;
-
-        std::vector<int> result;
-        result.assign(max_val - min_val + 1, 0);
-
-        int repeat = sample_sum;
-        while (repeat--) {
-            std::string scommand;
-            std::string sdetail;
-            std::string sresult;
-            std::string smessage;
-            dicebot::binary_tree_split_dice("2d6+1d4+1d8", scommand, sdetail, sresult, smessage);
-            int res = std::stoi(sresult);
-            ASSERT_GE(res, min_val);
-            ASSERT_LE(res, max_val);
-            result[res - min_val]++;
-        }
-
-        std::vector<int> compare;
-        compare.assign(result.size(), 0);
-        for (int i = 1; i <= 6; i++) {
-            for (int j = 1; j <= 6; j++) {
-                for (int k = 1; k <= 4; k++) {
-                    for (int l = 1; l <= 8; l++) {
-                        compare[i + j + k + l - min_val]++;
-                    }
-                }
-            }
-        }
-
-        double chi_square = fun_chi_square(result, compare);
-
-        // chi-square check with 0.1% of coherence
-        double chi_01_percent = 49.72823247;
-        ASSERT_LT(chi_square, chi_01_percent);
-    }
-
-    TEST(DiceSpliter, TEST_02_2D6K1_1D4_1D8) {
-        int sample_sum = (2000);
-
-        int max_val = 18;
-        int min_val = 3;
-
-        std::vector<int> result;
-        result.assign(max_val - min_val + 1, 0);
-
-        int repeat = sample_sum;
-        while (repeat--) {
-            std::string scommand;
-            std::string sdetail;
-            std::string sresult;
-            std::string smessage;
-            dicebot::binary_tree_split_dice("2D6K1+1D4+1D8", scommand, sdetail, sresult, smessage);
-            int res = std::stoi(sresult);
-            ASSERT_GE(res, min_val);
-            ASSERT_LE(res, max_val);
-            result[res - min_val]++;
-        }
-
-        std::vector<int> compare;
-        compare.assign(result.size(), 0);
-        for (int i = 1; i <= 6; i++) {
-            for (int j = 1; j <= 6; j++) {
-                int i_1 = i > j ? i : j;
-                for (int k = 1; k <= 4; k++) {
-                    for (int l = 1; l <= 8; l++) {
-                        compare[i_1 + k + l - min_val]++;
-                    }
-                }
-            }
-        }
-
-        double chi_square = fun_chi_square(result, compare);
-
-        // chi-square check with 0.1% of coherence
-        double chi_01_percent = 49.72823247;
         ASSERT_LT(chi_square, chi_01_percent);
     }
 
