@@ -57,11 +57,12 @@ sptr_user_profile profile_manager::get_profile(int64_t const user_id) {
         if (database::is_no_sql_mode) return nullptr;
 
         sptr_user_profile upf = std::make_shared<user_profile>();
-        profile_db::read_database(*upf, user_id);
+        if (!profile_db::read_database(*upf, user_id)) {
+            auto t = this->insert(profile_pair(user_id, upf));
+            profile_db::write_database(*(t.first->second), user_id);
+        } else
+            this->insert(profile_pair(user_id, upf));
 
-        auto t = this->insert(profile_pair(user_id, upf));
-        if (!t.second) return nullptr;
-        profile_db::insert_database(*(t.first->second), user_id);
         return upf;
     }
 }
@@ -75,6 +76,7 @@ bool profile::profile_db::read_database(user_profile &profile,
 
     return db_manager::get_instance()->exec(
         ostrs_sql_command.str().c_str(),
+        &profile,
         [](void *data, int argc, char **argv, char **azColName) -> int {
             user_profile *profile = (user_profile *)data;
             bool good_query = profile->sys_vars.decode(argv[0])
@@ -84,8 +86,7 @@ bool profile::profile_db::read_database(user_profile &profile,
                 return SQLITE_OK;
             else
                 return SQLITE_ABORT;
-        },
-        (void *)(&profile));
+        });
 }
 
 bool profile::profile_db::write_database(user_profile const &profile,
@@ -104,17 +105,14 @@ bool profile::profile_db::exist_database(int64_t const user_id) {
     ostrs_sql_command << "SELECT count(*) FROM " PROFILE_TABLE_NAME
                          " where qqid ="
                       << user_id;
-
-    int count = 0;
-
+    bool ret = false;
     db_manager::get_instance()->exec(
         ostrs_sql_command.str().c_str(),
+        &ret,
         [](void *data, int argc, char **argv, char **azColName) -> int {
-            *reinterpret_cast<int *>(data) = std::stoi(argv[0]);
-        },
-        (void *)&count);
-
-    return count > 0;
+            *reinterpret_cast<bool *>(data) = true;
+        });
+    return ret;
 }
 
 bool profile::profile_db::insert_database(user_profile const &profile,

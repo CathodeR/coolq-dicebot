@@ -46,6 +46,7 @@ static bool read_database(event_info const &event, std::string &nickname) {
 
     return db_manager::get_instance()->exec(
         ostrs_sql_command.str().c_str(),
+        &nickname,
         [](void *data, int argc, char **argv, char **azColName) -> int {
             if (argc == 1) {
                 std::string *nick = reinterpret_cast<std::string *>(data);
@@ -53,13 +54,22 @@ static bool read_database(event_info const &event, std::string &nickname) {
                 return SQLITE_OK;
             } else
                 return SQLITE_ABORT;
-        },
-        &nickname);
+        });
 }
 
 static bool exist_database(event_info const &event) {
-    bool ret;
-    db_manager::get_instance()->is_table_exist(NICK_TABLE_NAME, ret);
+    ostrs ostrs_sql_command(ostrs::ate);
+    ostrs_sql_command << "SELECT count(*) FROM " NICK_TABLE_NAME
+                      << " where qqid =" << event.user_id
+                      << " and groupid =" << event.group_id;
+    bool ret = false;
+    db_manager::get_instance()->exec(
+        ostrs_sql_command.str().c_str(),
+        &ret,
+        [](void *data, int argc, char **argv, char **azColName) -> int {
+            *(reinterpret_cast<bool *>(data)) = true;
+            return SQLITE_OK;
+        });
     return ret;
 }
 
@@ -99,7 +109,7 @@ bool nickname_manager::get_nickname(event_info const &event,
     } else {
         if (exist_database(event)) {
             read_database(event, nickname);
-            nick_map.insert(nick_pair_t(event.pair(), event.nickname));
+            nick_map.insert(nick_pair_t(event.pair(), nickname));
             return true;
         }
         return false;

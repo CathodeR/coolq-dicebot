@@ -184,6 +184,7 @@ bool manual_dice_control::read_database(manual_kpair manual_dice_key,
 
     return db_manager::get_instance()->exec(
         ostrs_sql_command.str().c_str(),
+        manual_dice_target.get(),
         [](void *data, int argc, char **argv, char **azColName) -> int {
             if (argc == 1) {
                 manual_dice *pstr_ret = reinterpret_cast<manual_dice *>(data);
@@ -191,13 +192,22 @@ bool manual_dice_control::read_database(manual_kpair manual_dice_key,
                 return SQLITE_OK;
             }
             return SQLITE_ABORT;
-        },
-        manual_dice_target.get());
+        });
 }
 
 bool manual_dice_control::exist_database(manual_kpair manual_dice_key) const {
     bool ret = false;
-    int ret_code = database::database_manager::get_instance()->is_table_exist(
-        MANUALDICE_TABLE_NAME, ret);
+    ostrs ostrs_sql_command(ostrs::ate);
+    ostrs_sql_command << "SELECT count(*) FROM " MANUALDICE_TABLE_NAME
+                         " where qqid ="
+                      << manual_dice_key.first
+                      << " and groupid =" << manual_dice_key.second;
+    int ret_code = database::database_manager::get_instance()->exec(
+        MANUALDICE_TABLE_NAME,
+        &ret,
+        [](void *data, int argc, char **argv, char **azColName) -> int {
+            *(reinterpret_cast<bool *>(data)) = true;
+            return SQLITE_OK;
+        });
     return ret;
 }
