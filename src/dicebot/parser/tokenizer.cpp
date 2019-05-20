@@ -107,7 +107,11 @@ tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, st
     size_t len = regulate_parenthesis(source, flag.parse_dicelet);
     this->sources = std::make_unique<sources_container_t>();
     this->sources->emplace_back(source.substr(0, len));
-    this->rtail = source.substr(len);
+
+    size_t tail_start = len;
+    while (this->sources->front()[len] == ' ' && this->sources->front()[len]) tail_start++;
+    this->rtail = source.substr(tail_start);
+
     this->sources_sites = std::make_unique<macro_marker_container_t>();
     this->sources_sites->push_back({0, len});
 
@@ -134,14 +138,16 @@ std::string tokenizer::token_string(token_t const& target) const {
 }
 
 std::string tokenizer::tail(token_t const& target) const {
+    const std::string& src = this->sources->front();
     if (target.source_index > 0) {
         size_t next_begin = this->sources_sites->at(target.source_index).macro_end;
         if (next_begin == npos) return rtail;
-        return this->sources->front().substr(next_begin) + rtail;
+        while (src[next_begin] == ' ' && src[next_begin]) next_begin++;
+        return src.substr(next_begin) + rtail;
     } else if (target.pos_next == npos)
         return rtail;
     else {
-        return this->sources->front().substr(target.pos_next) + rtail;
+        return src.substr(target.pos_next) + rtail;
     }
 }
 
@@ -260,8 +266,6 @@ void tokenizer::move_next_cursor(token_t& src_token, size_t length) const {
     src_token.pos_cur = src_token.pos_next;
     src_token.pos_next = src_token.pos_next + length;
     std::string const& src = this->sources->at(src_token.source_index);
-
-    while (src[src_token.pos_next] == ' ') src_token.pos_next++;
 
     if (src_token.pos_next >= src.size()) {
         src_token.pos_next = npos;
