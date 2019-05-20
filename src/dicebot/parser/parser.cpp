@@ -347,8 +347,7 @@ terminals translate(token_index what) {
 
 parser::parser(tokenizer const& tknz) noexcept : tknzer(tknz){};
 p_syntax_item parser::parse(std::string const& source) {
-    std::vector<uint8_t> vec_status = {0};
-    std::list<token_t> tokens;
+    std::deque<uint8_t> _status = {0};
     this->vec_symbols = std::make_unique<std::vector<p_syntax_item>>();
 
     while (tknzer.next_token()->id != token_index::index_stop)
@@ -360,12 +359,12 @@ p_syntax_item parser::parse(std::string const& source) {
     bool err = false;
     while (not_finished) {
         token_t next = deque_input_tokens.front();
-        uint8_t status = *(vec_status.rbegin());
+        uint8_t status = *(_status.rbegin());
         terminals next_terminal = translate(next.id);
         action_item const& ai = ACTION[status][next_terminal];
         switch (ai.operation) {
         case action_t::stack: {
-            vec_status.push_back(ai.status);
+            _status.push_back(ai.status);
             this->vec_symbols->emplace_back(stack(next, tknzer.token_string(next)));
             deque_input_tokens.pop_front();
             break;
@@ -376,11 +375,11 @@ p_syntax_item parser::parse(std::string const& source) {
             int lbeta = pi.len;
             while (lbeta--) {
                 this->vec_symbols->pop_back();
-                vec_status.pop_back();
+                _status.pop_back();
             }
-            uint8_t status_new = *(vec_status.rbegin());
+            uint8_t status_new = *(_status.rbegin());
             this->vec_symbols->emplace_back(std::move(p));
-            vec_status.push_back(GOTO[status_new][this->vec_symbols->back()->type].status);
+            _status.push_back(GOTO[status_new][this->vec_symbols->back()->type].status);
             break;
         }
         case action_t::accept:
@@ -389,7 +388,7 @@ p_syntax_item parser::parse(std::string const& source) {
         default: {
             if (err && !this->vec_symbols->empty()) {
                 this->vec_symbols->pop_back();
-                vec_status.pop_back();
+                _status.pop_back();
             } else if (!err) {
                 deque_input_tokens.push_front({token_index::index_stop, 0, npos, npos});
                 err = true;
