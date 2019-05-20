@@ -4,9 +4,11 @@
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
-#include "sqlite3.h"
+using namespace dicebot;
+using namespace dicebot::nickname;
+using namespace dicebot::database;
+using db_manager = dicebot::database::database_manager;
 
-namespace dicebot::nickname {
 #define NICK_TABLE_NAME "nickname"
 #define NICK_TABLE_DEFINE           \
     "create table " NICK_TABLE_NAME \
@@ -15,136 +17,102 @@ namespace dicebot::nickname {
     "name       text    NOT NULL,"  \
     "primary    key    (QQID,GROUPID));"
 
-    nickname_manager *nickname_manager::instance = nullptr;
+static std::string nickname_encode(const std::string &nick) {
+    return base64_encode(reinterpret_cast<const unsigned char *>(nick.c_str()),
+                         nick.size());
+}
 
-    nickname_manager::nickname_manager() noexcept {
-        database::database_manager *databaseControl = database::database_manager::get_instance();
-        int i_ret_code = databaseControl->register_table(NICK_TABLE_NAME, NICK_TABLE_DEFINE);
-        is_no_sql_mode = i_ret_code != SQLITE_OK;
-        if (nickname_manager::instance != nullptr) {
-            delete (nickname_manager::instance);
-        } else
-            nickname_manager::instance = this;
-    }
+static std::string nickname_decode(const std::string &source) {
+    return base64_decode(source);
+}
 
-    nickname_manager::~nickname_manager() {
-        if (nickname_manager::instance == this) {
-            nickname_manager::instance = nullptr;
-        }
-    }
+std::unique_ptr<nickname_manager> nickname_manager::instance = nullptr;
 
-    bool nickname_manager::get_nickname(event_info &event) {
-        auto iter = nick_map.find(event.pair());
-        if (iter != nick_map.end()) {
-            event.nickname = iter->second;
-            return true;
-        } else {
-            if (exist_database(event)) {
-                return read_database(event);
-            }
-            return false;
-        }
-    }
+nickname_manager *nickname_manager::create_instance() {
+    db_manager::get_instance()->register_table(NICK_TABLE_NAME,
+                                               NICK_TABLE_DEFINE);
+    nickname_manager::instance = std::make_unique<nickname_manager>();
+}
 
-    void nickname_manager::set_nickname(event_info const &event) {
-        auto iter = nick_map.find(event.pair());
-        if (iter != nick_map.end()) {
-            iter->second = event.nickname;
-            write_database(event);
-        } else {
-            auto t = nick_map.insert(nick_pair_t(event.pair(), event.nickname));
-            if (t.second) write_database(event);
-        }
-    }
+nickname_manager *nickname_manager::destroy_instance() {
+    nickname_manager::instance = nullptr;
+}
 
-    bool read_database(event_info &event) {
-        sqlite3 *database = database::database_manager::get_instance()->get_database();
-        ostrs ostrs_sql_command(ostrs::ate);
-        ostrs_sql_command << "SELECT name FROM " NICK_TABLE_NAME;
-        ostrs_sql_command << " where qqid =" << event.user_id;
-        ostrs_sql_command << " and groupid =" << event.group_id;
-        std::string str_nick_endcoded;
-        char *pchar_err_message = nullptr;
-        int ret_code = sqlite3_exec(
-            database, ostrs_sql_command.str().c_str(), &sqlite3_callback_query_name, (void *)&str_nick_endcoded, &pchar_err_message);
-        if (ret_code == SQLITE_OK) {
-            event.nickname = base64_decode(str_nick_endcoded);
-            return true;
-        } else {
-            is_no_sql_mode = true;
-#ifdef _DEBUG
-            logger::log("dicebot nick_manager", std::string(sqlite3_errmsg(database)));
-#endif
-            return false;
-        }
-    }
+static bool read_database(event_info const &event, std::string &nickname) {
+    ostrs ostrs_sql_command(ostrs::ate);
+    ostrs_sql_command << "SELECT name FROM " NICK_TABLE_NAME
+                      << " where qqid =" << event.user_id
+                      << " and groupid =" << event.group_id;
 
-    bool write_database(event_info const &event) {
+    return db_manager::get_instance()->exec(
+        ostrs_sql_command.str().c_str(),
+        [](void *data, int argc, char **argv, char **azColName) -> int {
+            if (argc == 1) {
+                std::string *nick = reinterpret_cast<std::string *>(data);
+                *nick = nickname_decode(argv[0]);
+                return SQLITE_OK;
+            } else
+                return SQLITE_ABORT;
+        },
+        &nickname);
+}
+
+static bool exist_database(event_info const &event) {
+    bool ret;
+    db_manager::get_instance()->is_table_exist(NICK_TABLE_NAME, ret);
+    return ret;
+}
+
+static bool insert_database(event_info const &event) {
+    ostrs ostrs_sql_command(ostrs::ate);
+    ostrs_sql_command << "insert into " NICK_TABLE_NAME " values ( "
+                      << event.user_id << ", " << event.group_id << ", "
+                      << "'" << nickname_encode(event.nickname) << "'"
+                      << ");";
+    db_manager::get_instance()->exec_noquery(ostrs_sql_command.str().c_str());
+}
+
+static bool update_database(event_info const &event) {
+    ostrs ostrs_sql_command(ostrs::ate);
+    ostrs_sql_command.str("update " NICK_TABLE_NAME " set ");
+    ostrs_sql_command << " name ='" << nickname_encode(event.nickname) << "'"
+                      << " where qqid =" << event.user_id
+                      << " and groupid =" << event.group_id;
+
+    return db_manager::get_instance()->exec_noquery(
+        ostrs_sql_command.str().c_str());
+}
+
+static bool write_database(event_info const &event) {
+    if (exist_database(event)) {
+        return update_database(event);
+    } else
+        return insert_database(event);
+}
+
+bool nickname_manager::get_nickname(event_info const &event,
+                                    std::string &nickname) {
+    auto iter = nick_map.find(event.pair());
+    if (iter != nick_map.end()) {
+        nickname = iter->second;
+        return true;
+    } else {
         if (exist_database(event)) {
-            return update_database(event);
-        } else
-            return insert_database(event);
-    }
-
-    bool exist_database(event_info const &event) {
-        bool ret;
-        database::database_manager::get_instance()->is_table_exist(NICK_TABLE_NAME, ret);
-        return ret;
-    }
-
-    bool insert_database(event_info const &event) {
-        sqlite3 *database = database::database_manager::get_instance()->get_database();
-
-        std::string name = base64_encode((unsigned char *)(event.nickname.c_str()), event.nickname.size());
-
-        ostrs ostrs_sql_command(ostrs::ate);
-        ostrs_sql_command.str("insert into " NICK_TABLE_NAME " values ( ");
-        ostrs_sql_command << event.user_id << ", ";
-        ostrs_sql_command << event.group_id << ", ";
-        ostrs_sql_command << "'" << name << "'"
-                          << ");";
-        char *pchar_err_message = nullptr;
-        int ret_code = database::sqlite3_exec_noquery(database, ostrs_sql_command.str().c_str());
-
-        if (ret_code != SQLITE_OK) {
-#ifdef _DEBUG
-            logger::log("dicebot nick_manager", std::string(sqlite3_errmsg(database)));
-#endif
-            is_no_sql_mode = true;
-            return false;
+            read_database(event, nickname);
+            nick_map.insert(nick_pair_t(event.pair(), event.nickname));
+            return true;
         }
-        return true;
+        return false;
     }
+}
 
-    bool update_database(event_info const &event) {
-        sqlite3 *database = database::database_manager::get_instance()->get_database();
-
-        std::string name = base64_encode((unsigned char *)(event.nickname.c_str()), event.nickname.size());
-
-        ostrs ostrs_sql_command(ostrs::ate);
-        ostrs_sql_command.str("update " NICK_TABLE_NAME " set ");
-        ostrs_sql_command << " name ='" << name << "'";
-        ostrs_sql_command << " where qqid =" << event.user_id;
-        ostrs_sql_command << " and groupid =" << event.group_id;
-        char *pchar_err_message = nullptr;
-        int ret_code = database::sqlite3_exec_noquery(database, ostrs_sql_command.str().c_str());
-
-        if (ret_code != SQLITE_OK) {
-#ifdef _DEBUG
-            logger::log("dicebot nick_manager", std::string(sqlite3_errmsg(database)));
-#endif
-            is_no_sql_mode = true;
-            return false;
-        }
-        return true;
+void nickname_manager::set_nickname(event_info const &event) {
+    auto iter = nick_map.find(event.pair());
+    if (iter != nick_map.end()) {
+        iter->second = event.nickname;
+        write_database(event);
+    } else {
+        auto t = nick_map.insert(nick_pair_t(event.pair(), event.nickname));
+        if (t.second) write_database(event);
     }
-
-    int sqlite3_callback_query_name(void *data, int argc, char **argv, char **azColName) {
-        if (argc == 1) {
-            std::string *pstr_ret = (std::string *)data;
-            pstr_ret->assign(std::string(argv[0]));
-            return SQLITE_OK;
-        } else
-            return SQLITE_ABORT;
-    }
-} // namespace dicebot::nickname
+}

@@ -24,12 +24,46 @@ using profile_pair = std::pair<int64_t, user_profile>;
 std::unique_ptr<profile_manager> profile_manager::instance = nullptr;
 
 profile_manager *profile_manager::create_instance() noexcept {
-    database_manager *databaseControl = db_manager::get_instance();
-    databaseControl->register_table(PROFILE_TABLE_NAME, PROFILE_TABLE_DEFINE);
+    db_manager::get_instance()->register_table(PROFILE_TABLE_NAME,
+                                               PROFILE_TABLE_DEFINE);
+    profile_manager::instance = std::make_unique<profile_manager>();
+}
 
-    if (!profile_manager::instance)
-        profile_manager::instance = std::make_unique<profile_manager>();
-    return profile_manager::instance.get();
+profile_manager *profile_manager::get_instance() noexcept {
+    return instance.get();
+}
+
+void profile_manager::destroy_instance() noexcept {
+    profile_manager::instance = nullptr;
+}
+
+bool profile_manager::force_update(int64_t const user_id) {
+    if (database::is_no_sql_mode) return false;
+
+    auto iter = this->find(user_id);
+    if (iter == this->end())
+        return false;
+    else {
+        return profile_db::update_database(*(iter->second), user_id);
+    }
+    return false;
+}
+
+sptr_user_profile profile_manager::get_profile(int64_t const user_id) {
+    auto iter = this->find(user_id);
+    if (iter != this->end()) {
+        return iter->second;
+    } else {
+        if (database::is_no_sql_mode) return nullptr;
+
+        sptr_user_profile upf = std::make_shared<user_profile>();
+        profile_db::read_database(*upf, user_id);
+
+        auto t = this->insert(profile_pair(user_id, upf));
+        if (!t.second) return nullptr;
+        profile_db::insert_database(*(t.first->second), user_id);
+        return upf;
+    }
 }
 
 bool profile::profile_db::read_database(user_profile &profile,

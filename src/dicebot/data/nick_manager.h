@@ -1,27 +1,31 @@
 #pragma once
 
+#include <unordered_map>
 #include "../common.h"
+namespace dicebot::nickname {
 
-namespace dicebot::nickname{
-    class nickname_manager{
-        using nick_map_t = std::map<std::pair<int64_t, int64_t>, std::string>;
-        using nick_pair_t = nick_map_t::value_type;
-        using nick_key_t = nick_map_t::key_type;
-    public:
-        nickname_manager() noexcept;
-        ~nickname_manager();
-        static nickname_manager * instance;
-        bool get_nickname(event_info & event);
-        void set_nickname(event_info const & event);
-    private:
-        nick_map_t nick_map;
+    using pair_t = std::pair<int64_t, int64_t>;
+    struct my_hash_pair {
+        size_t operator()(pair_t p) const noexcept {
+            return std::_Hash_impl::hash(p);
+        }
     };
 
-    bool read_database(event_info & event);
-    bool write_database(event_info const & event);
-    bool exist_database(event_info const & event);
-    bool insert_database(event_info const & event);
-    bool update_database(event_info const & event);
+    class nickname_manager {
+        using nick_map_t =
+            std::unordered_map<pair_t, std::string, my_hash_pair>;
+        using nick_pair_t = nick_map_t::value_type;
+        using nick_key_t = nick_map_t::key_type;
 
-    int sqlite3_callback_query_name(void * data, int argc, char ** argv, char ** azColName);
-}
+        nick_map_t nick_map;
+
+    public:
+        static std::unique_ptr<nickname_manager> instance;
+        static nickname_manager* create_instance();
+        static nickname_manager* destroy_instance();
+
+        bool get_nickname(event_info const& event, std::string& nickname);
+        void set_nickname(event_info const& event);
+    };
+
+} // namespace dicebot::nickname

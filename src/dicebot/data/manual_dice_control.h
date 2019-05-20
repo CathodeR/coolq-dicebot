@@ -2,28 +2,30 @@
 
 #include "../common.h"
 
-namespace dicebot::manual{
+namespace dicebot::manual {
     class manual_dice;
 
     using p_manual = std::shared_ptr<manual_dice>;
     using manual_kpair = std::pair<int64_t, int64_t>;
     using manual_map = std::map<manual_kpair, p_manual>;
     using manual_pair = std::pair<manual_kpair, p_manual>;
-    
-    class manual_dice_control:public std::map<manual_kpair, p_manual>{
+
+    class manual_dice_control : public std::map<manual_kpair, p_manual> {
+    private:
+        static std::unique_ptr<manual_dice_control> instance;
+
     public:
-        static manual_dice_control * instance;
-        manual_dice_control();
-        ~manual_dice_control();
-        p_manual create_manual_dice(const int64_t user_id, const int64_t group_id, const std::string & command);
-        p_manual roll_manual_dice(const int64_t user_id, const int64_t group_id, const std::string & command);
-        p_manual kill_manual_dice(const int64_t user_id, const int64_t group_id, const std::string & command);
-        p_manual add_manual_dice(const int64_t user_id, const int64_t group_id, const std::string & command);
-        p_manual killall_manual_dice(const int64_t user_id, const int64_t group_id);
-        static int sqlite3_callback_query_manualdice(void * data, int argc, char ** argv, char ** azColName);
-        bool update_database(manual_kpair manual_dice_key,p_manual manual_dice_target) const;
-        bool insert_database(manual_kpair manual_dice_key,p_manual manual_dice_target) const;
-        bool read_database(manual_kpair manual_dice_key,p_manual manual_dice_target);
-        bool exist_database(manual_kpair manual_dice_key) const;
+        static manual_dice_control *get_instance();
+        static manual_dice_control *create_instance();
+        static void destroy_instance();
+        p_manual create(const int64_t, const int64_t, const std::string &);
+        p_manual roll(const int64_t, const int64_t, const std::string &);
+        p_manual kill(const int64_t, const int64_t, const std::string &);
+        p_manual add(const int64_t, const int64_t, const std::string &);
+        p_manual killall(const int64_t, const int64_t);
+        bool update_database(manual_kpair, p_manual) const;
+        bool insert_database(manual_kpair, p_manual) const;
+        bool read_database(manual_kpair, p_manual);
+        bool exist_database(manual_kpair) const;
     };
-}
+} // namespace dicebot::manual
