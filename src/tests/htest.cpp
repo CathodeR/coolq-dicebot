@@ -19,6 +19,7 @@ int main(int argc, char const *argv[]) {
         if (in == "quit" | in == "q") break;
         std::string out;
         clock_t start = clock();
+        dicebot::try_fill_nickname(ei);
         dicebot::message_pipeline(in, ei, out);
         clock_t end = clock();
         std::cout << out << std::endl;
