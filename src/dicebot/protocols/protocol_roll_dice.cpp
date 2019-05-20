@@ -3,7 +3,6 @@
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 #include "../data/profile_manager.h"
-#include "../dice_spliter.h"
 #include "../parser/dicenalyzer.h"
 #include "../parser/parser.h"
 #include "../utils/dice_utils.h"
@@ -14,7 +13,8 @@ using namespace dicebot::protocol;
 
 protocol_roll_dice::protocol_roll_dice() {
     this->is_stand_alone = false;
-    this->filter_command = std::regex("^s(?:ource)? *", std::regex_constants::icase);
+    this->filter_command =
+        std::regex("^s(?:ource)? *", std::regex_constants::icase);
     this->identifier_regex = "r(?:oll)?";
     this->identifier_list = {"roll", "r"};
     this->help_message = base64_decode(
@@ -39,7 +39,9 @@ protocol_roll_dice::protocol_roll_dice() {
         "nO+8jOS7jeeEtuaYvuekuuivpue7hue7k+aenA==");
 }
 
-bool protocol_roll_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool protocol_roll_dice::resolve_request(std::string const& message,
+                                         event_info& event,
+                                         std::string& response) {
     bool detailed_roll_message = false;
     std::smatch match_list_command_detail;
     std::regex_search(message, match_list_command_detail, this->filter_command);
@@ -48,7 +50,9 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
     profile::profile_manager* pfm = profile::profile_manager::get_instance();
 
     profile::var_pair var;
-    if (pfm->get_profile(event.user_id)->sys_vars.get(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
+    if (pfm->get_profile(event.user_id)
+            ->sys_vars.get(profile::sys_var_type::rs_on, var)
+        == profile::profile_status::finished) {
         detailed_roll_message = var.second != 0;
     }
 
@@ -56,7 +60,9 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
         message_cp = match_list_command_detail.suffix().str();
         if (message_cp == "on") {
             var.second = true;
-            if (pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
+            if (pfm->get_profile(event.user_id)
+                    ->sys_vars.set(profile::sys_var_type::rs_on, var)
+                == profile::profile_status::finished) {
                 output_constructor oc(event.nickname);
                 oc.append_message(u8"启用骰子详细输出");
                 response = oc.str();
@@ -65,7 +71,9 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
                 return false;
         } else if (message_cp == "off") {
             var.second = false;
-            if (pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
+            if (pfm->get_profile(event.user_id)
+                    ->sys_vars.set(profile::sys_var_type::rs_on, var)
+                == profile::profile_status::finished) {
                 output_constructor oc(event.nickname);
                 oc.append_message(u8"关闭骰子详细输出");
                 response = oc.str();
@@ -79,13 +87,17 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
         message_cp = message;
 
     if (message_cp.empty()) {
-        if (pfm->get_profile(event.user_id)->def_roll.set(profile::def_roll_type::def_roll, message_cp)
+        if (pfm->get_profile(event.user_id)
+                ->def_roll.set(profile::def_roll_type::def_roll, message_cp)
             != profile::profile_status::finished)
             return false;
     }
 
     diceparser::tokenizer::token_container_t tk_cont;
-    diceparser::tokenizer tknz(tk_cont, {true, true}, message_cp, &pfm->get_profile(event.user_id)->mac_rolls);
+    diceparser::tokenizer tknz(tk_cont,
+                               {true, true},
+                               message_cp,
+                               &pfm->get_profile(event.user_id)->mac_rolls);
     diceparser::parser parser(tknz);
     auto pcomp = parser.parse(message_cp);
     if (!pcomp) return false;
@@ -107,18 +119,33 @@ bool protocol_roll_dice::resolve_request(std::string const& message, event_info&
         diceparser::result_container results;
         p_dicelet->roll_dicelet(results, strs_detail);
 
-        str_result.assign(diceparser::result_builder<diceparser::result_container>(
-            "{", results, [](const number& n) -> std::string { return n.str(); }, ", ", "}"));
+        str_result.assign(
+            diceparser::result_builder<diceparser::result_container>(
+                "{",
+                results,
+                [](const number& n) -> std::string { return n.str(); },
+                ", ",
+                "}"));
         if (detailed_roll_message)
-            str_roll_detail.assign(diceparser::result_builder<diceparser::str_container>(
-                "", strs_detail, [](const std::string& s) -> decltype(s) { return s; }, "", ""));
+            str_roll_detail.assign(
+                diceparser::result_builder<diceparser::str_container>(
+                    "",
+                    strs_detail,
+                    [](const std::string& s) -> decltype(s) { return s; },
+                    "",
+                    ""));
     } else {
         diceparser::str_container strs_detail;
         number result = p_dice->roll_the_dice(strs_detail);
         str_result.append(result.str());
         if (detailed_roll_message)
-            str_roll_detail.assign(diceparser::result_builder<diceparser::str_container>(
-                "", strs_detail, [](const std::string& s) -> decltype(s) { return s; }, "", ""));
+            str_roll_detail.assign(
+                diceparser::result_builder<diceparser::str_container>(
+                    "",
+                    strs_detail,
+                    [](const std::string& s) -> decltype(s) { return s; },
+                    "",
+                    ""));
     }
 
     output_constructor oc(event.nickname);

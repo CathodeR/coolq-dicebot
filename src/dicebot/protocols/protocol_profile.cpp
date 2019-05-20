@@ -3,7 +3,6 @@
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 #include "../data/profile_manager.h"
-#include "../dice_spliter.h"
 #include "../parser/dicenalyzer.h"
 #include "../parser/parser.h"
 #include "../utils/dice_utils.h"
@@ -33,13 +32,17 @@ protocol_set_roll::protocol_set_roll() {
         "qbrmoLw=");
 }
 
-bool protocol_set_roll::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool protocol_set_roll::resolve_request(std::string const& message,
+                                        event_info& event,
+                                        std::string& response) {
     auto pfm = profile::profile_manager::get_instance();
 
     std::string message_cp = message;
 
-    auto set_default = [this, pfm, &event, &response](std::string const& str_roll_command) -> bool {
-        pfm->get_profile(event.user_id)->def_roll.set(profile::def_roll_type::def_roll, str_roll_command);
+    auto set_default = [this, pfm, &event, &response](
+                           std::string const& str_roll_command) -> bool {
+        pfm->get_profile(event.user_id)
+            ->def_roll.set(profile::def_roll_type::def_roll, str_roll_command);
 
         output_constructor oc(event.nickname);
         oc.append_message(u8"设置默认骰子指令:");
@@ -48,11 +51,14 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
         return true;
     };
 
-    auto set_named = [this, pfm, &event, &response](std::string const& str_roll_command, std::string const& str_message) -> bool {
+    auto set_named = [this, pfm, &event, &response](
+                         std::string const& str_roll_command,
+                         std::string const& str_message) -> bool {
         std::smatch m_name;
         std::regex_search(str_message, m_name, this->filter_name);
         if (!m_name[1].matched) return false;
-        pfm->get_profile(event.user_id)->mac_rolls.set(str_message, str_roll_command);
+        pfm->get_profile(event.user_id)
+            ->mac_rolls.set(str_message, str_roll_command);
 
         output_constructor oc(event.nickname);
         oc.append_message(u8"设置指令:");
@@ -64,7 +70,10 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
     };
 
     diceparser::tokenizer::token_container_t tk_cont;
-    diceparser::tokenizer tknz(tk_cont, diceparser::tokenizer_flag{true, true}, message_cp, &(pfm->get_profile(event.user_id)->mac_rolls));
+    diceparser::tokenizer tknz(tk_cont,
+                               diceparser::tokenizer_flag{true, true},
+                               message_cp,
+                               &(pfm->get_profile(event.user_id)->mac_rolls));
     diceparser::parser parser(tknz);
     auto pcomp = parser.parse(message_cp);
     if (!pcomp) return false;
@@ -95,16 +104,20 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
         if (!parser.tail.empty()) return false;
         diceparser::str_container cont;
         p_dicelet->print(cont);
-        return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
+        return set_default(
+            diceparser::result_builder("(", cont, return_same, "", ")"));
     }
 
     if (p_dice) {
         diceparser::str_container cont;
         p_dice->print(cont);
         if (!parser.tail.empty()) {
-            return set_named(diceparser::result_builder("(", cont, return_same, "", ")"), parser.tail);
+            return set_named(
+                diceparser::result_builder("(", cont, return_same, "", ")"),
+                parser.tail);
         } else {
-            return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
+            return set_default(
+                diceparser::result_builder("(", cont, return_same, "", ")"));
         }
     }
     return false;
@@ -112,28 +125,34 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
 #pragma endregion
 
 #pragma region list
-protocol_list::gen_defr_t protocol_list::defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head,
-                                                       std::string const& message, output_constructor& out) {
-    if (map.empty()) return;
-    out.append_message("\r\n" + head);
-    for (auto const& pair : map) {
-        out.append_message(u8"\r\n>");
-        out.append_message(pair.second);
-    }
-};
+protocol_list::gen_defr_t protocol_list::defr_msg =
+    [](profile::user_profile::def_roll_map_t const& map,
+       std::string const& head, std::string const& message,
+       output_constructor& out) {
+        if (map.empty()) return;
+        out.append_message("\r\n" + head);
+        for (auto const& pair : map) {
+            out.append_message(u8"\r\n>");
+            out.append_message(pair.second);
+        }
+    };
 
-protocol_list::gen_macro_t protocol_list::macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std::string const& head,
-                                                         std::string const& message, output_constructor& out) {
-    if (map.empty()) return;
-    out.append_message("\r\n" + head);
-    for (auto const& pair : map) {
-        if (!message.empty() && pair.first.find(message) == std::string::npos) continue;
-        out.append_message(u8"\r\n>");
-        out.append_message(pair.first);
-        out.append_message(u8":");
-        out.append_message(pair.second);
-    }
-};
+protocol_list::gen_macro_t protocol_list::macro_msg =
+    [](profile::user_profile::mac_roll_map_t const& map,
+       std::string const& head, std::string const& message,
+       output_constructor& out) {
+        if (map.empty()) return;
+        out.append_message("\r\n" + head);
+        for (auto const& pair : map) {
+            if (!message.empty()
+                && pair.first.find(message) == std::string::npos)
+                continue;
+            out.append_message(u8"\r\n>");
+            out.append_message(pair.first);
+            out.append_message(u8":");
+            out.append_message(pair.second);
+        }
+    };
 
 protocol_list::protocol_list() {
     this->is_stand_alone = true;
@@ -160,9 +179,13 @@ protocol_list::protocol_list() {
         "77yaLmxpc3QgYWxs5Lit55qEYWxs5LiN6IO9566A"
         "5YaZ");
 
-    list_call_t list_all =
-        [](protocol_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
+    list_call_t list_all = [](protocol_list const& self,
+                              std::string const& message,
+                              event_info const& event,
+                              std::string& response) -> bool {
+        profile::sptr_user_profile upf =
+            profile::profile_manager::get_instance()->get_profile(
+                event.user_id);
         output_constructor oc(event.nickname);
         oc.append_message(u8"的个人信息如下:");
         self.defr_msg(upf->def_roll, u8"默认骰子:", "", oc);
@@ -173,9 +196,13 @@ protocol_list::protocol_list() {
     this->call_map.insert(call_map_value_t("all", list_all));
     this->call_map.insert(call_map_value_t("a", list_all));
 
-    list_call_t list_roll =
-        [](protocol_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
+    list_call_t list_roll = [](protocol_list const& self,
+                               std::string const& message,
+                               event_info const& event,
+                               std::string& response) -> bool {
+        profile::sptr_user_profile upf =
+            profile::profile_manager::get_instance()->get_profile(
+                event.user_id);
 
         output_constructor oc(event.nickname);
         oc.append_message(u8"的个人信息如下:");
@@ -187,7 +214,8 @@ protocol_list::protocol_list() {
     this->call_map.insert(call_map_value_t("r", list_roll));
 }
 
-bool protocol_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool protocol_list::resolve_request(std::string const& message,
+                                    event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
     if (!m.empty()) {
@@ -195,12 +223,16 @@ bool protocol_list::resolve_request(std::string const& message, event_info& even
         std::string args = m.suffix();
         if (m[1].matched) {
             message_cp = m[1];
-            std::transform(message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
+            std::transform(message_cp.begin(),
+                           message_cp.end(),
+                           message_cp.begin(),
+                           tolower);
         } else {
             message_cp = "a";
         }
         auto iter = this->call_map.find(message_cp);
-        if (iter != this->call_map.end()) return iter->second(*this, args, event, response);
+        if (iter != this->call_map.end())
+            return iter->second(*this, args, event, response);
     }
     return false;
 }
@@ -232,8 +264,10 @@ protocol_delete::protocol_delete() {
         "roDlhpkK5rOo5oSP77ya6buY6K6k6aqw5a2Q5piv"
         "5peg5rOV5Yig6Zmk55qE");
 
-    delete_call_t delete_all =
-        [](protocol_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
+    delete_call_t delete_all = [](protocol_delete const& self,
+                                  std::string const& message,
+                                  event_info const& event,
+                                  std::string& response) -> bool {
         auto pfm = profile::profile_manager::get_instance();
 
         pfm->get_profile(event.user_id)->mac_rolls.clear();
@@ -246,9 +280,12 @@ protocol_delete::protocol_delete() {
     };
     this->call_map.insert(call_map_value_t("all", delete_all));
 
-    delete_call_t delete_roll =
-        [](protocol_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::profile_manager* pfm = profile::profile_manager::get_instance();
+    delete_call_t delete_roll = [](protocol_delete const& self,
+                                   std::string const& message,
+                                   event_info const& event,
+                                   std::string& response) -> bool {
+        profile::profile_manager* pfm =
+            profile::profile_manager::get_instance();
         profile::sptr_user_profile upf = pfm->get_profile(event.user_id);
 
         if (!message.empty()) {
@@ -276,17 +313,21 @@ protocol_delete::protocol_delete() {
     this->call_map.insert(call_map_value_t("r", delete_roll));
 }
 
-bool protocol_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool protocol_delete::resolve_request(std::string const& message,
+                                      event_info& event,
+                                      std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
     if (!m.empty()) {
         std::string message_cp = m[1];
         std::string args = m.suffix();
 
-        std::transform(message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
+        std::transform(
+            message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
 
         auto iter = this->call_map.find(message_cp);
-        if (iter != this->call_map.end()) return iter->second(*this, args, event, response);
+        if (iter != this->call_map.end())
+            return iter->second(*this, args, event, response);
     }
     return false;
 }

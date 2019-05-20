@@ -14,7 +14,6 @@
 
 #include "dicebot/data/manual_dice.h"
 #include "dicebot/dice_roller.h"
-#include "dicebot/dice_spliter.h"
 
 namespace dicebot::test {
 
