@@ -67,17 +67,19 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
     diceparser::tokenizer::token_container_t tk_cont;
     diceparser::tokenizer tknz(tk_cont, diceparser::tokenizer_flag{true, true}, message_cp, &(pfm->get_profile(event.user_id)->mac_rolls));
     diceparser::parser parser(tknz);
-    auto pcomp = parser.parse(message_cp);
-    if (!pcomp) return false;
-    if (pcomp->type == diceparser::nterminal_const_expr) {
-        auto p_const = diceparser::build_component_from_syntax(pcomp.get());
-        if (!p_const) return false;
+    auto p_syntax = parser.parse(message_cp);
+    if (!p_syntax) return false;
 
+    auto p_comp = diceparser::build_component_from_syntax(p_syntax.get());
+    if (!p_comp) return false;
+
+    auto p_number = std::dynamic_pointer_cast<diceparser::comp_number>(p_comp);
+    if (p_number) {
         diceparser::str_container cont;
 
-        number result = p_const->roll_the_dice(cont);
+        number result = p_number->roll_the_dice(cont);
         cont.clear();
-        p_const->print(cont);
+        p_number->print(cont);
 
         if (!parser.tail.empty()) {
             return set_named(result.str(), parser.tail);
@@ -86,29 +88,31 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
         }
     }
 
-    auto p_dice = diceparser::build_component_from_syntax(pcomp.get());
-    if (!p_dice) return false;
+    diceparser::str_container cont;
 
-    auto return_same = [](const std::string& s) -> decltype(s) { return s; };
+    auto return_same = [](const std::string& s) -> std::string { return s; };
 
-    auto p_dicelet = std::dynamic_pointer_cast<diceparser::dicelet>(p_dice);
+    auto p_dicelet = std::dynamic_pointer_cast<diceparser::dicelet>(p_comp);
     if (p_dicelet) {
         if (!parser.tail.empty()) return false;
-        diceparser::str_container cont;
         p_dicelet->print(cont);
         return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
     }
 
-    if (p_dice) {
-        diceparser::str_container cont;
-        p_dice->print(cont);
-        if (!parser.tail.empty()) {
-            return set_named(diceparser::result_builder("(", cont, return_same, "", ")"), parser.tail);
-        } else {
-            return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
-        }
+    auto p_holder = std::dynamic_pointer_cast<diceparser::base_holder>(p_comp);
+    if (p_holder) {
+        p_comp->print(cont);
+        if (!parser.tail.empty())
+            return set_named(diceparser::result_builder("", cont, return_same, "", ""), parser.tail);
+        else
+            return set_default(diceparser::result_builder("", cont, return_same, "", ""));
     }
-    return false;
+
+    p_comp->print(cont);
+    if (!parser.tail.empty())
+        return set_named(diceparser::result_builder("(", cont, return_same, "", ")"), parser.tail);
+    else
+        return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
 }
 #pragma endregion
 

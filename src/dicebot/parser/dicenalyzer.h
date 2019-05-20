@@ -17,6 +17,8 @@ namespace dicebot::diceparser {
         virtual void print(str_container &) const noexcept {};
     };
 
+    class base_holder {};
+
     using p_component = std::shared_ptr<component>;
 
     class comp_number : public component {
@@ -26,7 +28,7 @@ namespace dicebot::diceparser {
         void print(str_container &) const noexcept override;
     };
 
-    class comp_holder : public component {
+    class comp_holder : public component, public base_holder {
     public:
         p_component child;
         number roll_the_dice(str_container &) const override;
@@ -81,7 +83,7 @@ namespace dicebot::diceparser {
         void print(str_container &) const noexcept override;
     };
 
-    class dicelet_holder : public dicelet {
+    class dicelet_holder : public dicelet, public base_holder {
     public:
         p_dicelet child;
         void roll_dicelet(result_container &, str_container &) const override;
