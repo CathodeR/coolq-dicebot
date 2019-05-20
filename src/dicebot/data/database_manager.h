@@ -36,9 +36,9 @@ namespace dicebot::database {
 
         bool exec_noquery(const char *sql) const noexcept;
 
-        bool exec(const char *sql,
-                  int (*callback)(void *, int, char **, char **),
-                  void *data) const noexcept;
+        bool exec(const char *sql, void *data,
+                  int (*callback)(void *, int, char **, char **)) const
+            noexcept;
     };
 
 } // namespace dicebot::database

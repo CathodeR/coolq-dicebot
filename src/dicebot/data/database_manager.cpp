@@ -119,9 +119,9 @@ bool database_manager::exec_noquery(const char* sql) const noexcept {
         return true;
 }
 
-bool database_manager::exec(const char* sql,
-                            int (*callback)(void*, int, char**, char**),
-                            void* data) const noexcept {
+bool database_manager::exec(const char* sql, void* data,
+                            int (*callback)(void*, int, char**, char**)) const
+    noexcept {
     char* pchar_err_message;
     int ret_code =
         sqlite3_exec(this->database, sql, callback, data, &pchar_err_message);
