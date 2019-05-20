@@ -23,6 +23,7 @@ int main(int argc, char const *argv[]) {
         dicebot::message_pipeline(in, ei, out);
         clock_t end = clock();
         std::cout << out << std::endl;
+        std::cout << end - start << "/" << CLOCKS_PER_SEC << std::endl;
     }
 
     dicebot::salvage();
