@@ -1,4 +1,4 @@
-#include "./protocol_profile.h"
+#include "./entry_profile.h"
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
@@ -8,10 +8,10 @@
 #include "../utils/dice_utils.h"
 
 using namespace dicebot;
-using namespace dicebot::protocol;
+using namespace dicebot::entry;
 
 #pragma region set roll
-protocol_set_roll::protocol_set_roll() {
+entry_set_roll::entry_set_roll() {
     this->is_stand_alone = false;
     this->identifier_regex = "s(?:et)?";
     this->identifier_list = {"set", "s"};
@@ -32,7 +32,7 @@ protocol_set_roll::protocol_set_roll() {
         "qbrmoLw=");
 }
 
-bool protocol_set_roll::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_set_roll::resolve_request(std::string const& message, event_info& event, std::string& response) {
     auto pfm = profile::profile_manager::get_instance();
 
     std::string message_cp = message;
@@ -117,8 +117,8 @@ bool protocol_set_roll::resolve_request(std::string const& message, event_info& 
 #pragma endregion
 
 #pragma region list
-protocol_list::gen_defr_t protocol_list::defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head,
-                                                       std::string const& message, output_constructor& out) {
+entry_list::gen_defr_t entry_list::defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head,
+                                                 std::string const& message, output_constructor& out) {
     if (map.empty()) return;
     out.append_message("\r\n" + head);
     for (auto const& pair : map) {
@@ -127,8 +127,8 @@ protocol_list::gen_defr_t protocol_list::defr_msg = [](profile::user_profile::de
     }
 };
 
-protocol_list::gen_macro_t protocol_list::macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std::string const& head,
-                                                         std::string const& message, output_constructor& out) {
+entry_list::gen_macro_t entry_list::macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std::string const& head,
+                                                   std::string const& message, output_constructor& out) {
     if (map.empty()) return;
     out.append_message("\r\n" + head);
     for (auto const& pair : map) {
@@ -140,7 +140,7 @@ protocol_list::gen_macro_t protocol_list::macro_msg = [](profile::user_profile::
     }
 };
 
-protocol_list::protocol_list() {
+entry_list::entry_list() {
     this->is_stand_alone = true;
     this->filter_command = std::regex("^(a(?:ll)?|r(?:oll)?)? *");
     this->identifier_regex = "l(?:ist)?";
@@ -165,8 +165,7 @@ protocol_list::protocol_list() {
         "77yaLmxpc3QgYWxs5Lit55qEYWxs5LiN6IO9566A"
         "5YaZ");
 
-    list_call_t list_all =
-        [](protocol_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
+    list_call_t list_all = [](entry_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
         profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
         output_constructor oc(event.nickname);
         oc.append_message(u8"的个人信息如下:");
@@ -178,8 +177,7 @@ protocol_list::protocol_list() {
     this->call_map.insert(call_map_value_t("all", list_all));
     this->call_map.insert(call_map_value_t("a", list_all));
 
-    list_call_t list_roll =
-        [](protocol_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
+    list_call_t list_roll = [](entry_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
         profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
 
         output_constructor oc(event.nickname);
@@ -192,7 +190,7 @@ protocol_list::protocol_list() {
     this->call_map.insert(call_map_value_t("r", list_roll));
 }
 
-bool protocol_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
     if (!m.empty()) {
@@ -212,7 +210,7 @@ bool protocol_list::resolve_request(std::string const& message, event_info& even
 #pragma endregion
 
 #pragma region delete
-protocol_delete::protocol_delete() {
+entry_delete::entry_delete() {
     this->is_stand_alone = false;
     this->filter_command = std::regex("^(all|r(?:oll)?) *");
     this->identifier_regex = "d(?:elete)?";
@@ -238,7 +236,7 @@ protocol_delete::protocol_delete() {
         "5peg5rOV5Yig6Zmk55qE");
 
     delete_call_t delete_all =
-        [](protocol_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
+        [](entry_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
         auto pfm = profile::profile_manager::get_instance();
 
         pfm->get_profile(event.user_id)->mac_rolls.clear();
@@ -252,7 +250,7 @@ protocol_delete::protocol_delete() {
     this->call_map.insert(call_map_value_t("all", delete_all));
 
     delete_call_t delete_roll =
-        [](protocol_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
+        [](entry_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
         profile::profile_manager* pfm = profile::profile_manager::get_instance();
         profile::sptr_user_profile upf = pfm->get_profile(event.user_id);
 
@@ -281,7 +279,7 @@ protocol_delete::protocol_delete() {
     this->call_map.insert(call_map_value_t("r", delete_roll));
 }
 
-bool protocol_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
     if (!m.empty()) {

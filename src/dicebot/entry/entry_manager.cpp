@@ -1,32 +1,32 @@
-#include "./protocol_manager.h"
+#include "./entry_manager.h"
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 
 using namespace dicebot;
-using namespace protocol;
+using namespace entry;
 
-void protocol_manager::register_dice(protocol::p_protocol protocol) {
-    for (std::string const& s : protocol->identifier_list) {
-        auto iter = this->protocol_cmd_map.find(s);
-        if (iter != this->protocol_cmd_map.end()) continue;
+void entry_manager::register_dice(entry::p_entry entry) {
+    for (std::string const& s : entry->identifier_list) {
+        auto iter = this->entry_cmd_map.find(s);
+        if (iter != this->entry_cmd_map.end()) continue;
 
-        this->protocol_cmd_map.insert(protocol_pair_t(s, protocol));
+        this->entry_cmd_map.insert(entry_pair_t(s, entry));
     }
-    protocol_list.push_back(protocol);
+    entry_list.push_back(entry);
 }
 
-void protocol_manager::finish_initialization() {
-    auto protocol_help = std::make_shared<protocol::protocol_help>();
-    for (const protocol::p_protocol& prot : this->protocol_list) {
-        protocol_help->register_help(prot);
+void entry_manager::finish_initialization() {
+    auto entry_help = std::make_shared<entry::entry_help>();
+    for (const entry::p_entry& prot : this->entry_list) {
+        entry_help->register_help(prot);
     }
-    protocol_help->generate_filter_command();
-    this->register_dice(protocol_help);
+    entry_help->generate_filter_command();
+    this->register_dice(entry_help);
 
     ostrs ostrs_stream(ostrs::ate);
     ostrs_stream << "^(";
     bool is_first = true;
-    auto iter = this->protocol_list.cbegin();
-    for (; iter != this->protocol_list.cend(); iter++) {
+    auto iter = this->entry_list.cbegin();
+    for (; iter != this->entry_list.cend(); iter++) {
         if (is_first) {
             is_first = false;
         } else
@@ -37,18 +37,18 @@ void protocol_manager::finish_initialization() {
     this->regex_command = std::regex(ostrs_stream.str(), std::regex_constants::icase);
 }
 
-protocol::p_protocol const protocol_manager::get_protocol(std::string command) const {
+entry::p_entry const entry_manager::get_entry(std::string command) const {
     std::transform(command.begin(), command.end(), command.begin(), tolower);
-    auto iter = this->protocol_cmd_map.find(command);
-    if (iter == protocol_cmd_map.cend())
+    auto iter = this->entry_cmd_map.find(command);
+    if (iter == entry_cmd_map.cend())
         return nullptr;
     else
         return (*iter).second;
 }
 
-std::regex const* protocol_manager::get_regex_command() const { return &(this->regex_command); }
+std::regex const* entry_manager::get_regex_command() const { return &(this->regex_command); }
 
-protocol_help::protocol_help() {
+entry_help::entry_help() {
     this->is_stand_alone = true;
     this->identifier_regex = "h(?:elp)?";
     this->identifier_list = {"help", "h"};
@@ -71,21 +71,21 @@ protocol_help::protocol_help() {
         "j43ppojvvIzmhJ/osKLmgqjnmoTluK7liqnjgII=");
 }
 
-bool protocol_help::register_help(p_protocol v_protocol) {
-    this->protocol_regex_list.push_back(v_protocol->identifier_regex);
-    for (const std::string& var : v_protocol->identifier_list) {
-        auto i = this->help_map.insert(help_pair_t(var, v_protocol->help_message));
+bool entry_help::register_help(p_entry v_entry) {
+    this->entry_regex_list.push_back(v_entry->identifier_regex);
+    for (const std::string& var : v_entry->identifier_list) {
+        auto i = this->help_map.insert(help_pair_t(var, v_entry->help_message));
         if (!i.second) return false;
     }
     return true;
 }
 
-void protocol_help::generate_filter_command() {
+void entry_help::generate_filter_command() {
     ostrs ostrs_stream(ostrs::ate);
     ostrs_stream << "^(";
     bool is_first = true;
-    auto iter = this->protocol_regex_list.cbegin();
-    for (; iter != this->protocol_regex_list.cend(); iter++) {
+    auto iter = this->entry_regex_list.cbegin();
+    for (; iter != this->entry_regex_list.cend(); iter++) {
         if (is_first) {
             is_first = false;
         } else
@@ -96,7 +96,7 @@ void protocol_help::generate_filter_command() {
     this->filter_command = std::regex(ostrs_stream.str(), std::regex_constants::icase);
 }
 
-bool protocol_help::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_help::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
 

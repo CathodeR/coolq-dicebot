@@ -1,4 +1,4 @@
-#include "./protocol_manual_dice.h"
+#include "./entry_manual_dice.h"
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/manual_dice.h"
@@ -8,9 +8,9 @@
 #include "../utils/dice_utils.h"
 
 using namespace dicebot;
-using namespace dicebot::protocol;
+using namespace dicebot::entry;
 
-protocol_manual_dice::protocol_manual_dice() {
+entry_manual_dice::entry_manual_dice() {
     this->is_stand_alone = false;
     this->filter_manual_dice = std::regex("^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
     this->filter_integer = std::regex("^ *(\\d+) *");
@@ -36,7 +36,7 @@ protocol_manual_dice::protocol_manual_dice() {
         "heepuuaJgOacieaJi+WKqOmqsOWtkA==");
 }
 
-bool protocol_manual_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_manual_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::string str_nickname = event.nickname;
 
     std::smatch match_command;
@@ -56,7 +56,7 @@ bool protocol_manual_dice::resolve_request(std::string const& message, event_inf
 
 TMDICE_CALL_NAMESPACE(manualdice_add) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, protocol_cal.filter_manual_dice);
+    std::regex_search(message, roll_match, entry_cal.filter_manual_dice);
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();
@@ -91,7 +91,7 @@ TMDICE_CALL_NAMESPACE(manualdice_killall) {
 
 TMDICE_CALL_NAMESPACE(manualdice_kill) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, protocol_cal.filter_integer);
+    std::regex_search(message, roll_match, entry_cal.filter_integer);
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();
@@ -113,7 +113,7 @@ TMDICE_CALL_NAMESPACE(manualdice_kill) {
 
 TMDICE_CALL_NAMESPACE(manualdice_roll) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, protocol_cal.filter_integer);
+    std::regex_search(message, roll_match, entry_cal.filter_integer);
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();
@@ -135,7 +135,7 @@ TMDICE_CALL_NAMESPACE(manualdice_roll) {
 
 TMDICE_CALL_NAMESPACE(manualdice_create) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, protocol_cal.filter_manual_dice);
+    std::regex_search(message, roll_match, entry_cal.filter_manual_dice);
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();

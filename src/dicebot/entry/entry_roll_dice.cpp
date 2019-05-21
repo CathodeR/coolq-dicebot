@@ -1,4 +1,4 @@
-#include "./protocol_roll_dice.h"
+#include "./entry_roll_dice.h"
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
@@ -9,9 +9,9 @@
 // regular dice, with detailed info
 
 using namespace dicebot;
-using namespace dicebot::protocol;
+using namespace dicebot::entry;
 
-protocol_roll_dice::protocol_roll_dice() {
+entry_roll_dice::entry_roll_dice() {
     this->is_stand_alone = false;
     this->filter_command = std::regex("^s(?:ource)? *", std::regex_constants::icase);
     this->identifier_regex = "r(?:oll)?";
@@ -38,7 +38,7 @@ protocol_roll_dice::protocol_roll_dice() {
         "nO+8jOS7jeeEtuaYvuekuuivpue7hue7k+aenA==");
 }
 
-bool protocol_roll_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_roll_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     bool detailed_roll_message = false;
     std::smatch match_list_command_detail;
     std::regex_search(message, match_list_command_detail, this->filter_command);

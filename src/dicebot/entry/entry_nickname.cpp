@@ -1,12 +1,12 @@
-#include "./protocol_nickname.h"
+#include "./entry_nickname.h"
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 
 using namespace dicebot;
-using namespace dicebot::protocol;
+using namespace dicebot::entry;
 
-protocol_nickname::protocol_nickname() {
+entry_nickname::entry_nickname() {
     this->is_stand_alone = false;
     this->filter_command = std::regex("^(s)(?:ilence)? *", std::regex_constants::icase);
     this->identifier_regex = "n(?:ame)?";
@@ -24,7 +24,7 @@ protocol_nickname::protocol_nickname() {
         "ouW8jw==");
 }
 
-bool protocol_nickname::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_nickname::resolve_request(std::string const& message, event_info& event, std::string& response) {
     bool is_silence = false;
     std::smatch match_list_silence;
     std::regex_search(message, match_list_silence, this->filter_command);

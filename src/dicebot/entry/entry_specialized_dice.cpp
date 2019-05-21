@@ -1,22 +1,22 @@
-#include "./protocol_specialized_dice.h"
+#include "./entry_specialized_dice.h"
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 #include "../dice_roller.h"
 #include "../utils/dice_utils.h"
 
 using namespace dicebot;
-using namespace dicebot::protocol;
+using namespace dicebot::entry;
 
 #pragma region wod
-protocol_wod_dice::protocol_wod_dice() {
+entry_wod_dice::entry_wod_dice() {
     this->is_stand_alone = false;
     this->full_dice = std::regex("^(\\d+)(?:d(\\d+))?(?:b(\\d+))? *", std::regex_constants::icase);
     this->filter_command = std::regex("^(n|o) *", std::regex_constants::icase);
 
     this->identifier_regex = "w(?:od)?";
     this->identifier_list = {"wod", "w"};
-    this->method_map.insert(std::pair<std::string, wod_call>("n", &protocol_wod_dice::nwod));
-    this->method_map.insert(std::pair<std::string, wod_call>("o", &protocol_wod_dice::owod));
+    this->method_map.insert(std::pair<std::string, wod_call>("n", &entry_wod_dice::nwod));
+    this->method_map.insert(std::pair<std::string, wod_call>("o", &entry_wod_dice::owod));
 
     this->help_message = base64_decode(
         "V29E5a6a5Yi26aqw5a2QKC53b2TmiJYudykK5oyH"
@@ -29,7 +29,7 @@ protocol_wod_dice::protocol_wod_dice() {
         "pZblirHpqrA=");
 }
 
-bool protocol_wod_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_wod_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch command_match;
     std::regex_search(message, command_match, this->filter_command);
     if (command_match.empty()) return false;
@@ -46,7 +46,7 @@ bool protocol_wod_dice::resolve_request(std::string const& message, event_info& 
     return false;
 }
 
-bool protocol_wod_dice::nwod(std::string const& message, std::string const& nick_name, std::string& response) {
+bool entry_wod_dice::nwod(std::string const& message, std::string const& nick_name, std::string& response) {
     std::smatch command_match;
     ostrs ostr(ostrs::ate);
     std::regex_search(message, command_match, this->full_dice);
@@ -69,7 +69,7 @@ bool protocol_wod_dice::nwod(std::string const& message, std::string const& nick
     return false;
 }
 
-bool protocol_wod_dice::owod(std::string const& message, std::string const& nick_name, std::string& response) {
+bool entry_wod_dice::owod(std::string const& message, std::string const& nick_name, std::string& response) {
     std::smatch command_match;
     ostrs ostr(ostrs::ate);
     std::regex_search(message, command_match, this->full_dice);
@@ -94,7 +94,7 @@ bool protocol_wod_dice::owod(std::string const& message, std::string const& nick
 #pragma endregion
 
 #pragma region coc
-protocol_coc_dice::protocol_coc_dice() {
+entry_coc_dice::entry_coc_dice() {
     this->is_stand_alone = false;
     this->full_dice = std::regex("^([pb]\\d+ *)* *", std::regex_constants::icase);
     this->identifier_regex = "c(?:oc)?";
@@ -109,7 +109,7 @@ protocol_coc_dice::protocol_coc_dice() {
         "77ya5aWW5Yqx6aqwMe+8iGJvbnVzIDHvvIk=");
 }
 
-bool protocol_coc_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_coc_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch roll_match;
     std::regex_search(message, roll_match, full_dice);
     if (!roll_match.empty()) {
@@ -134,7 +134,7 @@ bool protocol_coc_dice::resolve_request(std::string const& message, event_info& 
 #pragma endregion
 
 #pragma region fate
-protocol_fate_dice::protocol_fate_dice() {
+entry_fate_dice::entry_fate_dice() {
     this->is_stand_alone = false;
     this->full_dice = "^([\\+|\\-]\\d+)? *";
     this->identifier_regex = "f(?:ate)?";
@@ -146,7 +146,7 @@ protocol_fate_dice::protocol_fate_dice() {
         "muaMh+Wumis05L+u5q2j");
 }
 
-bool protocol_fate_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_fate_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
     std::smatch roll_match;
     std::regex_search(message, roll_match, full_dice);
 

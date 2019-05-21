@@ -2,38 +2,38 @@
 
 #include "../common.h"
 
-namespace dicebot::protocol {
+namespace dicebot::entry {
 
     using dice_request = std::string *(std::string const &, event_info const &, std::string &);
 
     class output_constructor {
     private:
-        ostrs protocol_ot;
+        ostrs _ot;
 
     public:
         output_constructor(std::string const &nickname) {
-            protocol_ot.str("");
-            protocol_ot << " * " << nickname;
+            _ot.str("");
+            _ot << " * " << nickname;
         }
 
-        void append_message(std::string const &message) { protocol_ot << " " << message; }
+        void append_message(std::string const &message) { _ot << " " << message; }
 
         template <class any_t>
         void append_message(any_t &&message) {
-            protocol_ot << " " << message;
+            _ot << " " << message;
         }
 
         template <class any_t>
         void append_roll(std::string const &roll_command, std::string const &detail, any_t &&roll_result) {
-            protocol_ot << u8" 掷骰: " << roll_command;
-            if (!detail.empty()) protocol_ot << " = " << detail;
-            protocol_ot << " = " << roll_result;
+            _ot << u8" 掷骰: " << roll_command;
+            if (!detail.empty()) _ot << " = " << detail;
+            _ot << " = " << roll_result;
         }
 
-        std::string str() noexcept { return protocol_ot.str(); }
+        std::string str() noexcept { return _ot.str(); }
     };
 
-    class protocol_base {
+    class entry_base {
     public:
         bool is_stand_alone = false;
         std::string identifier_regex;
@@ -42,5 +42,5 @@ namespace dicebot::protocol {
         virtual bool resolve_request(std::string const &message, event_info &event, std::string &response) { return false; }
     };
 
-    using p_protocol = std::shared_ptr<protocol_base>;
-} // namespace dicebot::protocol
+    using p_entry = std::shared_ptr<entry_base>;
+} // namespace dicebot::entry

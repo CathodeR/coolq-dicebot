@@ -2,18 +2,18 @@
 
 #include "../common.h"
 #include "../data/profile.h"
-#include "./protocol_base.h"
-namespace dicebot::protocol {
-    class protocol_set_roll : public protocol_base {
+#include "./entry_base.h"
+namespace dicebot::entry {
+    class entry_set_roll : public entry_base {
         std::regex filter_name;
 
     public:
-        protocol_set_roll();
+        entry_set_roll();
         bool resolve_request(std::string const &message, event_info &event, std::string &response) override;
     };
 
-    class protocol_list : public protocol_base {
-        using list_call_t = std::function<bool(protocol_list const &self, std::string const &, event_info const &, std::string &)>;
+    class entry_list : public entry_base {
+        using list_call_t = std::function<bool(entry_list const &self, std::string const &, event_info const &, std::string &)>;
 
         using call_map_t = std::map<std::string, list_call_t>;
         using call_map_value_t = typename call_map_t::value_type;
@@ -32,12 +32,12 @@ namespace dicebot::protocol {
     public:
         static gen_macro_t macro_msg;
         static gen_defr_t defr_msg;
-        protocol_list();
+        entry_list();
         bool resolve_request(std::string const &message, event_info &event, std::string &response) override;
     };
 
-    class protocol_delete : public protocol_base {
-        using delete_call_t = std::function<bool(protocol_delete const &self, std::string const &, event_info const &, std::string &)>;
+    class entry_delete : public entry_base {
+        using delete_call_t = std::function<bool(entry_delete const &self, std::string const &, event_info const &, std::string &)>;
         using call_map_t = std::map<std::string, delete_call_t>;
         using call_map_value_t = call_map_t::value_type;
 
@@ -46,7 +46,7 @@ namespace dicebot::protocol {
         call_map_t call_map;
 
     public:
-        protocol_delete();
+        entry_delete();
         bool resolve_request(std::string const &message, event_info &event, std::string &response) override;
     };
-} // namespace dicebot::protocol
+} // namespace dicebot::entry
