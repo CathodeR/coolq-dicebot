@@ -138,7 +138,6 @@ static auto macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std
 
 entry_list::entry_list() {
     this->is_stand_alone = true;
-    this->filter_command = std::regex("^(a(?:ll)?|r(?:oll)?)? *");
     this->identifier_regex = "l(?:ist)?";
     this->identifier_list = {"list", "l"};
 
@@ -189,7 +188,6 @@ bool entry_list::resolve_request(std::string const& message, event_info& event, 
 #pragma region delete
 entry_delete::entry_delete() {
     this->is_stand_alone = false;
-    this->filter_command = std::regex("^(all|r(?:oll)?) *");
     this->identifier_regex = "d(?:elete)?";
     this->identifier_list = {"d", "delete"};
 
