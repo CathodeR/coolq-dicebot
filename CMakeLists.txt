@@ -86,7 +86,8 @@ set(TEST_NAME_GROUP
 set(X roll_test)
 set(TEST_BUILD_NAME dicebot.gtest.${X})
 file(GLOB_RECURSE TEST_SOURCE_ROLL_TEST
-  src/tests/${X}.cpp 
+  src/tests/${X}.cpp
+  src/dicebot/random/*.cpp
   src/dicebot/data/manual_dice.cpp
   src/dicebot/dice_roller.cpp
   src/dicebot/utils/dice_utils.cpp

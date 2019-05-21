@@ -73,38 +73,46 @@ namespace dicebot::test {
 
 } // namespace dicebot::test
 
-TEST(number_test, Add_01_Int_Int) { dicebot::test::case_check<dicebot::test::add>(12, 1234, true); }
-TEST(number_test, Add_02_Int_Float) { dicebot::test::case_check<dicebot::test::add>(12, 123.4f, false); }
-TEST(number_test, Add_03_Float_Int) { dicebot::test::case_check<dicebot::test::add>(123.4f, 12, false); }
-TEST(number_test, Add_04_Float_Float) { dicebot::test::case_check<dicebot::test::add>(123.4f, 12.6f, true); }
-TEST(number_test, Add_05_MAX_UP) { dicebot::test::ceil_check<dicebot::test::add>(INT_MAX, 1); }
-TEST(number_test, Add_05_MAX_DOWN) { dicebot::test::ceil_check<dicebot::test::add>(-INT_MAX, -11); }
+TEST(number_test, add_test) {
+    dicebot::test::case_check<dicebot::test::add>(12, 1234, true);
+    dicebot::test::case_check<dicebot::test::add>(12, 123.4f, false);
+    dicebot::test::case_check<dicebot::test::add>(123.4f, 12, false);
+    dicebot::test::case_check<dicebot::test::add>(123.4f, 12.6f, true);
+    dicebot::test::ceil_check<dicebot::test::add>(INT_MAX, 1);
+    dicebot::test::ceil_check<dicebot::test::add>(-INT_MAX, -11);
+}
 
-TEST(number_test, Minus_01_Int_Int) { dicebot::test::case_check<dicebot::test::sub>(1234, 12, true); }
-TEST(number_test, Minus_02_Int_Float) { dicebot::test::case_check<dicebot::test::sub>(1234, 12.3f, false); }
-TEST(number_test, Minus_03_Float_Int) { dicebot::test::case_check<dicebot::test::sub>(123.4f, 12, false); }
-TEST(number_test, Minus_04_Float_Float) { dicebot::test::case_check<dicebot::test::sub>(123.4f, 12.4f, true); }
-TEST(number_test, Minus_05_MAX_UP) { dicebot::test::ceil_check<dicebot::test::sub>(INT_MAX, -5); }
-TEST(number_test, Minus_06_MAX_DOWN) { dicebot::test::ceil_check<dicebot::test::sub>(-INT_MAX, 11); }
+TEST(number_test, sub_test) {
+    dicebot::test::case_check<dicebot::test::sub>(1234, 12, true);
+    dicebot::test::case_check<dicebot::test::sub>(1234, 12.3f, false);
+    dicebot::test::case_check<dicebot::test::sub>(123.4f, 12, false);
+    dicebot::test::case_check<dicebot::test::sub>(123.4f, 12.4f, true);
+    dicebot::test::ceil_check<dicebot::test::sub>(INT_MAX, -5);
+    dicebot::test::ceil_check<dicebot::test::sub>(-INT_MAX, 11);
+}
 
-TEST(number_test, Product_01_Int_Int) { dicebot::test::case_check<dicebot::test::mul>(12, 12, true); }
-TEST(number_test, Product_02_Int_Float) { dicebot::test::case_check<dicebot::test::mul>(12, 12.3f, false); }
-TEST(number_test, Product_03_Float_Int) { dicebot::test::case_check<dicebot::test::mul>(25.4f, 12, false); }
-TEST(number_test, Product_04_Float_Float) { dicebot::test::case_check<dicebot::test::mul>(2.5f, 0.4f, true); }
-TEST(number_test, Product_05_MAX_A_UP) { dicebot::test::ceil_check<dicebot::test::mul>(INT_MAX, 5); }
-TEST(number_test, Product_06_MAX_A_DOWN) { dicebot::test::ceil_check<dicebot::test::mul>(INT_MAX, -3); }
-TEST(number_test, Product_05_MAX_B_UP) { dicebot::test::ceil_check<dicebot::test::mul>(-INT_MAX, -5); }
-TEST(number_test, Product_06_MAX_B_DOWN) { dicebot::test::ceil_check<dicebot::test::mul>(-INT_MAX, 3); }
+TEST(number_test, product_test) {
+    dicebot::test::case_check<dicebot::test::mul>(12, 12, true);
+    dicebot::test::case_check<dicebot::test::mul>(12, 12.3f, false);
+    dicebot::test::case_check<dicebot::test::mul>(25.4f, 12, false);
+    dicebot::test::case_check<dicebot::test::mul>(2.5f, 0.4f, true);
+    dicebot::test::ceil_check<dicebot::test::mul>(INT_MAX, 5);
+    dicebot::test::ceil_check<dicebot::test::mul>(INT_MAX, -3);
+    dicebot::test::ceil_check<dicebot::test::mul>(-INT_MAX, -5);
+    dicebot::test::ceil_check<dicebot::test::mul>(-INT_MAX, 3);
+}
 
-TEST(number_test, Divide_01_Int_Int) { dicebot::test::case_check<dicebot::test::dvi>(48, 12, true); }
-TEST(number_test, Divide_02_Int_Float) { dicebot::test::case_check<dicebot::test::dvi>(12, 12.3f, false); }
-TEST(number_test, Divide_03_Float_Int) { dicebot::test::case_check<dicebot::test::dvi>(25.4f, 12, false); }
-TEST(number_test, Divide_04_Float_Float) { dicebot::test::case_check<dicebot::test::dvi>(3.6f, 1.2f, true); }
-TEST(number_test, Divide_05_MAX_A_UP) { dicebot::test::ceil_check<dicebot::test::dvi>(INT_MAX, 5); }
-TEST(number_test, Divide_06_MAX_A_DOWN) { dicebot::test::ceil_check<dicebot::test::dvi>(INT_MAX, -3); }
-TEST(number_test, Divide_05_MAX_B_UP) { dicebot::test::ceil_check<dicebot::test::dvi>(-INT_MAX, -5); }
-TEST(number_test, Divide_06_MAX_B_DOWN) { dicebot::test::ceil_check<dicebot::test::dvi>(-INT_MAX, 3); }
-TEST(number_test, Divide_07_Int_Int) { dicebot::test::case_check<dicebot::test::dvi>(32, 12, false); }
+TEST(number_test, divide_test) {
+    dicebot::test::case_check<dicebot::test::dvi>(48, 12, true);
+    dicebot::test::case_check<dicebot::test::dvi>(12, 12.3f, false);
+    dicebot::test::case_check<dicebot::test::dvi>(25.4f, 12, false);
+    dicebot::test::case_check<dicebot::test::dvi>(3.6f, 1.2f, true);
+    dicebot::test::ceil_check<dicebot::test::dvi>(INT_MAX, 5);
+    dicebot::test::ceil_check<dicebot::test::dvi>(INT_MAX, -3);
+    dicebot::test::ceil_check<dicebot::test::dvi>(-INT_MAX, -5);
+    dicebot::test::ceil_check<dicebot::test::dvi>(-INT_MAX, 3);
+    dicebot::test::case_check<dicebot::test::dvi>(32, 12, false);
+}
 #pragma endregion
 
 int main(int argc, char **argv) {
