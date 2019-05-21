@@ -234,62 +234,29 @@ entry_delete::entry_delete() {
         "77yaLmRlbGV0ZSBhbGzkuK3nmoRhbGzkuI3og73n"
         "roDlhpkK5rOo5oSP77ya6buY6K6k6aqw5a2Q5piv"
         "5peg5rOV5Yig6Zmk55qE");
+}
 
-    delete_call_t delete_all =
-        [](entry_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        auto pfm = profile::profile_manager::get_instance();
-
+bool entry_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
+    auto pfm = profile::profile_manager::get_instance();
+    if (message.empty()) {
         pfm->get_profile(event.user_id)->mac_rolls.clear();
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"已删除所有骰子指令和变量。");
+        oc.append_message(u8"已删除所有骰子指令。");
         response = oc.str();
         return true;
-    };
-    this->call_map.insert(call_map_value_t("all", delete_all));
+    } else {
+        auto iter = pfm->get_profile(event.user_id)->mac_rolls.find(message);
+        if (iter == pfm->get_profile(event.user_id)->mac_rolls.end()) return false;
+        pfm->get_profile(event.user_id)->mac_rolls.erase(iter);
+        pfm->force_update(event.user_id);
 
-    delete_call_t delete_roll =
-        [](entry_delete const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::profile_manager* pfm = profile::profile_manager::get_instance();
-        profile::sptr_user_profile upf = pfm->get_profile(event.user_id);
-
-        if (!message.empty()) {
-            auto iter = upf->mac_rolls.find(message);
-            if (iter == upf->mac_rolls.end()) return false;
-            upf->mac_rolls.erase(iter);
-            pfm->force_update(event.user_id);
-
-            output_constructor oc(event.nickname);
-            oc.append_message(u8"已删除骰子指令:");
-            oc.append_message(message);
-            response = oc.str();
-            return true;
-        } else {
-            upf->mac_rolls.clear();
-            pfm->force_update(event.user_id);
-
-            output_constructor oc(event.nickname);
-            oc.append_message(u8"已删除所有骰子指令。");
-            response = oc.str();
-            return true;
-        }
-    };
-    this->call_map.insert(call_map_value_t("roll", delete_roll));
-    this->call_map.insert(call_map_value_t("r", delete_roll));
-}
-
-bool entry_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
-    std::smatch m;
-    std::regex_search(message, m, this->filter_command);
-    if (!m.empty()) {
-        std::string message_cp = m[1];
-        std::string args = m.suffix();
-
-        std::transform(message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
-
-        auto iter = this->call_map.find(message_cp);
-        if (iter != this->call_map.end()) return iter->second(*this, args, event, response);
+        output_constructor oc(event.nickname);
+        oc.append_message(u8"已删除骰子指令:");
+        oc.append_message(message);
+        response = oc.str();
+        return true;
     }
     return false;
 }
