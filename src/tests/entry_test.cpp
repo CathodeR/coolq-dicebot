@@ -160,6 +160,17 @@ TEST_F(entry_test, macro_recall) {
     this->test_call(ei, ".rs test d 6 ", result2_reg);
     this->test_call(ei, ".r testd6", result2_reg_s);
     this->test_call(ei, ".r test d 6", result2_reg_s);
+
+    this->base_call(ei, ".s 4d6k3");
+    this->test_call(ei, ".l", std::regex(u8"> \\(4d6k3)"));
+    this->base_call(ei, ".s 4d6kl3");
+    this->test_call(ei, ".l", std::regex(u8"> \\(4d6kl3\\)"));
+    this->base_call(ei, ".s 4d6k3 str");
+    this->test_call(ei, ".l", std::regex(u8"> str : \\(4d6k3\\)"));
+    this->base_call(ei, ".s 4d6kl3 str");
+    this->test_call(ei, ".l", std::regex(u8"> str : \\(4d6kl3\\)"));
+
+    this->test_call(ei, ".d str", std::regex(u8" \\* dice 已删除骰子指令: str"));
 }
 
 int main(int argc, char **argv) {
