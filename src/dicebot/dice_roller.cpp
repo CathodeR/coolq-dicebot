@@ -5,20 +5,10 @@
 
 #include "./utils/dice_utils.h"
 
+#include "./random/random_provider.h"
+
 using namespace dicebot;
 using namespace dicebot::roll;
-
-bool is_using_pseudo_random = false;
-unsigned long ulong_prand_seed = 0;
-unsigned long ulong_prand_stage = 0;
-
-void roll::random_initialize() {
-    std::random_device rd;
-    if (rd.entropy() > 0.0) {
-        is_using_pseudo_random = false;
-    } else
-        is_using_pseudo_random = true;
-}
 
 size_t dice_roll::add_result(int32_t const result) {
     this->results.push_back(dice_pair(result, true));
@@ -181,30 +171,16 @@ dice_roll::dice_roll(roll_status const& stat) noexcept { this->status = stat; }
 
 dice_roll::operator bool() const noexcept { return this->status == roll_status::FINISHED; }
 
-#define _RANDOMIZE(_Face, _Min_Val)                                      \
-    std::random_device rd_generator;                                     \
-    std::mt19937 mt_generator(ulong_prand_seed);                         \
-    if (is_using_pseudo_random) mt_generator.discard(ulong_prand_stage); \
-    std::uniform_int_distribution<int32_t> dice_distribution(_Min_Val, _Face + _Min_Val - 1)
-
-#define _RANDOM(_Target)                           \
-    if (is_using_pseudo_random) {                  \
-        _Target = dice_distribution(mt_generator); \
-        ulong_prand_stage++;                       \
-    } else                                         \
-        _Target = dice_distribution(rd_generator);
-
 roll_status roll::roll_base(dice_roll& dice, int const i_num_of_dice, int const i_num_of_face) noexcept {
     dice.clear();
 
-    _RANDOMIZE(i_num_of_face, 1);
+    auto distr = random::create_distribution(1, i_num_of_face);
     if (CHECK_LIMITS(i_num_of_dice, i_num_of_face)) {
         uint16_t single_result = 0;
         bool first = true;
         int i_dice = i_num_of_dice;
-        while (i_dice-- > 0) {
-            _RANDOM(single_result);
-            dice.add_result(single_result);
+        while (i_dice--) {
+            dice.add_result(random::rand_int(distr));
         }
         return dice.finish_roll();
     } else {
@@ -221,7 +197,7 @@ roll_status roll::roll_rdk(dice_roll& dice, int const i_num_of_dice, int const i
     int i_num_of_keep = i_keep > 0 ? i_keep : (-i_keep);
     if (i_num_of_keep >= i_num_of_dice) return roll::roll_base(dice, i_num_of_dice, i_num_of_face);
 
-    _RANDOMIZE(i_num_of_face, 1);
+    auto distr = random::create_distribution(1, i_num_of_face);
 
     if (!CHECK_LIMITS(i_num_of_dice, i_num_of_face)) {
         return dice.dice_exceed();
@@ -235,8 +211,7 @@ roll_status roll::roll_rdk(dice_roll& dice, int const i_num_of_dice, int const i
     std::vector<bool> flagList;
 
     for (uint16_t i_count = 0; i_count < i_num_of_dice; i_count++) {
-        uint16_t i_temp_result = 0;
-        _RANDOM(i_temp_result);
+        uint16_t i_temp_result = random::rand_int(distr);
         dice.add_ignored_result(i_temp_result);
         pilotList.push_back(i_count);
         sortList.push_back(i_temp_result);
@@ -310,25 +285,22 @@ roll_status roll::roll_coc(dice_roll& dice, int const i_bp) noexcept {
 
         if (!CHECK_LIMITS(i_dice_count, 100)) return dice.dice_exceed();
 
-        uint16_t i_units = 0;
-        {
-            _RANDOMIZE(10, 0);
-            _RANDOM(i_units);
-            dice.add_result(i_units);
-        }
+        auto units_distr = random::create_distribution(0, 9);
+        auto tens_distr = random::create_distribution(1, 10);
+
+        uint16_t i_units = random::rand_int(units_distr);
+
+        dice.add_result(i_units);
+
         if (i_units == 0) {
-            _RANDOMIZE(10, 1);
             for (uint16_t i_count = 0; i_count < i_dice_count; i_count++) {
-                uint16_t i_temp_result = 0;
-                _RANDOM(i_temp_result);
+                uint16_t i_temp_result = random::rand_int(tens_distr);
                 dice.add_ignored_result(i_temp_result);
             }
 
         } else {
-            _RANDOMIZE(10, 0);
             for (uint16_t i_count = 0; i_count < i_dice_count; i_count++) {
-                uint16_t i_temp_result = 0;
-                _RANDOM(i_temp_result);
+                uint16_t i_temp_result = random::rand_int(units_distr);
                 dice.add_ignored_result(i_temp_result);
             }
         }
@@ -384,13 +356,13 @@ roll_status roll::roll_coc(dice_roll& dice, std::string const& str_dice_command)
 roll_status roll::roll_wod(dice_roll& dice, int const i_val, int const i_d, int const i_bonus, bool failing) noexcept {
     dice.clear();
 
-    _RANDOMIZE(10, 1);
+    auto distr = random::create_distribution(1, 10);
     if (CHECK_LIMITS(i_val, 10)) {
         uint16_t single_result = 0;
         bool first = true;
         int i_dice = i_val;
         while (i_dice-- > 0) {
-            _RANDOM(single_result);
+            single_result = random::rand_int(distr);
             if (single_result >= i_bonus) i_dice++;
             if (dice.results.size() > MAX_DICE_NUM) break;
             dice.add_ignored_result(single_result);
@@ -451,13 +423,12 @@ roll_status roll::roll_owod(dice_roll& dice, std::string const& str_dice_command
 
 roll_status roll::roll_fate(dice_roll& dice) noexcept {
     dice.clear();
-
-    _RANDOMIZE(3, -1);
+    auto distr = random::create_distribution(-1, 1);
     int16_t single_result = 0;
     bool first = true;
     int i_dice = 4;
     while (i_dice-- > 0) {
-        _RANDOM(single_result);
+        single_result = random::rand_int(distr);
         dice.add_result(single_result);
     }
     return dice.finish_roll();
@@ -466,12 +437,12 @@ roll_status roll::roll_fate(dice_roll& dice) noexcept {
 roll_status roll::roll_fate(dice_roll& dice, int const i_val) noexcept {
     dice.clear();
 
-    _RANDOMIZE(3, -1);
+    auto distr = random::create_distribution(-1, 1);
     int16_t single_result = 0;
     bool first = true;
     int i_dice = 4;
     while (i_dice-- > 0) {
-        _RANDOM(single_result);
+        single_result = random::rand_int(distr);
         dice.add_result(single_result);
     }
     dice.add_result(i_val);

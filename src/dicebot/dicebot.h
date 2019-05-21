@@ -18,6 +18,7 @@
 #include "./entry/entry_profile.h"
 #include "./entry/entry_roll_dice.h"
 #include "./entry/entry_specialized_dice.h"
+#include "./random/random_provider.h"
 
 namespace dicebot {
     std::unique_ptr<entry_manager> dice_ptcs;
@@ -29,7 +30,7 @@ namespace dicebot {
         manual::manual_dice_control::create_instance();
         profile::profile_manager::create_instance();
 
-        roll::random_initialize();
+        random::initialize();
         dice_ptcs = std::make_unique<entry_manager>();
         dice_ptcs->register_dice(std::make_shared<entry::entry_roll_dice>());
         dice_ptcs->register_dice(std::make_shared<entry::entry_coc_dice>());
@@ -53,7 +54,9 @@ namespace dicebot {
 
     void set_logger(std::function<void(std::string, std::string)> varlog) { logger::_log = varlog; }
 
-    bool try_fill_nickname(event_info& event) { return nickname::nickname_manager::instance->get_nickname(event, event.nickname); }
+    bool try_fill_nickname(event_info& event) {
+        return nickname::nickname_manager::instance->get_nickname(event, event.nickname);
+    }
 
     bool message_pipeline(std::string const& source, event_info& event, std::string& output) {
         std::list<std::string> source_splits;

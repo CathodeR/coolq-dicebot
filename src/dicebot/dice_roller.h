@@ -6,13 +6,13 @@ namespace dicebot::roll {
 
 #define CHECK_LIMITS(_Num, _Face) ((_Face < MAX_DICE_FACE && _Num < MAX_DICE_NUM) && (_Face > 1 && _Num >= 1))
 
-    typedef std::pair<int32_t, bool> dice_pair;
+    using dice_pair = std::pair<int32_t, bool>;
 
     class dice_roll {
-       private:
+    private:
         dice_roll(roll_status const& status) noexcept;
 
-       public:
+    public:
         int32_t summary;
         roll_status status;
         std::vector<dice_pair> results;
@@ -34,7 +34,7 @@ namespace dicebot::roll {
         explicit operator bool() const noexcept;
     };
 
-    typedef std::shared_ptr<dice_roll> p_dice_roll;
+    using p_dice_roll = std::shared_ptr<dice_roll>;
 
     roll_status roll_base(dice_roll& dice, int const i_num_of_dice, int const i_num_of_face) noexcept;
 
@@ -51,6 +51,4 @@ namespace dicebot::roll {
     roll_status roll_fate(dice_roll& dice) noexcept;
     roll_status roll_fate(dice_roll& dice, int const i_val) noexcept;
     roll_status roll_fate(dice_roll& dice, std::string const& str_dice_command) noexcept;
-
-    void random_initialize();
-}  // namespace dicebot::roll
+} // namespace dicebot::roll
