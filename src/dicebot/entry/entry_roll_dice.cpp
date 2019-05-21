@@ -44,7 +44,7 @@ bool entry_roll_dice::resolve_request(std::string const& message, event_info& ev
     std::regex_search(message, match_list_command_detail, this->filter_command);
 
     std::string message_cp;
-    profile::profile_manager* pfm = profile::profile_manager::get_instance();
+    auto pfm = profile::profile_manager::get_instance();
 
     profile::var_pair var;
     if (pfm->get_profile(event.user_id)->sys_vars.get(profile::sys_var_type::rs_on, var) == profile::profile_status::finished) {
