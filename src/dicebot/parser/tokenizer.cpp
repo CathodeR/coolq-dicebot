@@ -158,19 +158,21 @@ std::string tokenizer::tail(token_t const& target) const {
 token_t* tokenizer::cur_token() const { return &(this->token_container.back()); }
 
 token_t* tokenizer::next_token() const {
+    const token_t& tback = this->token_container.back();
     token_t temp_token = this->token_container.back();
 
-    const token_t& tback = this->token_container.back();
     if (tback.id == token_index::index_begin)
         this->token_container.pop_back();
     else if (tback.id == token_index::index_stop)
         return &(this->token_container.back());
-    else if (tback.pos_next == npos) {
+
+    if (tback.pos_next == npos || tback.pos_next >= this->sources->at(tback.source_index)->size()) {
         if (tback.source_index == 0) {
             temp_token = {token_index::index_stop, 0, npos, npos};
             this->token_container.emplace_back(std::move(temp_token));
             return &(this->token_container.back());
         } else {
+            temp_token = this->token_container.back();
             temp_token.pos_next = (*this->sources_sites)[temp_token.source_index].macro_end;
             temp_token.source_index = 0;
             if (temp_token.pos_next == npos) {
