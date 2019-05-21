@@ -357,20 +357,17 @@ bool tokenizer::resolve_identifier(token_t& target) const {
             token_t suppose_target = target;
             suppose_target.pos_next += find_result.first;
             if (suppose_target.pos_next >= this->sources->at(suppose_target.source_index)->size()) suppose_target.pos_next = npos;
-            token_index prev_index;
-            if (this->token_container.empty())
-                prev_index = token_index::index_begin;
-            else
-                prev_index = token_container.back().id;
 
             // if "d" "k" "kl" is a macro, it would work just
             // like const_unit/var_unit/dicelet_unit.
             // there is no way a number, ")", or "}" infront of
-            // them also this is sufficient to decide whether a
+            // them. also this is sufficient to decide whether a
             // k/kl is allowed here, for k/kl is always following
             // a unit.
-            if (prev_index == token_index::index_number || prev_index == token_index::punct_rparenthesis
-                || prev_index == token_index::punct_rbrace) {
+            if (!(this->token_container.empty())
+                && (this->token_container.back().id == token_index::index_number
+                    || this->token_container.back().id == token_index::punct_rparenthesis
+                    || this->token_container.back().id == token_index::punct_rbrace)) {
                 return false;
             }
 
@@ -378,8 +375,9 @@ bool tokenizer::resolve_identifier(token_t& target) const {
             // complex. "d d" indicates the last "d" is a macro.
             // "d d d" indicates that the first and last "d" is
             // a maro.
+            // In addition, "d d 'number'" indicates that the first "d" is a macro
             if ((this->ambi_flag.ambiguity_d) && suppose_macro == "d") {
-                if (prev_index == token_index::keyword_d) break;
+                if (!(this->token_container.empty()) && this->token_container.back().id == token_index::keyword_d) break;
                 token_t tn = peek_next(suppose_target);
                 if (tn.id == token_index::punct_lbrace || tn.id == token_index::punct_lparenthesis || tn.id == token_index::index_number
                     || tn.id == token_index::ambiguity_indentifier)
@@ -391,7 +389,7 @@ bool tokenizer::resolve_identifier(token_t& target) const {
 
                 if (tn.id == token_index::ambiguity_macro_d) {
                     token_t tnn = peek_next(tn);
-                    if (tnn.id == token_index::ambiguity_macro_d)
+                    if (tnn.id == token_index::ambiguity_macro_d || tnn.id == token_index::index_number)
                         break;
                     else
                         return false;
