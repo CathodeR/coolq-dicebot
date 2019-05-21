@@ -17,10 +17,10 @@
 
 #include "dicebot/dicebot.h"
 
-class Protocol_Level_test : public ::testing::Test {
+class entry_test : public ::testing::Test {
 protected:
-    Protocol_Level_test() { dicebot::initialize("./build/test_db/"); }
-    ~Protocol_Level_test() { dicebot::salvage(); }
+    entry_test() { dicebot::initialize("./build/test_db/"); }
+    ~entry_test() { dicebot::salvage(); }
 
 public:
     void test_call(dicebot::event_info &ei, const std::string &source, const std::regex &reg_test) {
@@ -37,7 +37,7 @@ public:
     }
 };
 
-TEST_F(Protocol_Level_test, roll_2d20plus4) {
+TEST_F(entry_test, roll_2d20plus4) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
@@ -76,7 +76,7 @@ TEST_F(Protocol_Level_test, roll_2d20plus4) {
     this->test_call(ei, ".roll source 2d20+4", result_reg);
 }
 
-TEST_F(Protocol_Level_test, roll_6sharp4d6kl3) {
+TEST_F(entry_test, roll_6sharp4d6kl3) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
@@ -96,7 +96,7 @@ TEST_F(Protocol_Level_test, roll_6sharp4d6kl3) {
     this->test_call(ei, ".rs6#4d6kl3", result_reg);
 }
 
-TEST_F(Protocol_Level_test, name_dice) {
+TEST_F(entry_test, name_dice) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
@@ -128,7 +128,7 @@ TEST_F(Protocol_Level_test, name_dice) {
     this->test_call(ei, ".ndice", std::regex(u8"^ \\* dice2 的新名字是 dice$"));
 }
 
-TEST_F(Protocol_Level_test, macro_recall) {
+TEST_F(entry_test, macro_recall) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 

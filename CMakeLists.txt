@@ -78,7 +78,7 @@ endif()
 # build tests
 set(TEST_NAME_GROUP 
   roll_test 
-  protocol_test
+  entry_test
   number_test
   interpreter_test)
 
@@ -95,7 +95,7 @@ file(GLOB_RECURSE TEST_SOURCE_ROLL_TEST
 add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE_ROLL_TEST})
 
 # protocol test
-set(X protocol_test)
+set(X entry_test)
 set(TEST_BUILD_NAME dicebot.gtest.${X})
 add_executable(${TEST_BUILD_NAME}
   src/tests/${X}.cpp 
