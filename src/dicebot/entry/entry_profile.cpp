@@ -52,7 +52,7 @@ bool entry_set_roll::resolve_request(std::string const& message, event_info& eve
         std::smatch m_name;
         std::regex_search(str_message, m_name, this->filter_name);
         if (!m_name[1].matched) return false;
-        pfm->get_profile(event.user_id)->mac_rolls.set(str_message, str_roll_command);
+        pfm->get_profile(event.user_id)->mac_rolls.set(m_name[1], str_roll_command);
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
@@ -117,20 +117,16 @@ bool entry_set_roll::resolve_request(std::string const& message, event_info& eve
 #pragma endregion
 
 #pragma region list
-entry_list::gen_defr_t entry_list::defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head,
-                                                 std::string const& message, output_constructor& out) {
+static auto defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head, output_constructor& out) {
     if (map.empty()) return;
     out.append_message("\r\n" + head);
     for (auto const& pair : map) {
-        out.append_message(u8"\r\n>");
         out.append_message(pair.second);
     }
 };
 
-entry_list::gen_macro_t entry_list::macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std::string const& head,
-                                                   std::string const& message, output_constructor& out) {
+static auto macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std::string const& message, output_constructor& out) {
     if (map.empty()) return;
-    out.append_message("\r\n" + head);
     for (auto const& pair : map) {
         if (!message.empty() && pair.first.find(message) == std::string::npos) continue;
         out.append_message(u8"\r\n>");
@@ -164,46 +160,27 @@ entry_list::entry_list() {
         "v53lrZjnmoTpqrDlrZDlkozlj5jph48K5rOo5oSP"
         "77yaLmxpc3QgYWxs5Lit55qEYWxs5LiN6IO9566A"
         "5YaZ");
-
-    list_call_t list_all = [](entry_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
-        output_constructor oc(event.nickname);
-        oc.append_message(u8"的个人信息如下:");
-        self.defr_msg(upf->def_roll, u8"默认骰子:", "", oc);
-        self.macro_msg(upf->mac_rolls, u8"已设置下列骰子指令:", "", oc);
-        response = oc.str();
-        return true;
-    };
-    this->call_map.insert(call_map_value_t("all", list_all));
-    this->call_map.insert(call_map_value_t("a", list_all));
-
-    list_call_t list_roll = [](entry_list const& self, std::string const& message, event_info const& event, std::string& response) -> bool {
-        profile::sptr_user_profile upf = profile::profile_manager::get_instance()->get_profile(event.user_id);
-
-        output_constructor oc(event.nickname);
-        oc.append_message(u8"的个人信息如下:");
-        self.macro_msg(upf->mac_rolls, u8"已设置下列骰子指令:", message, oc);
-        response = oc.str();
-        return true;
-    };
-    this->call_map.insert(call_map_value_t("roll", list_roll));
-    this->call_map.insert(call_map_value_t("r", list_roll));
 }
 
 bool entry_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
-    std::smatch m;
-    std::regex_search(message, m, this->filter_command);
-    if (!m.empty()) {
-        std::string message_cp;
-        std::string args = m.suffix();
-        if (m[1].matched) {
-            message_cp = m[1];
-            std::transform(message_cp.begin(), message_cp.end(), message_cp.begin(), tolower);
-        } else {
-            message_cp = "a";
-        }
-        auto iter = this->call_map.find(message_cp);
-        if (iter != this->call_map.end()) return iter->second(*this, args, event, response);
+    if (message.empty()) {
+        auto p_profile = profile::profile_manager::get_instance()->get_profile(event.user_id);
+        output_constructor oc(event.nickname);
+        oc.append_message(u8"已设置下列骰子指令:");
+        defr_msg(p_profile->def_roll, u8"* 默认 :", oc);
+        macro_msg(p_profile->mac_rolls, "", oc);
+        response = oc.str();
+        return true;
+    } else {
+        const auto& macros = profile::profile_manager::get_instance()->get_profile(event.user_id)->mac_rolls;
+
+        output_constructor oc(event.nickname);
+        oc.append_message(u8"已设置如下包含\"");
+        oc.append_message(message);
+        oc.append_message("\"的骰子指令:");
+        macro_msg(macros, message, oc);
+        response = oc.str();
+        return true;
     }
     return false;
 }
@@ -243,12 +220,13 @@ bool entry_delete::resolve_request(std::string const& message, event_info& event
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"已删除所有骰子指令。");
+        oc.append_message(u8"已删除所有骰子指令");
         response = oc.str();
         return true;
     } else {
-        auto iter = pfm->get_profile(event.user_id)->mac_rolls.find(message);
-        if (iter == pfm->get_profile(event.user_id)->mac_rolls.end()) return false;
+        const auto& p_macro = pfm->get_profile(event.user_id)->mac_rolls;
+        auto iter = p_macro.find(message);
+        if (iter == p_macro.end()) return false;
         pfm->get_profile(event.user_id)->mac_rolls.erase(iter);
         pfm->force_update(event.user_id);
 

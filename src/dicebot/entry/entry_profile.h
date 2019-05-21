@@ -21,17 +21,11 @@ namespace dicebot::entry {
         template <class map_t, class value_t = typename map_t::value_type>
         using get_func_template = std::function<void(map_t const &, std::string const &, std::string const &, output_constructor &)>;
 
-        using gen_macro_t = get_func_template<profile::user_profile::mac_roll_map_t>;
-
-        using gen_defr_t = get_func_template<profile::user_profile::def_roll_map_t>;
-
     private:
         std::regex filter_command;
         call_map_t call_map;
 
     public:
-        static gen_macro_t macro_msg;
-        static gen_defr_t defr_msg;
         entry_list();
         bool resolve_request(std::string const &message, event_info &event, std::string &response) override;
     };
