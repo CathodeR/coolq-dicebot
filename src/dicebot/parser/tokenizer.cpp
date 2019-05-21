@@ -106,15 +106,16 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
 tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, std::string const& source, macro_map_t const* macros) noexcept
     : token_container(tokens), macro_map(macros) {
     size_t restrict_len = regulate_parenthesis(source, flag.parse_dicelet);
+    this->source = source.substr(0, restrict_len);
     this->sources = std::make_unique<sources_container_t>();
-    this->sources->emplace_back(source.substr(0, restrict_len));
+    this->sources->emplace_back(&this->source);
 
-    size_t tail_start = restrict_len;
-    while (this->sources->front()[tail_start] == ' ' && this->sources->front()[tail_start]) tail_start++;
-    this->rtail = source.substr(tail_start);
+    std::string::const_iterator tail_start = source.cbegin() + restrict_len;
+    while (*tail_start == ' ' && tail_start != source.cend()) tail_start++;
+    this->rtail = std::string(tail_start, source.cend());
 
     this->sources_sites = std::make_unique<macro_marker_container_t>();
-    this->sources_sites->push_back({0, restrict_len});
+    this->sources_sites->push_back({0, 0});
 
     this->token_container.push_back({token_index::index_begin, 0, 0, 0});
 
@@ -134,12 +135,12 @@ tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, st
 
 std::string tokenizer::token_string(token_t const& target) const {
     if (target.pos_cur == npos) return "";
-    std::string const& src = (*this->sources)[target.source_index];
+    std::string const& src = *(this->sources->at(target.source_index));
     return src.substr(target.pos_cur, target.pos_next - target.pos_cur);
 }
 
 std::string tokenizer::tail(token_t const& target) const {
-    const std::string& src = this->sources->front();
+    const std::string& src = *(this->sources->front());
     if (target.source_index > 0) {
         size_t next_begin = this->sources_sites->at(target.source_index).macro_end;
         if (next_begin == npos) return rtail;
@@ -158,7 +159,6 @@ token_t* tokenizer::cur_token() const { return &(this->token_container.back()); 
 
 token_t* tokenizer::next_token() const {
     token_t temp_token = this->token_container.back();
-    while (this->sources->at(temp_token.source_index)[temp_token.pos_next] == ' ') temp_token.pos_next++;
 
     const token_t& tback = this->token_container.back();
     if (tback.id == token_index::index_begin)
@@ -173,8 +173,16 @@ token_t* tokenizer::next_token() const {
         } else {
             temp_token.pos_next = (*this->sources_sites)[temp_token.source_index].macro_end;
             temp_token.source_index = 0;
+            if (temp_token.pos_next == npos) {
+                temp_token = {token_index::index_stop, 0, npos, npos};
+                this->token_container.emplace_back(std::move(temp_token));
+                return &(this->token_container.back());
+            }
         }
     }
+
+    while (this->sources->at(temp_token.source_index)->at(temp_token.pos_next) == ' ') temp_token.pos_next++;
+
     temp_token.pos_cur = temp_token.pos_next;
 
     bool has_got = this->get_punctuator(temp_token) || this->get_number(temp_token);
@@ -186,14 +194,15 @@ token_t* tokenizer::next_token() const {
 
     if (this->do_parse_identifier // parse macro only when parse identifier is enabled
         && temp_token.source_index == 0 // parse macro only for origin source, macros cannot contains macros
-        && (this->sources_sites->empty() || this->sources_sites->back().macro_end < temp_token.pos_next - 1)) // last one is not a macro
+        && (this->sources_sites->back().macro_end == 0 // only the first one (for origin source) have a macro_end of 0
+            || this->sources_sites->back().macro_end < temp_token.pos_next)) // last one is not a macro
     {
         has_got = this->resolve_identifier(temp_token);
 
         if (has_got && temp_token.id == token_index::index_macro) {
             this->sources_sites->push_back({temp_token.pos_cur, temp_token.pos_next});
-            std::string expand_macro = macro_map->find(this->token_string(temp_token))->second;
-            this->sources->emplace_back(std::move(expand_macro));
+            const std::string* expand_macro = &macro_map->find(this->token_string(temp_token))->second;
+            this->sources->push_back(expand_macro);
             temp_token = {token_index::index_begin, this->sources->size() - 1, 0, 0};
             this->token_container.emplace_back(std::move(temp_token));
             return this->next_token();
@@ -208,7 +217,7 @@ token_t* tokenizer::next_token() const {
 }
 
 bool tokenizer::get_punctuator(token_t& target) const {
-    char t = this->sources->at(target.source_index)[target.pos_next];
+    char t = this->sources->at(target.source_index)->at(target.pos_next);
     for (const punct_container& punc : punct_arr) {
         if (punc.name == t) {
             target.id = punc.pc;
@@ -220,7 +229,7 @@ bool tokenizer::get_punctuator(token_t& target) const {
 }
 
 bool tokenizer::get_number(token_t& target) const {
-    std::string const& src = this->sources->at(target.source_index);
+    std::string const& src = *(this->sources->at(target.source_index));
 
     bool dotted = false;
 
@@ -254,7 +263,7 @@ bool tokenizer::get_number(token_t& target) const {
 }
 
 bool tokenizer::get_keyword(token_t& target) const {
-    std::string const& src = this->sources->at(target.source_index);
+    std::string const& src = *(this->sources->at(target.source_index));
     size_t max_len = src.size() - target.pos_next;
     for (const keyword_container& keyw : keyword_arr) {
         size_t i = 0;
@@ -278,7 +287,7 @@ bool tokenizer::get_keyword(token_t& target) const {
 void tokenizer::move_next_cursor(token_t& src_token, size_t length) const {
     src_token.pos_cur = src_token.pos_next;
     src_token.pos_next = src_token.pos_next + length;
-    std::string const& src = this->sources->at(src_token.source_index);
+    std::string const& src = *(this->sources->at(src_token.source_index));
 
     if (src_token.pos_next >= src.size()) {
         src_token.pos_next = npos;
@@ -286,8 +295,21 @@ void tokenizer::move_next_cursor(token_t& src_token, size_t length) const {
 }
 
 std::pair<size_t, bool> greed_map_find(std::string const& source, size_t start_pos, tokenizer::macro_map_t const& map) {
-    std::vector<char> source_cp(source.size() + 1, '\0');
-    std::copy(source.begin(), source.end(), source_cp.begin());
+    std::vector<char> source_cp;
+    source_cp.reserve(source.size() + 1);
+
+    size_t maxlen = source.find_first_of(illegal_identifier, start_pos);
+
+    std::string::const_iterator end_point;
+    if (maxlen == 0)
+        return {0, false};
+    else if (maxlen == npos)
+        end_point = source.cend();
+    else
+        end_point = source.begin() + maxlen;
+    std::copy(source.cbegin() + start_pos, end_point, std::back_inserter(source_cp));
+    source_cp.push_back('\0');
+
     for (auto ri = source_cp.rbegin(); ri != source_cp.rend(); ri++) {
         auto target = map.find(source_cp.data());
         if (target != map.cend()) {
@@ -302,7 +324,7 @@ bool tokenizer::resolve_identifier(token_t& target) const {
     // no macros inside macro
     if (target.source_index != 0) return 0;
 
-    std::string const& src = this->sources->at(target.source_index);
+    std::string const& src = *this->sources->at(target.source_index);
     bool terminate = false;
 
     // match macro at maximum length
@@ -334,7 +356,7 @@ bool tokenizer::resolve_identifier(token_t& target) const {
 
             token_t suppose_target = target;
             suppose_target.pos_next += find_result.first;
-            if (suppose_target.pos_next >= this->sources->at(suppose_target.source_index).size()) suppose_target.pos_next = npos;
+            if (suppose_target.pos_next >= this->sources->at(suppose_target.source_index)->size()) suppose_target.pos_next = npos;
             token_index prev_index;
             if (this->token_container.empty())
                 prev_index = token_index::index_begin;
@@ -398,7 +420,7 @@ token_t tokenizer::peek_next(token_t const& origin) const {
 
 bool tokenizer::peek_identifier_d(token_t& target) const {
     if (target.source_index != 0) return false;
-    std::string const& src = this->sources->at(target.source_index);
+    std::string const& src = *this->sources->at(target.source_index);
     while (src[target.pos_next] == ' ') target.pos_next++;
     auto find_result = greed_map_find(src, target.pos_next, *this->macro_map);
 

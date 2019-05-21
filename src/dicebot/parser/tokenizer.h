@@ -25,7 +25,7 @@ namespace dicebot::diceparser {
     public:
         using macro_map_t = std::unordered_map<std::string, std::string>;
         using macro_map_pair_t = typename macro_map_t::value_type;
-        using sources_container_t = std::deque<std::string>;
+        using sources_container_t = std::deque<const std::string *>;
 
     private:
         // string source, sources[0] is original source, the others are expanded macros, ordered by the sequence where it presents in the
@@ -33,6 +33,9 @@ namespace dicebot::diceparser {
         std::unique_ptr<sources_container_t> sources;
         // tail string separated from input by parenthesis check
         std::string rtail;
+
+        // the real source, with tail cutted by regulate_parenthesis
+        std::string source;
 
         // map of macros, if do_parse_identifier = false, it is nullptr
         macro_map_t const *macro_map;
