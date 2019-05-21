@@ -24,24 +24,28 @@
             "name": "roll_test linux64",
             "type": "cppdbg",
             "request": "launch",
+            "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/build/Debug/dicebot.gtest.roll_test",
         },
         {
             "name": "protocol_test linux64",
             "type": "cppdbg",
             "request": "launch",
+            "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/build/Debug/dicebot.gtest.protocol_test",
         },
         {
             "name": "number_test linux64",
             "type": "cppdbg",
             "request": "launch",
+            "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/build/Debug/dicebot.gtest.number_test",
         },
         {
             "name": "interpreter_test linux64",
             "type": "cppdbg",
             "request": "launch",
+            "cwd": "${workspaceFolder}",
             "program": "${workspaceFolder}/build/Debug/dicebot.gtest.interpreter_test",
         },
         {
