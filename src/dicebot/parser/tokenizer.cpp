@@ -110,9 +110,8 @@ tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, st
     this->sources = std::make_unique<sources_container_t>();
     this->sources->emplace_back(&this->source);
 
-    std::string::const_iterator tail_start = source.cbegin() + restrict_len;
-    while (*tail_start == ' ' && tail_start != source.cend()) tail_start++;
-    this->rtail = std::string(tail_start, source.cend());
+    size_t tail_start = source.find_first_not_of(' ', restrict_len);
+    if (tail_start != npos) this->rtail = source.substr(tail_start);
 
     this->sources_sites = std::make_unique<macro_marker_container_t>();
     this->sources_sites->push_back({0, 0});
@@ -166,8 +165,10 @@ token_t* tokenizer::next_token() const {
     else if (tback.id == token_index::index_stop)
         return &(this->token_container.back());
 
-    if (tback.pos_next == npos || tback.pos_next >= this->sources->at(tback.source_index)->size()) {
-        if (tback.source_index == 0) {
+    temp_token.pos_next = this->sources->at(temp_token.source_index)->find_first_not_of(' ', temp_token.pos_next);
+
+    if (temp_token.pos_next == npos || temp_token.pos_next >= this->sources->at(temp_token.source_index)->size()) {
+        if (temp_token.source_index == 0) {
             temp_token = {token_index::index_stop, 0, npos, npos};
             this->token_container.emplace_back(std::move(temp_token));
             return &(this->token_container.back());
@@ -175,6 +176,7 @@ token_t* tokenizer::next_token() const {
             temp_token = this->token_container.back();
             temp_token.pos_next = (*this->sources_sites)[temp_token.source_index].macro_end;
             temp_token.source_index = 0;
+            temp_token.pos_next = this->sources->at(temp_token.source_index)->find_first_not_of(' ', temp_token.pos_next);
             if (temp_token.pos_next == npos) {
                 temp_token = {token_index::index_stop, 0, npos, npos};
                 this->token_container.emplace_back(std::move(temp_token));
@@ -182,8 +184,6 @@ token_t* tokenizer::next_token() const {
             }
         }
     }
-
-    while (this->sources->at(temp_token.source_index)->at(temp_token.pos_next) == ' ') temp_token.pos_next++;
 
     temp_token.pos_cur = temp_token.pos_next;
 
@@ -421,7 +421,12 @@ token_t tokenizer::peek_next(token_t const& origin) const {
 bool tokenizer::peek_identifier_d(token_t& target) const {
     if (target.source_index != 0) return false;
     std::string const& src = *this->sources->at(target.source_index);
-    while (src[target.pos_next] == ' ') target.pos_next++;
+    target.pos_next = src.find_first_not_of(' ', target.pos_next);
+    if (target.pos_next == npos) {
+        target.id = token_index::index_stop;
+        return false;
+    }
+
     auto find_result = greed_map_find(src, target.pos_next, *this->macro_map);
 
     if (find_result.first >= 2 || find_result.first == 0) return false;
