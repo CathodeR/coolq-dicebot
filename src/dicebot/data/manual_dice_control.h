@@ -1,31 +1,23 @@
 #pragma once
 
-#include "../common.h"
+#include <memory>
+#include "../utils/pair_hash.h"
+#include "./manual_dice.h"
 
 namespace dicebot::manual {
-    class manual_dice;
-
-    using p_manual = std::shared_ptr<manual_dice>;
-    using manual_kpair = std::pair<int64_t, int64_t>;
-    using manual_map = std::map<manual_kpair, p_manual>;
-    using manual_pair = std::pair<manual_kpair, p_manual>;
-
-    class manual_dice_control : public std::map<manual_kpair, p_manual> {
+    class manual_dice_control {
     private:
+        using md_map_t =
+            std::unordered_map<utils::pair_t, manual_dice, utils::pair_hash>;
+
         static std::unique_ptr<manual_dice_control> instance;
+        md_map_t manual_dice_map;
 
     public:
         static manual_dice_control *get_instance();
         static manual_dice_control *create_instance();
         static void destroy_instance();
-        p_manual create(const int64_t, const int64_t, const std::string &);
-        p_manual roll(const int64_t, const int64_t, const std::string &);
-        p_manual kill(const int64_t, const int64_t, const std::string &);
-        p_manual add(const int64_t, const int64_t, const std::string &);
-        p_manual killall(const int64_t, const int64_t);
-        bool update_database(manual_kpair, p_manual) const;
-        bool insert_database(manual_kpair, p_manual) const;
-        bool read_database(manual_kpair, p_manual);
-        bool exist_database(manual_kpair) const;
+        md_map_t::iterator find_manual_dice(const event_info &);
+        void sync_database(const md_map_t::iterator) const;
     };
 } // namespace dicebot::manual

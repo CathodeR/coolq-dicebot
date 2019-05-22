@@ -2,15 +2,11 @@
 
 #include <unordered_map>
 #include "../common.h"
+#include "../utils/pair_hash.h"
 namespace dicebot::nickname {
-
-    using pair_t = std::pair<int64_t, int64_t>;
-    struct my_hash_pair {
-        size_t operator()(pair_t p) const noexcept { return std::_Hash_impl::hash(p); }
-    };
-
     class nickname_manager {
-        using nick_map_t = std::unordered_map<pair_t, std::string, my_hash_pair>;
+        using nick_map_t =
+            std::unordered_map<utils::pair_t, std::string, utils::pair_hash>;
         using nick_pair_t = nick_map_t::value_type;
         using nick_key_t = nick_map_t::key_type;
 
