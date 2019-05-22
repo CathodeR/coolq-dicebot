@@ -2,7 +2,6 @@
 
 #include <regex>
 
-#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 
 using namespace dicebot;

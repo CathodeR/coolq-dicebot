@@ -2,7 +2,6 @@
 
 #include <regex>
 
-#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 #include "../data/profile_manager.h"
 #include "../parser/dicenalyzer.h"
@@ -20,7 +19,7 @@ entry_roll_dice::entry_roll_dice() noexcept {
     this->is_stand_alone = false;
     this->identifier_regex = "r(?:oll)?";
     this->identifier_list = {"roll", "r"};
-    this->help_message = base64_decode(
+    this->help_message =
         u8"骰子指令(.roll或.r)\n"
         u8"指令.r 1d20：骰一个1d20\n"
         u8"指令.r 1d20+2d6+4：骰1d20+2d6+4，并输出其计算结果\n"
@@ -34,7 +33,7 @@ entry_roll_dice::entry_roll_dice() noexcept {
         u8"指令.rs off：上述指令的较短形式\n"
         u8"指令.roll source on：恢复显示你的骰子的详细结果\n"
         u8"指令.rs on：上述指令的较短形式\n"
-        u8"指令.rs 3d6：骰3d6，无视rs off状态，仍然显示详细结果\n");
+        u8"指令.rs 3d6：骰3d6，无视rs off状态，仍然显示详细结果\n";
 }
 
 bool entry_roll_dice::resolve_request(std::string const& message,

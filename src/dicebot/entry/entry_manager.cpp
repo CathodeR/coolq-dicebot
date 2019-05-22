@@ -2,7 +2,6 @@
 
 #include <memory>
 
-#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../utils/utils.h"
 
 using namespace dicebot;

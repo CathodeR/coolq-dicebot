@@ -2,7 +2,6 @@
 
 #include <regex>
 
-#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/manual_dice_control.h"
 #include "../data/nick_manager.h"
 #include "../dice_roller.h"
