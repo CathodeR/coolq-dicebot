@@ -13,10 +13,7 @@ namespace dicebot {
     using integer_type = int32_t;
     using float_type = double;
 
-    class zero_divider_exception : public std::exception {
-    public:
-        zero_divider_exception() : exception() {}
-    };
+    class zero_divider_exception : public std::exception {};
 
     union number_val {
         integer_type i_value;
@@ -54,12 +51,14 @@ namespace dicebot {
         number operator/(const number &val1) const;
         number operator/(const integer_type val1) const;
         number operator/(const float_type val1) const;
+        number operator-() const;
 
         bool operator==(const number &val1) const;
         bool operator==(const integer_type val1) const;
         bool operator==(const float_type val1) const;
 
-        std::string str() const;
+        std::string str() const noexcept;
+        std::string str_holder() const noexcept;
 
         integer_type force_positive_int();
     };

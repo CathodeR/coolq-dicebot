@@ -276,31 +276,45 @@ namespace dicebot::test {
         ASSERT_LT(chi_square, chi_01_percent);
     }
 
+    template <class exception_t, class func_t, class... Args>
+    bool limit_test(func_t func, Args... args...) {
+        try {
+            func(args...);
+            return false;
+        } catch (exception_t e) {
+            return true;
+        } catch (...) {
+            return false;
+        }
+    };
+
     TEST(RollTest, DICE_LIMIT) {
         dicebot::roll::dice_roll dr;
-        dicebot::roll::roll_base(dr, 1, 6);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::FINISHED);
 
-        dicebot::roll::roll_base(dr, MAX_DICE_NUM + 1, 2);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::TOO_MANY_DICE);
+        ASSERT_FALSE(
+            limit_test<std::exception>(dicebot::roll::roll_base, dr, 1, 6));
 
-        dicebot::roll::roll_base(dr, 1, MAX_DICE_FACE + 1);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::TOO_MANY_DICE);
+        ASSERT_TRUE(limit_test<dice_exceed>(
+            dicebot::roll::roll_base, dr, MAX_DICE_NUM + 1, 2));
 
-        dicebot::roll::roll_rdk(dr, MAX_DICE_NUM + 1, 2, 1);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::TOO_MANY_DICE);
+        ASSERT_TRUE(limit_test<face_exceed>(
+            dicebot::roll::roll_base, dr, 1, MAX_DICE_FACE + 1));
 
-        dicebot::roll::roll_rdk(dr, 1, MAX_DICE_FACE + 1, 1);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::TOO_MANY_DICE);
+        /*
+        ASSERT_TRUE(limit_test<dice_exceed>(
+            dicebot::roll::roll_rdk, dr, MAX_DICE_NUM + 1, 2, 1));
 
-        dicebot::roll::roll_rdk(dr, 1, 6, MAX_DICE_NUM + 1);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::FINISHED);
+        ASSERT_TRUE(limit_test<face_exceed>(
+            dicebot::roll::roll_rdk, dr, 1, MAX_DICE_FACE + 1, 1));
 
-        dicebot::roll::roll_coc(dr, -MAX_DICE_NUM - 1);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::TOO_MANY_DICE);
+        ASSERT_TRUE(limit_test<dice_exceed>(
+            dicebot::roll::roll_rdk, dr, 1, 6, MAX_DICE_NUM + 1));
 
-        dicebot::roll::roll_coc(dr, MAX_DICE_NUM + 1);
-        ASSERT_EQ(dr.status, dicebot::roll::roll_status::TOO_MANY_DICE);
+        ASSERT_TRUE(limit_test<dice_exceed>(
+            dicebot::roll::roll_coc, dr, -MAX_DICE_NUM - 1));
+
+        ASSERT_TRUE(limit_test<dice_exceed>(
+            dicebot::roll::roll_coc, dr, MAX_DICE_NUM + 1));*/
     }
 
     TEST(RollTest, WOD_01_O_5D8) {

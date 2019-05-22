@@ -1,7 +1,10 @@
-#include "dicenalyzer.h"
+#include "./dicenalyzer.h"
+
 #include <functional>
 #include <sstream>
+
 #include "../dice_roller.h"
+
 using namespace dicebot;
 using namespace diceparser;
 
@@ -32,7 +35,7 @@ static inline char operator_from_syntax_item(const syntax_item *from) {
 
 static inline dicelet::p_dicelet dicelet_from_normal_component(
     const syntax_item *root) {
-    auto ret = std::make_shared<dicelet_unit>();
+    auto ret = std::make_shared<dicelet_unit_brace>();
     ret->dicelets.resize(1, build_component_from_syntax(root));
     return std::dynamic_pointer_cast<dicelet>(ret);
 }
@@ -68,37 +71,31 @@ static auto build_rdk = [](dice_rdk_mode mode,
     ret->mode = mode;
     switch (mode) {
     case dice_rdk_mode::single_d: {
-        p_component p1 =
-            build_component_from_syntax(p_syntax_item->items[1].get());
-        ret->face = std::dynamic_pointer_cast<comp_number>(p1)
-                        ->what.force_positive_int();
+        auto p1 = std::dynamic_pointer_cast<comp_number>(
+            build_component_from_syntax(p_syntax_item->items[1].get()));
+        ret->face = std::move(p1->what);
         break;
     }
     case dice_rdk_mode::numbered_d: {
-        p_component p1 =
-            build_component_from_syntax(p_syntax_item->items[0].get());
-        p_component p2 =
-            build_component_from_syntax(p_syntax_item->items[2].get());
-        ret->dice = std::dynamic_pointer_cast<comp_number>(p1)
-                        ->what.force_positive_int();
-        ret->face = std::dynamic_pointer_cast<comp_number>(p2)
-                        ->what.force_positive_int();
+        auto p1 = std::dynamic_pointer_cast<comp_number>(
+            build_component_from_syntax(p_syntax_item->items[0].get()));
+        auto p2 = std::dynamic_pointer_cast<comp_number>(
+            build_component_from_syntax(p_syntax_item->items[2].get()));
+        ret->dice = std::move(p1->what);
+        ret->face = std::move(p2->what);
         break;
     }
     case dice_rdk_mode::numbered_d_k:
     case dice_rdk_mode::numbered_d_kl: {
-        p_component p1 =
-            build_component_from_syntax(p_syntax_item->items[0].get());
-        p_component p2 =
-            build_component_from_syntax(p_syntax_item->items[2].get());
-        ret->dice = std::dynamic_pointer_cast<comp_number>(p1)
-                        ->what.force_positive_int();
-        ret->face = std::dynamic_pointer_cast<comp_number>(p2)
-                        ->what.force_positive_int();
-        p_component p3 =
-            build_component_from_syntax(p_syntax_item->items[4].get());
-        ret->keep = std::dynamic_pointer_cast<comp_number>(p3)
-                        ->what.force_positive_int();
+        auto p1 = std::dynamic_pointer_cast<comp_number>(
+            build_component_from_syntax(p_syntax_item->items[0].get()));
+        auto p2 = std::dynamic_pointer_cast<comp_number>(
+            build_component_from_syntax(p_syntax_item->items[2].get()));
+        auto p3 = std::dynamic_pointer_cast<comp_number>(
+            build_component_from_syntax(p_syntax_item->items[4].get()));
+        ret->dice = std::move(p1->what);
+        ret->face = std::move(p2->what);
+        ret->keep = std::move(p3->what);
         break;
     }
     default:
@@ -193,18 +190,16 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
         }
         case production_type::dicelet_u_const_unit_sharp_const_unit:
         case production_type::dicelet_u_const_unit_sharp_rand_unit: {
-            auto ret = std::make_shared<dicelet_unit>();
-            p_component p1 =
-                build_component_from_syntax(p_syntax_item->items[0].get());
-            uint16_t count = std::dynamic_pointer_cast<comp_number>(p1)
-                                 ->what.force_positive_int();
-            ret->dicelets.resize(
-                count,
-                build_component_from_syntax(p_syntax_item->items[2].get()));
+            auto ret = std::make_shared<dicelet_unit_sharp>();
+            auto p1 = std::dynamic_pointer_cast<comp_number>(
+                build_component_from_syntax(p_syntax_item->items[0].get()));
+            ret->count = p1->what;
+            ret->child =
+                build_component_from_syntax(p_syntax_item->items[2].get());
             return ret;
         }
         case production_type::dicelet_u_lbrace_dicelet_ct_rbrace: {
-            auto ret = std::make_shared<dicelet_unit>();
+            auto ret = std::make_shared<dicelet_unit_brace>();
             recurse_dicelet_ct(p_syntax_item->items[1].get(), ret->dicelets);
             return ret;
         }
@@ -282,57 +277,63 @@ void comp_holder::print(str_container &strlist) const noexcept {
     strlist.emplace_back(")");
 }
 
+static auto fit_for_dice = [](const number &num) -> int {
+    if (num.is_using_int && num.value.i_value > 0)
+        return num.value.i_value;
+    else
+        throw invalid_dice();
+};
+
 number comp_dice_rdk::roll_the_dice(str_container &out) const {
-    dicebot::roll::dice_roll dr;
+    using namespace dicebot::roll;
+    dice_roll dr;
+
     switch (this->mode) {
     case dice_rdk_mode::single_d: {
-        dicebot::roll::roll_rdk(dr, 1, this->face, 1);
+        roll_base(dr, 1, fit_for_dice(this->face));
         break;
     }
     case dice_rdk_mode::numbered_d: {
-        dicebot::roll::roll_rdk(dr, this->dice, this->face, this->dice);
+        roll_base(dr, fit_for_dice(this->dice), fit_for_dice(this->face));
         break;
     }
     case dice_rdk_mode::numbered_d_k: {
-        dicebot::roll::roll_rdk(dr, this->dice, this->face, this->keep);
+        roll_rdk(dr,
+                 fit_for_dice(this->dice),
+                 fit_for_dice(this->face),
+                 fit_for_dice(this->keep));
         break;
     }
     case dice_rdk_mode::numbered_d_kl: {
-        dicebot::roll::roll_rdk(
-            dr, this->dice, this->face, -static_cast<signed>(this->keep));
+        roll_rdk(dr,
+                 fit_for_dice(this->dice),
+                 fit_for_dice(this->face),
+                 -fit_for_dice(this->keep));
         break;
     }
     default:
         break;
     }
 
-    switch (dr.status) {
-    case roll::roll_status::FINISHED: {
-        out.emplace_back(dr.detail());
-        return dr.summary;
-    }
-    case roll::roll_status::TOO_MANY_DICE: {
-    }
-    case roll::roll_status::DICE_NOT_AVAILABLE: {
-    }
-    default:
-        return 0;
-    }
+    out.emplace_back(dr.detail());
+    return dr.summary;
 }
 void comp_dice_rdk::print(str_container &strlist) const noexcept {
     std::ostringstream strss;
     switch (this->mode) {
     case dice_rdk_mode::single_d:
-        strss << "d" << this->face;
+        strss << "d" << this->face.str_holder();
         break;
     case dice_rdk_mode::numbered_d:
-        strss << this->dice << "d" << this->face;
+        strss << this->dice.str_holder() << "d" << this->face.str_holder();
         break;
     case dice_rdk_mode::numbered_d_k:
-        strss << this->dice << "d" << this->face << "k" << this->keep;
+        strss << this->dice.str_holder() << "d" << this->face.str_holder()
+              << "k" << this->keep.str_holder();
         break;
     case dice_rdk_mode::numbered_d_kl:
-        strss << this->dice << "d" << this->face << "kl" << this->keep;
+        strss << this->dice.str_holder() << "d" << this->face.str_holder()
+              << "kl" << this->keep.str_holder();
         break;
     }
     strlist.emplace_back(strss.str());
@@ -378,8 +379,33 @@ void comp_calculus_reverse::print(str_container &strlist) const noexcept {
     this->child->print(strlist);
 }
 
-void dicelet_unit::roll_dicelet(result_container &rets,
-                                str_container &out) const {
+void dicelet_unit_sharp::roll_dicelet(result_container &rets,
+                                      str_container &out) const {
+    str_container str_temp;
+    bool is_first = true;
+    str_temp.emplace_back("{");
+
+    int counter = fit_for_dice(this->count);
+    if (counter > MAX_DICE_UNIT_COUNT) throw unit_exceed();
+
+    while (counter--) {
+        if (is_first)
+            is_first = false;
+        else
+            str_temp.emplace_back(", ");
+        rets.push_back(this->child->roll_the_dice(str_temp));
+    }
+    str_temp.emplace_back("}");
+    out.splice(out.end(), str_temp);
+}
+void dicelet_unit_sharp::print(str_container &strlist) const noexcept {
+    strlist.emplace_back(this->count.str_holder());
+    strlist.emplace_back("#");
+    this->child->print(strlist);
+}
+
+void dicelet_unit_brace::roll_dicelet(result_container &rets,
+                                      str_container &out) const {
     str_container str_temp;
     bool is_first = true;
     str_temp.emplace_back("{");
@@ -393,7 +419,7 @@ void dicelet_unit::roll_dicelet(result_container &rets,
     str_temp.emplace_back("}");
     out.splice(out.end(), str_temp);
 }
-void dicelet_unit::print(str_container &strlist) const noexcept {
+void dicelet_unit_brace::print(str_container &strlist) const noexcept {
     strlist.emplace_back("{");
     bool is_first = true;
     for (p_component const &dlp : this->dicelets) {

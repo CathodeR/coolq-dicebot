@@ -17,7 +17,7 @@ namespace dicebot {
         enum class def_roll_type { def_roll };
     } // namespace profile
 
-    constexpr unsigned MAX_DICE_UNIT_COUNT = 10;
-    constexpr unsigned MAX_DICE_NUM = 50;
-    constexpr unsigned MAX_DICE_FACE = 1000;
+    constexpr int MAX_DICE_UNIT_COUNT = 10;
+    constexpr int MAX_DICE_NUM = 50;
+    constexpr int MAX_DICE_FACE = 1000;
 } // namespace dicebot

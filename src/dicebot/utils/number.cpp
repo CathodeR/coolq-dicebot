@@ -209,7 +209,7 @@ bool number::operator==(const float_type val1) const {
         return this->value.i_value == val1;
 }
 
-std::string number::str() const {
+std::string number::str() const noexcept {
     if (this->is_using_int)
         return std::to_string(this->value.i_value);
     else {
@@ -217,6 +217,34 @@ std::string number::str() const {
         int pos = ret.find_last_not_of('0');
         if (pos != std::string::npos) ret.assign(ret.substr(0, pos + 1));
         return ret;
+    }
+}
+
+std::string number::str_holder() const noexcept {
+    if (this->is_using_int) {
+        if (this->value.i_value > 0)
+            return std::to_string(this->value.i_value);
+        else
+            return std::string("(")
+                .append(std::to_string(this->value.i_value))
+                .append(")");
+    } else {
+        std::string ret = "(";
+        std::string fr = std::to_string(this->value.f_value);
+        int pos = fr.find_last_not_of('0');
+        if (pos != std::string::npos)
+            ret.append(fr.substr(0, pos + 1)).append(")");
+        else
+            ret.append("0)");
+        return ret;
+    }
+}
+
+number number::operator-() const {
+    if (this->is_using_int) {
+        return number(this->value.i_value);
+    } else {
+        return number(this->value.f_value);
     }
 }
 

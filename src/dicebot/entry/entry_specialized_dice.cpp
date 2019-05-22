@@ -24,14 +24,12 @@ static const auto roll_owod = [](std::string const& message,
 
         roll::dice_roll dr;
         roll::roll_owod(dr, str_roll_source);
-        if (dr) {
-            output_constructor oc(event.nickname);
-            if (command_match.suffix().length())
-                oc << command_match.suffix().str() << " ";
-            oc.append_roll("oWoD", dr.detail(), dr.summary);
-            response = oc.str();
-            return true;
-        }
+        output_constructor oc(event.nickname);
+        if (command_match.suffix().length())
+            oc << command_match.suffix().str() << " ";
+        oc.append_roll("oWoD", dr.detail(), dr.summary);
+        response = oc.str();
+        return true;
     }
     return false;
 };
@@ -47,15 +45,13 @@ static const auto roll_nwod = [](std::string const& message,
 
         roll::dice_roll dr;
         roll::roll_nwod(dr, str_roll_source);
-        if (dr) {
-            output_constructor oc(event.nickname);
-            if (command_match.suffix().length())
-                oc << command_match.suffix().str() << " ";
-            oc.append_roll("nWoD", dr.detail(), dr.summary);
-            response = oc.str();
+        output_constructor oc(event.nickname);
+        if (command_match.suffix().length())
+            oc << command_match.suffix().str() << " ";
+        oc.append_roll("nWoD", dr.detail(), dr.summary);
+        response = oc.str();
 
-            return true;
-        }
+        return true;
     }
     return false;
 };
@@ -126,14 +122,11 @@ bool entry_coc_dice::resolve_request(std::string const& message,
         // roll::dice_roller diceRoll(str_roll_source, roll::roll_mode::COC_PB);
         roll::dice_roll dr;
         roll::roll_coc(dr, str_roll_source);
-        if (dr) {
-            output_constructor oc(event.nickname, str_roll_message);
-            oc.append_roll(
-                "CoC" + str_roll_source, dr.detail_coc(), dr.summary);
-            response = oc.str();
+        output_constructor oc(event.nickname, str_roll_message);
+        oc.append_roll("CoC" + str_roll_source, dr.detail_coc(), dr.summary);
+        response = oc.str();
 
-            return true;
-        }
+        return true;
     }
     return false;
 }
@@ -172,12 +165,9 @@ bool entry_fate_dice::resolve_request(std::string const& message,
         roll::roll_fate(dr);
     }
 
-    if (dr) {
-        output_constructor oc(event.nickname, str_roll_message);
-        oc.append_roll("FATE", dr.detail_fate(), dr.summary);
-        response = oc.str();
-        return true;
-    }
-    return false;
+    output_constructor oc(event.nickname, str_roll_message);
+    oc.append_roll("FATE", dr.detail_fate(), dr.summary);
+    response = oc.str();
+    return true;
 }
 #pragma endregion

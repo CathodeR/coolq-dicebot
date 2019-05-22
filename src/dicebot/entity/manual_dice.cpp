@@ -35,14 +35,9 @@ void manual_dice::roll(const std::string& source) {
         int i_face_of_die = (*iter_list).first;
         roll::dice_roll dr;
         roll::roll_base(dr, 1, i_face_of_die);
-        if (dr) {
-            this->i_sum_result -= (*iter_list).second;
-            (*iter_list).second = dr.summary;
-            this->i_sum_result += dr.summary;
-        } else {
-            this->status = dr.status;
-            return;
-        }
+        this->i_sum_result -= (*iter_list).second;
+        (*iter_list).second = dr.summary;
+        this->i_sum_result += dr.summary;
         this->status = roll::roll_status::FINISHED;
     } catch (const std::invalid_argument& ia) {
 #ifdef _DEBUG
@@ -97,13 +92,8 @@ void manual_dice::add(const std::string& source) {
             for (int i_iter = 0; i_iter < i_dice; i_iter++) {
                 roll::dice_roll dr;
                 roll::roll_base(dr, 1, i_face);
-                if (dr) {
-                    this->push_back(pair_mdice(i_face, dr.summary));
-                    this->i_sum_result += dr.summary;
-                } else {
-                    this->status = dr.status;
-                    return;
-                }
+                this->push_back(pair_mdice(i_face, dr.summary));
+                this->i_sum_result += dr.summary;
             }
             str_source_copy.assign(smatch_single.suffix().str());
         }

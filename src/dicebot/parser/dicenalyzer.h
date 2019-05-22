@@ -3,18 +3,26 @@
 #include <list>
 #include <memory>
 #include <vector>
-#include "syntax.h"
+#include "../utils/number.h"
+#include "./syntax.h"
 
 namespace dicebot::diceparser {
-    enum class cal_err { fine, negative_dice, dice_num_exceed, dice_face_exceed, div_zero };
+    enum class cal_err {
+        fine,
+        negative_dice,
+        dice_num_exceed,
+        dice_face_exceed,
+        div_zero
+    };
 
     using str_container = std::list<std::string>;
     using result_container = std::list<number>;
 
     class component {
     public:
-        virtual number roll_the_dice(str_container &) const { return 0; }
-        virtual void print(str_container &) const noexcept {};
+        virtual number roll_the_dice(str_container &) const = 0;
+        virtual void print(str_container &) const noexcept = 0;
+        virtual ~component() {}
     };
 
     class base_holder {};
@@ -35,12 +43,17 @@ namespace dicebot::diceparser {
         void print(str_container &) const noexcept override;
     };
 
-    enum class dice_rdk_mode { single_d, numbered_d, numbered_d_k, numbered_d_kl };
+    enum class dice_rdk_mode {
+        single_d,
+        numbered_d,
+        numbered_d_k,
+        numbered_d_kl
+    };
 
     class comp_dice_rdk : public component {
     public:
         dice_rdk_mode mode;
-        uint32_t dice, face, keep;
+        number dice, face, keep;
         number roll_the_dice(str_container &) const override;
         void print(str_container &) const noexcept override;
     };
@@ -64,10 +77,20 @@ namespace dicebot::diceparser {
     class dicelet : public component {
     public:
         using p_dicelet = std::shared_ptr<dicelet>;
-        virtual void roll_dicelet(result_container &, str_container &) const {};
+        number roll_the_dice(str_container &) const override { return 0; }
+        virtual void roll_dicelet(result_container &,
+                                  str_container &) const = 0;
     };
 
-    class dicelet_unit : public dicelet {
+    class dicelet_unit_sharp : public dicelet {
+    public:
+        number count;
+        p_component child;
+        void roll_dicelet(result_container &, str_container &) const override;
+        void print(str_container &) const noexcept override;
+    };
+
+    class dicelet_unit_brace : public dicelet {
     public:
         std::vector<p_component> dicelets;
         void roll_dicelet(result_container &, str_container &) const override;

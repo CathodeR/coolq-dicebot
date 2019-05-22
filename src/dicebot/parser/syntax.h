@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <memory>
-#include "../utils/number.h"
 #include "./token.h"
 
 namespace dicebot::diceparser {
@@ -124,7 +123,8 @@ namespace dicebot::diceparser {
         production_type prod_type;
         p_syntax_item items[5];
 
-        syntax_nterminal(token_t end_token, uint8_t type, production_type prod_type) {
+        syntax_nterminal(token_t end_token, uint8_t type,
+                         production_type prod_type) {
             this->type = type;
             this->prod_type = prod_type;
             this->source_token = end_token;
