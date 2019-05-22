@@ -11,15 +11,15 @@ namespace dicebot::profile {
 
     class profile_manager {
         static std::unique_ptr<profile_manager> instance;
-        std::unique_ptr<profile_map> profiles = std::make_unique<profile_map>();
+        profile_map profiles;
 
     public:
         static profile_manager* create_instance() noexcept;
-        static const profile_manager* get_instance() noexcept;
+        static profile_manager* get_instance() noexcept;
         static void destroy_instance() noexcept;
 
         bool force_update(int64_t const user_id) const;
 
-        sptr_user_profile get_profile(int64_t const user_id) const;
+        sptr_user_profile get_profile(int64_t const user_id);
     };
 } // namespace dicebot::profile
