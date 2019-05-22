@@ -27,7 +27,7 @@ static const auto roll_owod = [](std::string const& message,
         if (dr) {
             output_constructor oc(event.nickname);
             if (command_match.suffix().length())
-                oc << command_match.suffix().str();
+                oc << command_match.suffix().str() << " ";
             oc.append_roll("oWoD", dr.detail(), dr.summary);
             response = oc.str();
             return true;
@@ -50,7 +50,7 @@ static const auto roll_nwod = [](std::string const& message,
         if (dr) {
             output_constructor oc(event.nickname);
             if (command_match.suffix().length())
-                oc << command_match.suffix().str();
+                oc << command_match.suffix().str() << " ";
             oc.append_roll("nWoD", dr.detail(), dr.summary);
             response = oc.str();
 
@@ -127,10 +127,9 @@ bool entry_coc_dice::resolve_request(std::string const& message,
         roll::dice_roll dr;
         roll::roll_coc(dr, str_roll_source);
         if (dr) {
-            output_constructor oc(event.nickname);
-            if (!str_roll_message.empty()) oc.append_message(str_roll_message);
+            output_constructor oc(event.nickname, str_roll_message);
             oc.append_roll(
-                "CoC " + str_roll_source, dr.detail_coc(), dr.summary);
+                "CoC" + str_roll_source, dr.detail_coc(), dr.summary);
             response = oc.str();
 
             return true;
@@ -174,8 +173,7 @@ bool entry_fate_dice::resolve_request(std::string const& message,
     }
 
     if (dr) {
-        output_constructor oc(event.nickname);
-        if (!str_roll_message.empty()) oc.append_message(str_roll_message);
+        output_constructor oc(event.nickname, str_roll_message);
         oc.append_roll("FATE", dr.detail_fate(), dr.summary);
         response = oc.str();
         return true;

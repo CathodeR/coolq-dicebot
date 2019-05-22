@@ -41,8 +41,7 @@ bool entry_set_roll::resolve_request(std::string const& message,
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"设置默认骰子指令:");
-        oc.append_message(str_roll_command);
+        oc << u8"设置默认骰子指令: " << str_roll_command;
         response = oc.str();
         return true;
     };
@@ -58,10 +57,7 @@ bool entry_set_roll::resolve_request(std::string const& message,
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"设置指令:");
-        oc.append_message(str_roll_command);
-        oc.append_message(u8"为");
-        oc.append_message(m_name[1]);
+        oc << u8"设置指令: " << str_roll_command << u8" 为 " << m_name[1];
         response = oc.str();
         return true;
     };
@@ -132,9 +128,9 @@ bool entry_set_roll::resolve_request(std::string const& message,
 static auto defr_msg = [](profile::user_profile::def_roll_map_t const& map,
                           std::string const& head, output_constructor& out) {
     if (map.empty()) return;
-    out.append_message("\r\n" + head);
+    out << "\r\n" << head;
     for (auto const& pair : map) {
-        out.append_message(pair.second);
+        out << pair.second;
     }
 };
 
@@ -145,10 +141,7 @@ static auto macro_msg = [](profile::user_profile::mac_roll_map_t const& map,
     for (auto const& pair : map) {
         if (!message.empty() && pair.first.find(message) == std::string::npos)
             continue;
-        out.append_message(u8"\r\n>");
-        out.append_message(pair.first);
-        out.append_message(u8":");
-        out.append_message(pair.second);
+        out << u8"\r\n> " << pair.first << u8" : " << pair.second;
     }
 };
 
@@ -170,8 +163,8 @@ bool entry_list::resolve_request(std::string const& message, event_info& event,
         auto p_profile = profile::profile_manager::get_instance()->get_profile(
             event.user_id);
         output_constructor oc(event.nickname);
-        oc.append_message(u8"已设置下列骰子指令:");
-        defr_msg(p_profile->def_roll, u8"* 默认 :", oc);
+        oc << u8"已设置下列骰子指令: ";
+        defr_msg(p_profile->def_roll, u8"* 默认 : ", oc);
         macro_msg(p_profile->mac_rolls, "", oc);
         response = oc.str();
         return true;
@@ -181,9 +174,7 @@ bool entry_list::resolve_request(std::string const& message, event_info& event,
                                  ->mac_rolls;
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"已设置如下包含\"");
-        oc.append_message(message);
-        oc.append_message("\"的骰子指令:");
+        oc << u8"已设置如下包含 \"" << message << "\" 的骰子指令:";
         macro_msg(macros, message, oc);
         response = oc.str();
         return true;
@@ -213,7 +204,7 @@ bool entry_delete::resolve_request(std::string const& message,
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"已删除所有骰子指令");
+        oc << u8"已删除所有骰子指令";
         response = oc.str();
         return true;
     } else {
@@ -224,8 +215,7 @@ bool entry_delete::resolve_request(std::string const& message,
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc.append_message(u8"已删除骰子指令:");
-        oc.append_message(message);
+        oc << u8"已删除骰子指令: " << message;
         response = oc.str();
         return true;
     }

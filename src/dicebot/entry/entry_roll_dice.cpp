@@ -61,7 +61,7 @@ bool entry_roll_dice::resolve_request(std::string const& message,
                     ->sys_vars.set(profile::sys_var_type::rs_on, var)
                 == profile::profile_status::finished) {
                 output_constructor oc(event.nickname);
-                oc.append_message(u8"启用骰子详细输出");
+                oc << u8"启用骰子详细输出";
                 response = oc.str();
                 return true;
             } else
@@ -72,7 +72,7 @@ bool entry_roll_dice::resolve_request(std::string const& message,
                     ->sys_vars.set(profile::sys_var_type::rs_on, var)
                 == profile::profile_status::finished) {
                 output_constructor oc(event.nickname);
-                oc.append_message(u8"关闭骰子详细输出");
+                oc << u8"关闭骰子详细输出";
                 response = oc.str();
                 return true;
             } else
@@ -145,8 +145,7 @@ bool entry_roll_dice::resolve_request(std::string const& message,
                     ""));
     }
 
-    output_constructor oc(event.nickname);
-    if (!parser.tail.empty()) oc.append_message(parser.tail);
+    output_constructor oc(event.nickname, parser.tail);
     if (detailed_roll_message)
         oc.append_roll(str_roll_command, str_roll_detail, str_result);
     else

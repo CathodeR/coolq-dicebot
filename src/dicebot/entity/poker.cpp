@@ -33,18 +33,18 @@ constexpr poker::poker_type standard_deck[] = {
     club_5,    club_6,    club_7,    club_8,    club_9,      club_10,
     club_J,    club_Q,    club_K,    club_A,    joker_color, joker_bw};
 
-constexpr char poker_name_ascii[][12] = {
-    "heart 2",   "heart 3",   "heart 4",     "heart 5",   "heart 6",
-    "heart 7",   "heart 8",   "heart 9",     "heart 10",  "heart J",
-    "heart Q",   "heart K",   "heart A",     "spade 2",   "spade 3",
-    "spade 4",   "spade 5",   "spade 6",     "spade 7",   "spade 8",
-    "spade 9",   "spade 10",  "  spade J",   "spade Q",   "spade K",
-    "spade A",   "diamond 2", "diamond 3",   "diamond 4", "diamond 5",
-    "diamond 6", "diamond 7", "diamond 8",   "diamond 9", "diamond 10",
-    "diamond J", "diamond Q", "diamond K",   "diamond A", "club 2",
-    "club 3",    "club 4",    "club 5",      "club 6",    "club 7",
-    "club 8",    "club 9",    "club 10",     "club J",    "club Q",
-    "club K",    "club A",    "joker color", "joker bw"};
+constexpr char poker_name_ascii[][14] = {
+    "heart 2",   "Heart 3",   "Heart 4",   "Heart 5",   "Heart 6",
+    "Heart 7",   "Heart 8",   "Heart 9",   "Heart 10",  "Heart J",
+    "Heart Q",   "Heart K",   "Heart A",   "Spade 2",   "Spade 3",
+    "Spade 4",   "Spade 5",   "Spade 6",   "Spade 7",   "Spade 8",
+    "Spade 9",   "Spade 10",  "  Spade J", "Spade Q",   "Spade K",
+    "Spade A",   "Diamond 2", "Diamond 3", "Diamond 4", "Diamond 5",
+    "Diamond 6", "Diamond 7", "Diamond 8", "Diamond 9", "Diamond 10",
+    "Diamond J", "Diamond Q", "Diamond K", "Diamond A", "Club 2",
+    "Club 3",    "Club 4",    "Club 5",    "Club 6",    "Club 7",
+    "Club 8",    "Club 9",    "Club 10",   "Club J",    "Club Q",
+    "Club K",    "Club A",    "Joker",     "Joker(bw)"};
 
 const std::unordered_map<std::string, poker::poker_type> card_names = {
     {"h2", heart_2},
@@ -234,6 +234,8 @@ void poker_deck::init(const std::string& params) noexcept {
                 {custom, static_cast<uint16_t>(this->card_sources.size())});
             this->card_sources.push_back(count_and_name.second);
         }
+
+        if (this->deck.size() > MAX_DECK_SIZE) break;
     }
     this->card_sources.shrink_to_fit();
     this->shuffle();

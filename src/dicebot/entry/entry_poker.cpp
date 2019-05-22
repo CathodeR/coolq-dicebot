@@ -30,14 +30,29 @@ static auto draw_poker = [](const std::string &suffix, const event_info &event,
     auto p_deck =
         poker::poker_manager::get_instance()->get_deck(event.group_id);
 
+    auto show_drawer = [p_deck](output_constructor &oc) {
+        oc << u8" | 牌堆(" << p_deck->size() << ")已经抽出了: ";
+        bool is_first = true;
+        for (const auto &item : p_deck->drawer) {
+            if (is_first) {
+                is_first = false;
+                oc << p_deck->render_name(item);
+            } else {
+                oc << std::string(", ") + p_deck->render_name(item);
+            }
+        }
+    };
+
     if (p_deck->draw(card)) {
         output_constructor oc(event.nickname);
         oc << u8"抽出了" << p_deck->render_name(card);
+        show_drawer(oc);
         response = oc.str();
         return true;
     } else {
         output_constructor oc(event.nickname);
-        oc.append_message(u8"无牌可抽");
+        oc << u8"无牌可抽";
+        show_drawer(oc);
         response = oc.str();
         return true;
     }
@@ -76,7 +91,7 @@ entry_poker::entry_poker() noexcept {
         u8"指令.poker init standard 初始化一副共54张的扑克牌，并洗牌\n"
         u8"指令.poker draw 抽一张牌\n"
         u8"指令.poker shuffle 重新洗牌\n"
-        u8"指令.poker init 8j,8diamond a "
+        u8"指令.poker init 8j,8diamonda "
         u8"初始化一副由8张joker和8张方片A组成的牌堆，并洗牌\n"
         u8"指令.poker init 战,法,牧 "
         u8"初始化一副由战,法,牧3张牌组成的牌堆，并洗牌";
@@ -86,10 +101,10 @@ bool entry_poker::resolve_request(std::string const &message, event_info &event,
                                   std::string &response) {
     std::smatch detail_command_match;
     std::regex_search(message, detail_command_match, filter_command);
-    if (!detail_command_match.empty()) {
-        auto iter = func_map.find(detail_command_match[1]);
-        if (iter == func_map.end()) return false;
-        iter->second(detail_command_match.suffix().str(), event, response);
-    }
-    return false;
+    if (detail_command_match.empty()) return false;
+
+    auto iter = func_map.find(detail_command_match[1]);
+    if (iter == func_map.end()) return false;
+    iter->second(detail_command_match.suffix().str(), event, response);
+    return true;
 }

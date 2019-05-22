@@ -1,5 +1,9 @@
 #include "./database_manager.h"
 
+#ifdef _DEBUG
+#include "../utils/logger.h"
+#endif
+
 using namespace dicebot;
 using namespace dicebot::database;
 
