@@ -100,7 +100,7 @@ TEST_F(entry_test, roll_6sharp4d6kl3) {
     this->base_call(ei, ".rson");
 
     std::regex result_reg(
-        u8"^ \\* dice 掷骰: \\{(4d6kl3, ){5}4d6kl3\\} = \\{(\\[\\d\\*? \\+ "
+        u8"^ \\* dice 掷骰: 6\\#4d6kl3 = \\{(\\[\\d\\*? \\+ "
         u8"\\d\\*? \\+ \\d\\*? \\+ \\d\\*?\\], ){5}(\\[\\d\\*? \\+ "
         u8"\\d\\*? \\+ \\d\\*? \\+ \\d\\*?\\])\\} = \\{(\\d{1,2}, "
         u8"){5}\\d{1,2}\\}$");
@@ -109,7 +109,7 @@ TEST_F(entry_test, roll_6sharp4d6kl3) {
     ASSERT_TRUE(this->test_call(
         ei, ".rsoff", std::regex(u8"^ \\* dice 关闭骰子详细输出$")));
     std::regex result_reg_s(
-        u8"^ \\* dice 掷骰: \\{(4d6kl3, ){5}4d6kl3\\} = \\{(\\d{1,2}, "
+        u8"^ \\* dice 掷骰: 6\\#4d6kl3 = \\{(\\d{1,2}, "
         u8"){5}\\d{1,2}\\}$");
     ASSERT_TRUE(this->test_call(ei, source, result_reg_s));
     ASSERT_TRUE(this->test_call(ei, ".rs6#4d6kl3", result_reg));
@@ -125,7 +125,7 @@ TEST_F(entry_test, roll_brace_calculus) {
     this->base_call(ei, ".rson");
 
     std::regex result(
-        "^ \\* dice 掷骰: \\{d20, d20\\} - \\{1, 2\\} = "
+        "^ \\* dice 掷骰: 2\\#d20 - \\{1, 2\\} = "
         "\\{\\[\\d{1,2}\\], \\[\\d{1,2}\\]\\} - \\{1, 2\\} = "
         "\\{\\d{1,2}, \\d{1,2}\\}");
 
