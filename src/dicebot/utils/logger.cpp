@@ -1,6 +1,5 @@
-#include "./common.h"
-
-using namespace dicebot;
+#include "./logger.h"
+#include <functional>
 
 namespace dicebot::logger {
     std::function<void(std::string const &, std::string const &)> _log;

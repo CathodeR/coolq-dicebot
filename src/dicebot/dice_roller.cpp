@@ -2,6 +2,8 @@
 
 #include <chrono>
 #include <random>
+#include <regex>
+#include <sstream>
 
 #include "./utils/utils.h"
 
@@ -61,7 +63,7 @@ roll_status dice_roll::finish_roll() noexcept {
 }
 
 std::string dice_roll::detail() {
-    ostrs ost(ostrs::ate);
+    std::ostringstream ost;
     ost << "[";
     for (uint16_t i = 0; i < this->results.size(); i++) {
         dice_pair dp = results[i];
@@ -95,7 +97,7 @@ roll_status dice_roll::finish_coc() noexcept {
 }
 
 std::string dice_roll::detail_coc() noexcept {
-    ostrs ost(ostrs::ate);
+    std::ostringstream ost;
     if (this->results.size() > 1) {
         ost << "[";
         for (uint16_t i = 1; i < this->results.size(); i++) {
@@ -131,7 +133,7 @@ roll_status dice_roll::finish_wod(int const i_d, bool const failing) noexcept {
 }
 
 std::string dice_roll::detail_fate() noexcept {
-    ostrs ost(ostrs::ate);
+    std::ostringstream ost;
     ost << "[";
     for (uint16_t i = 0; i < 4; i++) {
         dice_pair dp = results[i];

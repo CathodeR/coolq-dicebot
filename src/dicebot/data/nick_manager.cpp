@@ -1,8 +1,9 @@
 #include "./database_manager.h"
 
-#include "./nick_manager.h"
+#include <sstream>
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "./nick_manager.h"
 
 using namespace dicebot;
 using namespace dicebot::nickname;
@@ -39,7 +40,7 @@ void nickname_manager::destroy_instance() {
 }
 
 static bool read_database(event_info const &event, std::string &nickname) {
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "SELECT name FROM " NICK_TABLE_NAME
                       << " where qqid =" << event.user_id
                       << " and groupid =" << event.group_id;
@@ -58,7 +59,7 @@ static bool read_database(event_info const &event, std::string &nickname) {
 }
 
 static bool exist_database(event_info const &event) {
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "SELECT count(*) FROM " NICK_TABLE_NAME
                       << " where qqid =" << event.user_id
                       << " and groupid =" << event.group_id;
@@ -74,7 +75,7 @@ static bool exist_database(event_info const &event) {
 }
 
 static bool insert_database(event_info const &event) {
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "insert into " NICK_TABLE_NAME " values ( "
                       << event.user_id << ", " << event.group_id << ", "
                       << "'" << nickname_encode(event.nickname) << "'"
@@ -83,9 +84,9 @@ static bool insert_database(event_info const &event) {
 }
 
 static bool update_database(event_info const &event) {
-    ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command.str("update " NICK_TABLE_NAME " set ");
-    ostrs_sql_command << " name ='" << nickname_encode(event.nickname) << "'"
+    std::ostringstream ostrs_sql_command;
+    ostrs_sql_command << "update " NICK_TABLE_NAME " set "
+                      << " name ='" << nickname_encode(event.nickname) << "'"
                       << " where qqid =" << event.user_id
                       << " and groupid =" << event.group_id;
 

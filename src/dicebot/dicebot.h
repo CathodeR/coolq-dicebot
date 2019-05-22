@@ -1,10 +1,11 @@
 #pragma once
 
-#include "./common.h"
 #include "./utils/number.h"
 #include "./utils/utils.h"
 
 #include <memory>
+#include <regex>
+#include <sstream>
 
 #include "./data/database_manager.h"
 #include "./data/manual_dice_control.h"
@@ -21,6 +22,7 @@
 #include "./entry/entry_roll_dice.h"
 #include "./entry/entry_specialized_dice.h"
 #include "./random/random_provider.h"
+#include "./utils/logger.h"
 
 namespace dicebot {
     std::unique_ptr<entry_manager> dice_ptcs;
@@ -74,7 +76,7 @@ namespace dicebot {
 
         std::list<std::string>::iterator iter_source = source_splits.begin();
 
-        ostrs ot(ostrs::ate);
+        std::ostringstream ot;
 
         bool is_output_available = false;
         bool does_last_line_have_output = false;
@@ -94,7 +96,7 @@ namespace dicebot {
             if (!match_command[1].matched) continue;
 
             std::string command = match_command[1];
-            entry::p_entry target_entry = dice_ptcs->get_entry(command);
+            auto target_entry = dice_ptcs->get_entry(command);
 
             if (target_entry->is_stand_alone) {
                 if (target_entry->resolve_request(

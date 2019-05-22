@@ -1,5 +1,7 @@
 #include "./entry_profile.h"
 
+#include <regex>
+
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 #include "../data/profile_manager.h"
@@ -11,11 +13,10 @@ using namespace dicebot;
 using namespace dicebot::entry;
 
 #pragma region set roll
-entry_set_roll::entry_set_roll() {
+entry_set_roll::entry_set_roll() noexcept {
     this->is_stand_alone = false;
     this->identifier_regex = "s(?:et)?";
     this->identifier_list = {"set", "s"};
-    this->filter_name = "^([^\\+\\-\\*/\\(\\)\\s]+)";
 
     this->help_message = base64_decode(
         "6K6+572u6aqw5a2QKC5zZXTmiJbogIUucykK5oyH"
@@ -31,6 +32,8 @@ entry_set_roll::entry_set_roll() {
         "kOWQjeensOS4reS4jeiDveWMheWQqystKi/lkozn"
         "qbrmoLw=");
 }
+
+static const std::regex filter_name("^([^\\+\\-\\*/\\(\\)\\s]+)");
 
 bool entry_set_roll::resolve_request(std::string const& message,
                                      event_info& event, std::string& response) {
@@ -55,7 +58,7 @@ bool entry_set_roll::resolve_request(std::string const& message,
                          std::string const& str_roll_command,
                          std::string const& str_message) -> bool {
         std::smatch m_name;
-        std::regex_search(str_message, m_name, this->filter_name);
+        std::regex_search(str_message, m_name, filter_name);
         if (!m_name[1].matched) return false;
         pfm->get_profile(event.user_id)
             ->mac_rolls.set(m_name[1], str_roll_command);
@@ -156,7 +159,7 @@ static auto macro_msg = [](profile::user_profile::mac_roll_map_t const& map,
     }
 };
 
-entry_list::entry_list() {
+entry_list::entry_list() noexcept {
     this->is_stand_alone = true;
     this->identifier_regex = "l(?:ist)?";
     this->identifier_list = {"list", "l"};
@@ -210,7 +213,7 @@ bool entry_list::resolve_request(std::string const& message, event_info& event,
 #pragma endregion
 
 #pragma region delete
-entry_delete::entry_delete() {
+entry_delete::entry_delete() noexcept {
     this->is_stand_alone = false;
     this->identifier_regex = "d(?:elete)?";
     this->identifier_list = {"d", "delete"};

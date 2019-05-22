@@ -1,10 +1,13 @@
 #pragma once
 
-#include "./common.h"
+#include <memory>
+#include <vector>
+#include "./constants.h"
 
 namespace dicebot::roll {
 
-#define CHECK_LIMITS(_Num, _Face) ((_Face < MAX_DICE_FACE && _Num < MAX_DICE_NUM) && (_Face > 1 && _Num >= 1))
+#define CHECK_LIMITS(_Num, _Face) \
+    ((_Face < MAX_DICE_FACE && _Num < MAX_DICE_NUM) && (_Face > 1 && _Num >= 1))
 
     using dice_pair = std::pair<int32_t, bool>;
 
@@ -36,19 +39,27 @@ namespace dicebot::roll {
 
     using p_dice_roll = std::shared_ptr<dice_roll>;
 
-    roll_status roll_base(dice_roll& dice, int const i_num_of_dice, int const i_num_of_face) noexcept;
+    roll_status roll_base(dice_roll& dice, int const i_num_of_dice,
+                          int const i_num_of_face) noexcept;
 
-    roll_status roll_rdk(dice_roll& dice, int const i_num_of_dice, int const i_num_of_face, int const i_keep) noexcept;
-    roll_status roll_rdk(dice_roll& dice, std::string const& str_dice_command) noexcept;
+    roll_status roll_rdk(dice_roll& dice, int const i_num_of_dice,
+                         int const i_num_of_face, int const i_keep) noexcept;
+    roll_status roll_rdk(dice_roll& dice,
+                         std::string const& str_dice_command) noexcept;
 
     roll_status roll_coc(dice_roll& dice, int const i_bp) noexcept;
-    roll_status roll_coc(dice_roll& dice, std::string const& str_dice_command) noexcept;
+    roll_status roll_coc(dice_roll& dice,
+                         std::string const& str_dice_command) noexcept;
 
-    roll_status roll_wod(dice_roll& dice, int const i_val, int const i_d, int const i_bonus, bool failing) noexcept;
-    roll_status roll_nwod(dice_roll& dice, std::string const& str_dice_command) noexcept;
-    roll_status roll_owod(dice_roll& dice, std::string const& str_dice_command) noexcept;
+    roll_status roll_wod(dice_roll& dice, int const i_val, int const i_d,
+                         int const i_bonus, bool failing) noexcept;
+    roll_status roll_nwod(dice_roll& dice,
+                          std::string const& str_dice_command) noexcept;
+    roll_status roll_owod(dice_roll& dice,
+                          std::string const& str_dice_command) noexcept;
 
     roll_status roll_fate(dice_roll& dice) noexcept;
     roll_status roll_fate(dice_roll& dice, int const i_val) noexcept;
-    roll_status roll_fate(dice_roll& dice, std::string const& str_dice_command) noexcept;
+    roll_status roll_fate(dice_roll& dice,
+                          std::string const& str_dice_command) noexcept;
 } // namespace dicebot::roll

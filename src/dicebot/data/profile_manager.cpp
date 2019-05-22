@@ -1,5 +1,7 @@
 #include "./profile_manager.h"
 
+#include <sstream>
+
 #include "../entity/profile.h"
 #include "./database_manager.h"
 
@@ -20,7 +22,7 @@ using db_manager = dicebot::database::database_manager;
     "primary    key    (qqid));"
 
 static bool read_database(user_profile &profile, int64_t const user_id) {
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "SELECT system_variables, default_roll, macro_roll "
                          "FROM " PROFILE_TABLE_NAME " where qqid ="
                       << user_id;
@@ -41,7 +43,7 @@ static bool read_database(user_profile &profile, int64_t const user_id) {
 }
 
 static bool exist_database(int64_t const user_id) {
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "SELECT count(*) FROM " PROFILE_TABLE_NAME
                          " where qqid ="
                       << user_id;
@@ -57,7 +59,7 @@ static bool exist_database(int64_t const user_id) {
 
 static bool insert_database(user_profile const &profile,
                             int64_t const user_id) {
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command.str(
         "insert into " PROFILE_TABLE_NAME
         " (system_variables,default_roll,macro_roll) values ( ");
@@ -76,9 +78,9 @@ static bool update_database(user_profile const &profile,
     sqlite3 *database = db_manager::get_instance()->get_database();
     char *pchar_err_message = nullptr;
 
-    ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command.str("update " PROFILE_TABLE_NAME " set ");
-    ostrs_sql_command << " system_variables ='" << profile.sys_vars.encode()
+    std::ostringstream ostrs_sql_command;
+    ostrs_sql_command << "update " PROFILE_TABLE_NAME " set "
+                      << " system_variables ='" << profile.sys_vars.encode()
                       << "'"
                       << ", default_roll ='" << profile.def_roll.encode() << "'"
                       << ", macro_roll ='" << profile.mac_rolls.encode() << "'"

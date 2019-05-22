@@ -2,6 +2,7 @@
 
 #include <memory>
 #include "../entity/manual_dice.h"
+#include "../event_info.h"
 #include "../utils/pair_hash.h"
 
 namespace dicebot::manual {

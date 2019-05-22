@@ -1,14 +1,15 @@
 #include "./entry_nickname.h"
 
+#include <regex>
+
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 
 using namespace dicebot;
 using namespace dicebot::entry;
 
-entry_nickname::entry_nickname() {
+entry_nickname::entry_nickname() noexcept {
     this->is_stand_alone = false;
-    this->filter_command = std::regex("^(s)(?:ilence)? *", std::regex_constants::icase);
     this->identifier_regex = "n(?:ame)?";
     this->identifier_list = {"name", "n"};
 
@@ -24,10 +25,14 @@ entry_nickname::entry_nickname() {
         "ouW8jw==");
 }
 
-bool entry_nickname::resolve_request(std::string const& message, event_info& event, std::string& response) {
+static std::regex filter_command("^(s)(?:ilence)? *",
+                                 std::regex_constants::icase);
+
+bool entry_nickname::resolve_request(std::string const& message,
+                                     event_info& event, std::string& response) {
     bool is_silence = false;
     std::smatch match_list_silence;
-    std::regex_search(message, match_list_silence, this->filter_command);
+    std::regex_search(message, match_list_silence, filter_command);
 
     if (match_list_silence.empty()) {
         std::string message_cp;
@@ -43,14 +48,14 @@ bool entry_nickname::resolve_request(std::string const& message, event_info& eve
             event.nickname = message_cp;
             (nickname::nickname_manager::instance)->set_nickname(event);
 
-            ostrs ot(ostrs::ate);
-            ot << u8" * " << str_origin_name << u8" 的新名字是 " << event.nickname;
-            response = ot.str();
+            output_constructor oc(str_origin_name);
+            oc << u8"的新名字是" << event.nickname;
+            response = oc.str();
             return true;
         } else {
-            ostrs ot(ostrs::ate);
-            ot << u8" * " << str_origin_name << u8" 的名字是 " << event.nickname;
-            response = ot.str();
+            output_constructor oc(str_origin_name);
+            oc << u8"的名字是" << event.nickname;
+            response = oc.str();
             return true;
         }
     } else {

@@ -1,10 +1,12 @@
 #include "./manual_dice.h"
 
-#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
-#include "../dice_roller.h"
-
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <iostream>
+#include <regex>
+
+#include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../dice_roller.h"
 
 using namespace dicebot;
 using namespace dicebot::manual;
@@ -130,7 +132,7 @@ void manual_dice::killall() {
 }
 
 std::string manual_dice::encode() const {
-    ostrs strs(ostrs::ate);
+    std::ostringstream strs;
     boost::archive::binary_oarchive oa(strs);
     oa << this->size();
     auto iter_list = this->cbegin();
@@ -163,7 +165,7 @@ void manual_dice::decode(const std::string& source) {
 }
 
 std::string manual_dice::str() {
-    ostrs ostrs_result(ostrs::ate);
+    std::ostringstream ostrs_result;
     int i_sum_result = 0;
     vec_mdice::iterator iter_list = this->begin();
 

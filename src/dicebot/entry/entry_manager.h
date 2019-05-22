@@ -1,22 +1,25 @@
 #pragma once
 
-#include "../common.h"
+#include <map>
+#include <memory>
+#include <regex>
 #include "./entry_base.h"
 
 namespace dicebot {
+    using p_entry = std::shared_ptr<entry::entry_base>;
     class entry_manager {
-        using entry_map_t = std::map<std::string, entry::p_entry>;
+        using entry_map_t = std::map<std::string, p_entry>;
         using entry_pair_t = entry_map_t::value_type;
 
     private:
         entry_map_t entry_cmd_map;
-        std::list<entry::p_entry> entry_list;
+        std::list<p_entry> entry_list;
         std::regex regex_command;
 
     public:
-        void register_dice(entry::p_entry entry);
-        void finish_initialization();
-        entry::p_entry const get_entry(std::string command) const;
+        void register_dice(p_entry entry) noexcept;
+        void finish_initialization() noexcept;
+        p_entry const get_entry(std::string command) const;
         std::regex const* get_regex_command() const;
     };
 } // namespace dicebot
@@ -33,9 +36,10 @@ namespace dicebot::entry {
         std::string default_help_message;
 
     public:
-        entry_help();
-        bool register_help(p_entry v_entry);
-        void generate_filter_command();
-        bool resolve_request(std::string const& message, event_info& event, std::string& response) override;
+        entry_help() noexcept;
+        bool register_help(p_entry v_entry) noexcept;
+        void generate_filter_command() noexcept;
+        bool resolve_request(std::string const& message, event_info& event,
+                             std::string& response) override;
     };
 } // namespace dicebot::entry

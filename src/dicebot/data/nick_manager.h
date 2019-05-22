@@ -1,7 +1,10 @@
 #pragma once
 
 #include <unordered_map>
-#include "../common.h"
+
+#include <memory>
+
+#include "../event_info.h"
 #include "../utils/pair_hash.h"
 namespace dicebot::nickname {
     class nickname_manager {

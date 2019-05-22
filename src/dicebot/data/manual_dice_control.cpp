@@ -1,5 +1,7 @@
 #include "./manual_dice_control.h"
 
+#include <sstream>
+
 #include "../entity/manual_dice.h"
 #include "./database_manager.h"
 
@@ -19,10 +21,10 @@ using db_manager = dicebot::database::database_manager;
 static bool insert_database(const utils::pair_t &manual_dice_key,
                             const manual_dice &manual_dice_target) {
     std::string str_encoded_manualdice(manual_dice_target.encode());
-    ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command.str("insert into " MANUALDICE_TABLE_NAME
-                          " (qqid, groupid, source) values ( ");
-    ostrs_sql_command << manual_dice_key.first << ", " << manual_dice_key.second
+    std::ostringstream ostrs_sql_command;
+    ostrs_sql_command << "insert into " MANUALDICE_TABLE_NAME
+                         " (qqid, groupid, source) values ( "
+                      << manual_dice_key.first << ", " << manual_dice_key.second
                       << ", '" << str_encoded_manualdice << "'"
                       << ");";
     return db_manager::get_instance()->exec_noquery(
@@ -32,9 +34,9 @@ static bool insert_database(const utils::pair_t &manual_dice_key,
 static bool update_database(const utils::pair_t &manual_dice_key,
                             const manual_dice &manual_dice_target) {
     std::string str_encoded_manualdice(manual_dice_target.encode());
-    ostrs ostrs_sql_command(ostrs::ate);
-    ostrs_sql_command.str("update " MANUALDICE_TABLE_NAME " set ");
-    ostrs_sql_command << " source ='" << str_encoded_manualdice << "'"
+    std::ostringstream ostrs_sql_command;
+    ostrs_sql_command << "update " MANUALDICE_TABLE_NAME " set "
+                      << " source ='" << str_encoded_manualdice << "'"
                       << " where qqid =" << manual_dice_key.first
                       << " and groupid =" << manual_dice_key.second;
     return db_manager::get_instance()->exec_noquery(
@@ -44,7 +46,7 @@ static bool update_database(const utils::pair_t &manual_dice_key,
 static bool read_database(const utils::pair_t &manual_dice_key,
                           manual_dice &manual_dice_target) {
     std::string str_encoded_manualdice(manual_dice_target.encode());
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "SELECT source FROM " MANUALDICE_TABLE_NAME
                          " where qqid ="
                       << manual_dice_key.first
@@ -66,7 +68,7 @@ static bool read_database(const utils::pair_t &manual_dice_key,
 
 static bool exist_database(const utils::pair_t &manual_dice_key) {
     bool ret = false;
-    ostrs ostrs_sql_command(ostrs::ate);
+    std::ostringstream ostrs_sql_command;
     ostrs_sql_command << "SELECT count(*) FROM " MANUALDICE_TABLE_NAME
                          " where qqid ="
                       << manual_dice_key.first

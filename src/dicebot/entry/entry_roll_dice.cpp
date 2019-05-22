@@ -1,20 +1,23 @@
 #include "./entry_roll_dice.h"
 
+#include <regex>
+
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../data/nick_manager.h"
 #include "../data/profile_manager.h"
 #include "../parser/dicenalyzer.h"
 #include "../parser/parser.h"
 #include "../utils/utils.h"
+
 // regular dice, with detailed info
 
 using namespace dicebot;
 using namespace dicebot::entry;
 
-entry_roll_dice::entry_roll_dice() {
+static const std::regex filter_command("^s(?:ource)? *",
+                                       std::regex_constants::icase);
+entry_roll_dice::entry_roll_dice() noexcept {
     this->is_stand_alone = false;
-    this->filter_command =
-        std::regex("^s(?:ource)? *", std::regex_constants::icase);
     this->identifier_regex = "r(?:oll)?";
     this->identifier_list = {"roll", "r"};
     this->help_message = base64_decode(
@@ -44,7 +47,7 @@ bool entry_roll_dice::resolve_request(std::string const& message,
                                       std::string& response) {
     bool detailed_roll_message = false;
     std::smatch match_list_command_detail;
-    std::regex_search(message, match_list_command_detail, this->filter_command);
+    std::regex_search(message, match_list_command_detail, filter_command);
 
     std::string message_cp;
     auto pfm = profile::profile_manager::get_instance();

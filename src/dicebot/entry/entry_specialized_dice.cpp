@@ -3,23 +3,74 @@
 #include "../data/nick_manager.h"
 #include "../dice_roller.h"
 #include "../utils/utils.h"
-
 using namespace dicebot;
 using namespace dicebot::entry;
 
 #pragma region wod
-entry_wod_dice::entry_wod_dice() {
-    this->is_stand_alone = false;
-    this->full_dice = std::regex("^(\\d+)(?:d(\\d+))?(?:b(\\d+))? *",
-                                 std::regex_constants::icase);
-    this->filter_command = std::regex("^(n|o) *", std::regex_constants::icase);
 
+static const std::regex wod_full_dice("^(\\d+)(?:d(\\d+))?(?:b(\\d+))? *",
+                                      std::regex_constants::icase);
+
+static const std::regex wod_filter_command("^(n|o) *",
+                                           std::regex_constants::icase);
+
+static const auto roll_owod = [](std::string const& message,
+                                 const event_info& event,
+                                 std::string& response) noexcept -> bool {
+    std::smatch command_match;
+    std::regex_search(message, command_match, wod_full_dice);
+    if (!command_match.empty()) {
+        std::string str_roll_source = command_match.str();
+        utils::remove_space_and_tab(str_roll_source);
+
+        roll::dice_roll dr;
+        roll::roll_owod(dr, str_roll_source);
+        if (dr) {
+            output_constructor oc(event.nickname);
+            if (command_match.suffix().length())
+                oc << command_match.suffix().str();
+            oc.append_roll("oWoD", dr.detail(), dr.summary);
+            response = oc.str();
+            return true;
+        }
+    }
+    return false;
+};
+
+static const auto roll_nwod = [](std::string const& message,
+                                 const event_info& event,
+                                 std::string& response) noexcept -> bool {
+    std::smatch command_match;
+    std::regex_search(message, command_match, wod_full_dice);
+    if (!command_match.empty()) {
+        std::string str_roll_source = command_match.str();
+        utils::remove_space_and_tab(str_roll_source);
+
+        roll::dice_roll dr;
+        roll::roll_nwod(dr, str_roll_source);
+        if (dr) {
+            output_constructor oc(event.nickname);
+            if (command_match.suffix().length())
+                oc << command_match.suffix().str();
+            oc.append_roll("nWoD", dr.detail(), dr.summary);
+            response = oc.str();
+
+            return true;
+        }
+    }
+    return false;
+};
+
+using wod_call =
+    std::function<bool(std::string const&, const event_info&, std::string&)>;
+using wod_map_t = std::map<std::string, wod_call>;
+
+static const wod_map_t wod_map = {{"n", roll_nwod}, {"o", roll_owod}};
+
+entry_wod_dice::entry_wod_dice() noexcept {
+    this->is_stand_alone = false;
     this->identifier_regex = "w(?:od)?";
     this->identifier_list = {"wod", "w"};
-    this->method_map.insert(
-        std::pair<std::string, wod_call>("n", &entry_wod_dice::nwod));
-    this->method_map.insert(
-        std::pair<std::string, wod_call>("o", &entry_wod_dice::owod));
 
     this->help_message = base64_decode(
         "V29E5a6a5Yi26aqw5a2QKC53b2TmiJYudykK5oyH"
@@ -35,67 +86,17 @@ entry_wod_dice::entry_wod_dice() {
 bool entry_wod_dice::resolve_request(std::string const& message,
                                      event_info& event, std::string& response) {
     std::smatch command_match;
-    std::regex_search(message, command_match, this->filter_command);
+    std::regex_search(message, command_match, wod_filter_command);
     if (command_match.empty()) return false;
 
     std::string str_match = command_match[1];
     utils::lower_case(str_match);
 
-    auto iter = this->method_map.find(str_match);
-    if (iter != method_map.end()) {
-        wod_call dice_call = (*iter).second;
-        return (this->*dice_call)(
-            command_match.suffix().str(), event.nickname, response);
+    auto iter = wod_map.find(str_match);
+    if (iter != wod_map.end()) {
+        return iter->second(command_match.suffix().str(), event, response);
     }
 
-    return false;
-}
-
-bool entry_wod_dice::nwod(std::string const& message,
-                          std::string const& nick_name, std::string& response) {
-    std::smatch command_match;
-    ostrs ostr(ostrs::ate);
-    std::regex_search(message, command_match, this->full_dice);
-    if (!command_match.empty()) {
-        std::string str_roll_msg = command_match.suffix().str();
-        std::string str_roll_source = command_match.str();
-        utils::remove_space_and_tab(str_roll_source);
-
-        roll::dice_roll dr;
-        roll::roll_nwod(dr, str_roll_source);
-        if (dr) {
-            output_constructor oc(nick_name);
-            if (!str_roll_msg.empty()) oc.append_message(str_roll_msg);
-            oc.append_roll("nWoD", dr.detail(), dr.summary);
-            response = oc.str();
-
-            return true;
-        }
-    }
-    return false;
-}
-
-bool entry_wod_dice::owod(std::string const& message,
-                          std::string const& nick_name, std::string& response) {
-    std::smatch command_match;
-    ostrs ostr(ostrs::ate);
-    std::regex_search(message, command_match, this->full_dice);
-    if (!command_match.empty()) {
-        std::string str_roll_msg = command_match.suffix().str();
-        std::string str_roll_source = command_match.str();
-        utils::remove_space_and_tab(str_roll_source);
-
-        roll::dice_roll dr;
-        roll::roll_owod(dr, str_roll_source);
-        if (dr) {
-            output_constructor oc(nick_name);
-            if (!str_roll_msg.empty()) oc.append_message(str_roll_msg);
-            oc.append_roll("oWoD", dr.detail(), dr.summary);
-            response = oc.str();
-
-            return true;
-        }
-    }
     return false;
 }
 #pragma endregion

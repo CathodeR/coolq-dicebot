@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../common.h"
 #include "../utils/number.h"
 #include "./syntax.h"
 #include "./token.h"

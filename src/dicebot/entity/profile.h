@@ -1,11 +1,12 @@
 #pragma once
 
-#include "../common.h"
-
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <initializer_list>
+#include <sstream>
+
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../constants.h"
 
 namespace dicebot::profile {
 
@@ -73,7 +74,7 @@ namespace dicebot::profile {
         }
 
         std::string encode() const noexcept {
-            ostrs strs(ostrs::ate);
+            std::ostringstream strs;
             boost::archive::binary_oarchive oa(strs);
             oa << this->size();
             auto iter_list = this->cbegin();
