@@ -88,7 +88,7 @@ set(TEST_BUILD_NAME dicebot.gtest.${X})
 file(GLOB_RECURSE TEST_SOURCE_ROLL_TEST
   src/tests/${X}.cpp
   src/dicebot/random/*.cpp
-  src/dicebot/data/manual_dice.cpp
+  src/dicebot/entity/manual_dice.cpp
   src/dicebot/dice_roller.cpp
   src/dicebot/utils/utils.cpp
   src/dicebot/common.cpp

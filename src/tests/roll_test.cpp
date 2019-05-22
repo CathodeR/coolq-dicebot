@@ -12,8 +12,8 @@
 
 #include "gtest/gtest.h"
 
-#include "dicebot/data/manual_dice.h"
-#include "dicebot/dice_roller.h"
+#include "./dicebot/dice_roller.h"
+#include "./dicebot/entity/manual_dice.h"
 
 namespace dicebot::test {
 

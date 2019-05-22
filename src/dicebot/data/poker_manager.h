@@ -1,6 +1,6 @@
 #include <memory>
 #include <unordered_map>
-#include "./poker.h"
+#include "../entity/poker.h"
 
 namespace dicebot::poker {
     class poker_manager {

@@ -1,7 +1,7 @@
 #include "./profile_manager.h"
 
+#include "../entity/profile.h"
 #include "./database_manager.h"
-#include "./profile.h"
 
 using namespace dicebot;
 using namespace dicebot::profile;
@@ -123,7 +123,7 @@ bool profile_manager::force_update(int64_t const user_id) const {
     if (iter == this->profiles.end())
         return false;
     else {
-        return write_database(*(iter->second), user_id);
+        return write_database(iter->second, user_id);
     }
     return false;
 }
@@ -131,17 +131,19 @@ bool profile_manager::force_update(int64_t const user_id) const {
 sptr_user_profile profile_manager::get_profile(int64_t const user_id) {
     auto iter = this->profiles.find(user_id);
     if (iter != this->profiles.end()) {
-        return iter->second;
+        return &iter->second;
     } else {
         if (database::is_no_sql_mode) return nullptr;
 
-        sptr_user_profile upf = std::make_shared<user_profile>();
-        if (!read_database(*upf, user_id)) {
-            auto t = this->profiles.insert(profile_pair(user_id, upf));
-            write_database(*(t.first->second), user_id);
-        } else
-            this->profiles.insert(profile_pair(user_id, upf));
+        auto t = this->profiles.insert({user_id, user_profile()});
 
-        return upf;
+        if (!t.second) return nullptr;
+
+        if (!read_database(t.first->second, user_id)) {
+            write_database(t.first->second, user_id);
+            return &(t.first->second);
+        } else {
+            return &(t.first->second);
+        }
     }
 }

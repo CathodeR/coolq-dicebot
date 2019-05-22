@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
+#include "../entity/manual_dice.h"
 #include "../utils/pair_hash.h"
-#include "./manual_dice.h"
 
 namespace dicebot::manual {
     class manual_dice_control {

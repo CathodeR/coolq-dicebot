@@ -1,10 +1,10 @@
 #include "./entry_manual_dice.h"
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
-#include "../data/manual_dice.h"
 #include "../data/manual_dice_control.h"
 #include "../data/nick_manager.h"
 #include "../dice_roller.h"
+#include "../entity/manual_dice.h"
 #include "../utils/utils.h"
 
 using namespace dicebot;

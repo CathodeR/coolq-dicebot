@@ -1,7 +1,7 @@
 #include "./manual_dice_control.h"
 
+#include "../entity/manual_dice.h"
 #include "./database_manager.h"
-#include "./manual_dice.h"
 
 using namespace dicebot;
 using namespace dicebot::manual;

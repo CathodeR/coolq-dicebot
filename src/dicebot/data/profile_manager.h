@@ -2,12 +2,12 @@
 
 #include <unordered_map>
 #include "../common.h"
-#include "./profile.h"
+#include "../entity/profile.h"
 
 namespace dicebot::profile {
-    using sptr_user_profile = std::shared_ptr<user_profile>;
-    using profile_map = std::unordered_map<int64_t, sptr_user_profile>;
-    using profile_pair = std::pair<int64_t, sptr_user_profile>;
+    using sptr_user_profile = user_profile*;
+    using profile_map = std::unordered_map<int64_t, user_profile>;
+    using profile_pair = profile_map::value_type;
 
     class profile_manager {
         static std::unique_ptr<profile_manager> instance;
@@ -20,6 +20,6 @@ namespace dicebot::profile {
 
         bool force_update(int64_t const user_id) const;
 
-        sptr_user_profile get_profile(int64_t const user_id);
+        user_profile* get_profile(int64_t const user_id);
     };
 } // namespace dicebot::profile
