@@ -33,7 +33,7 @@ entry_roll_dice::entry_roll_dice() noexcept {
         u8"指令.rs off：上述指令的较短形式\n"
         u8"指令.roll source on：恢复显示你的骰子的详细结果\n"
         u8"指令.rs on：上述指令的较短形式\n"
-        u8"指令.rs 3d6：骰3d6，无视rs off状态，仍然显示详细结果\n";
+        u8"指令.rs 3d6：骰3d6，无视rs off状态，仍然显示详细结果";
 }
 
 bool entry_roll_dice::resolve_request(std::string const& message,

@@ -31,7 +31,7 @@ static auto draw_poker = [](const std::string &suffix, const event_info &event,
         poker::poker_manager::get_instance()->get_deck(event.group_id);
 
     auto show_drawer = [p_deck](output_constructor &oc) {
-        oc << u8" | 牌堆(" << p_deck->size() << ")已经抽出了: ";
+        oc << u8" | 牌堆剩余" << p_deck->size() << "张，已经抽出了: ";
         bool is_first = true;
         for (const auto &item : p_deck->drawer) {
             if (is_first) {

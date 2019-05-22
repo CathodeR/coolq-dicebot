@@ -17,6 +17,10 @@ static const std::regex filter_integer("^ *(\\d+) *");
 static const std::regex filter_manual_dice(
     "^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
 
+static auto cur_state = [](output_constructor& oc, const std::string& state) {
+    oc << u8" | 当前状态: " << state;
+};
+
 static auto manualdice_add = [](std::string const& message,
                                 const event_info& event,
                                 std::string& response) noexcept -> bool {
@@ -34,8 +38,8 @@ static auto manualdice_add = [](std::string const& message,
 
             output_constructor oc(event.nickname);
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"在桌上增加了这些骰子:" << str_command << u8" | 当前状态:"
-               << md_target->second.str();
+            oc << u8"在桌上增加了这些骰子:" << str_command;
+            cur_state(oc, md_target->second.str());
             response = oc.str();
             return true;
         }
@@ -51,8 +55,8 @@ static auto manualdice_killall = [](std::string const& message,
         md_target->second.killall();
         output_constructor oc(event.nickname);
         if (!message.empty()) oc << message;
-        oc << u8"杀掉了所有的骰子" << u8" | 当前状态:"
-           << md_target->second.str();
+        oc << u8"杀掉了所有的骰子";
+        cur_state(oc, md_target->second.str());
         response = oc.str();
         return true;
     }
@@ -72,8 +76,8 @@ static auto manualdice_kill = [](std::string const& message,
             md_target->second.kill(str_command);
             output_constructor oc(event.nickname);
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"杀死桌上的第" << str_command << u8"个骰子"
-               << u8" | 当前状态:" << md_target->second.str();
+            oc << u8"杀死桌上的第" << str_command << u8"个骰子";
+            cur_state(oc, md_target->second.str());
             response = oc.str();
             return true;
         }
@@ -97,8 +101,8 @@ static auto manualdice_roll = [](std::string const& message,
             md_ctrl::get_instance()->sync_database(md_target);
             output_constructor oc(event.nickname);
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"重骰桌上的第" << str_command << u8"个骰子"
-               << u8" | 当前状态:" << md_target->second.str();
+            oc << u8"重骰桌上的第" << str_command << u8"个骰子";
+            cur_state(oc, md_target->second.str());
             response = oc.str();
             return true;
         }
@@ -121,8 +125,8 @@ static auto manualdice_create = [](std::string const& message,
             md_target->second.add(str_command);
             output_constructor oc(event.nickname);
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"在桌上放了这些骰子:" << str_command << u8" | 当前状态:"
-               << md_target->second.str();
+            oc << u8"在桌上放了这些骰子: " << str_command;
+            cur_state(oc, md_target->second.str());
             response = oc.str();
             return true;
         }
