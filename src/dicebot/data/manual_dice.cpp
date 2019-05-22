@@ -11,15 +11,13 @@ using namespace dicebot::manual;
 
 std::regex regex_filter_manual_dice_part("^(?:\\+)?(\\d+)?[dD](\\d+)");
 
-manual_dice::manual_dice() { i_sum_result = 0; }
+manual_dice::manual_dice() {
+    i_sum_result = 0;
+    this->status = roll::roll_status::FINISHED;
+}
 
 manual_dice::operator bool() const noexcept {
     return this->status == roll::roll_status::FINISHED;
-}
-
-manual_dice::manual_dice(const std::string& source) {
-    i_sum_result = 0;
-    this->add(source);
 }
 
 void manual_dice::roll(const std::string& source) {

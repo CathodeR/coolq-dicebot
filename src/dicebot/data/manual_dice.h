@@ -8,7 +8,6 @@ namespace dicebot::manual {
     class manual_dice : vec_mdice {
     public:
         manual_dice();
-        manual_dice(const std::string& source);
         void roll(const std::string& source);
         void kill(const std::string& source);
         void add(const std::string& source);
