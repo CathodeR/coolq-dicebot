@@ -150,16 +150,12 @@ entry_manual_dice::entry_manual_dice() noexcept {
     this->is_stand_alone = false;
     this->identifier_regex = "m(?:annual)?";
     this->identifier_list = {"mannual", "m"};
-    this->help_message = base64_decode(
-        "5omL5Yqo6aqw5a2QKC5tYW51YWzmiJbogIUubSkK"
-        "5oyH5LukLm0gW2RpY2Vd77ya5Lqn55Sf5omL5Yqo"
-        "6aqw5a2Q77yM5ZCO5o6l6aqw5a2Q77yM6L+Z6YeM"
-        "5LiN5pSv5oyB566X5byPCuaMh+S7pC5tciBbbnVt"
-        "YmVyXe+8mumqsOaMh+WumumqsOWtkO+8jOWQjuaO"
-        "pemqsOWtkOW6j+WPtwrmjIfku6QubWsgW251bWJl"
-        "cl3vvJrmtojnga3mjIflrprpqrDlrZDvvIzlkI7m"
-        "jqXpqrDlrZDluo/lj7cK5oyH5LukLm1rYe+8mua4"
-        "heepuuaJgOacieaJi+WKqOmqsOWtkA==");
+    this->help_message =
+        u8"手动骰子(.manual或者.m)\n"
+        u8"指令.m [dice]：产生手动骰子，后接骰子，这里不支持算式\n"
+        u8"指令.mr [number]：骰指定骰子，后接骰子序号\n"
+        u8"指令.mk [number]：消灭指定骰子，后接骰子序号\n"
+        u8"指令.mka：清空所有手动骰子";
 }
 
 bool entry_manual_dice::resolve_request(std::string const& message,

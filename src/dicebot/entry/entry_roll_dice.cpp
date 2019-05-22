@@ -21,25 +21,20 @@ entry_roll_dice::entry_roll_dice() noexcept {
     this->identifier_regex = "r(?:oll)?";
     this->identifier_list = {"roll", "r"};
     this->help_message = base64_decode(
-        "6aqw5a2Q5oyH5LukKC5yb2xs5oiWLnIpCuaMh+S7"
-        "pC5yIDFkMjDvvJrpqrDkuIDkuKoxZDIwCuaMh+S7"
-        "pC5yIDFkMjArMmQ2KzTvvJrpqrAxZDIwKzJkNis0"
-        "77yM5rGC5YW257uT5p6cCuaMh+S7pC5yICgxMGQ2"
-        "KzEwKSoxNTAl77ya6aqwKDEwZDYrMTApKjE1MCXv"
-        "vIzmsYLlhbbnu5PmnpwK5oyH5LukLnIgNGQ2azPv"
-        "vJrpqrA0ZDbvvIzlj5blhbbkuK3ovoPpq5jnmoTk"
-        "uInkuKrnu5PmnpwK5oyH5LukLnIgMmQyMGtsMe+8"
-        "mumqsDJkMjDvvIzlj5blhbbkuK3ovoPkvY7nmoTk"
-        "uIDkuKrnu5PmnpwK5oyH5LukLnJvbGwgc291cmNl"
-        "IG9mZu+8muWBnOatouaYvuekuuS9oOeahOmqsOWt"
-        "kOeahOivpue7hue7k+aenArmjIfku6QucnMgb2Zm"
-        "77ya5LiK6L+w5oyH5Luk55qE6L6D55+t5b2i5byP"
-        "CuaMh+S7pC5yb2xsIHNvdXJjZSBvbu+8muaBouWk"
-        "jeaYvuekuuS9oOeahOmqsOWtkOeahOivpue7hue7"
-        "k+aenArmjIfku6QucnMgb27vvJrkuIrov7DmjIfk"
-        "u6TnmoTovoPnn63lvaLlvI8K5oyH5LukLnJzIDNk"
-        "Nu+8mumqsDNkNu+8jOaXoOinhnJzIG9mZuaViOae"
-        "nO+8jOS7jeeEtuaYvuekuuivpue7hue7k+aenA==");
+        u8"骰子指令(.roll或.r)\n"
+        u8"指令.r 1d20：骰一个1d20\n"
+        u8"指令.r 1d20+2d6+4：骰1d20+2d6+4，并输出其计算结果\n"
+        u8"指令.r (10d6+10)*150%：骰(10d6+10)*150%，并输出其计算结果\n"
+        u8"指令.r 4d6k3：骰4d6，取其中较高的三个结果\n"
+        u8"指令.r 2d20kl1：骰2d20，取其中较低的一个结果\n"
+        u8"指令.r 6#4d6kl3：骰6次4d6kl3，将它们的结果分别显示\n"
+        u8"指令.r {1d20,1d12,1d10,1d8,1d6}：分别骰这些骰子，结果分别显示\n"
+        u8"指令.r 2#d20-{1,2}：骰两次d20,结果分别减去1和2，结果分别显示\n"
+        u8"指令.roll source off：停止显示你的骰子的详细结果\n"
+        u8"指令.rs off：上述指令的较短形式\n"
+        u8"指令.roll source on：恢复显示你的骰子的详细结果\n"
+        u8"指令.rs on：上述指令的较短形式\n"
+        u8"指令.rs 3d6：骰3d6，无视rs off状态，仍然显示详细结果\n");
 }
 
 bool entry_roll_dice::resolve_request(std::string const& message,

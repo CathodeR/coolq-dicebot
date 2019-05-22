@@ -72,15 +72,12 @@ entry_wod_dice::entry_wod_dice() noexcept {
     this->identifier_regex = "w(?:od)?";
     this->identifier_list = {"wod", "w"};
 
-    this->help_message = base64_decode(
-        "V29E5a6a5Yi26aqw5a2QKC53b2TmiJYudykK5oyH"
-        "5LukLndvNO+8muS9v+eUqG93b2Top4TliJnov5vo"
-        "oYzpqrDmsaDkuLo055qE5qOA5a6aCuaMh+S7pC53"
-        "bjTvvJrkvb/nlKhud29k6KeE5YiZ6L+b6KGM6aqw"
-        "5rGg5Li6NOeahOajgOWumgrmjIfku6Qud280ZDjv"
-        "vJrmjIflrprpmr7luqbkuLo4CuaMh+S7pC53bjRi"
-        "OO+8muaMh+WumuWcqDjmiJbku6XkuIrojrflvpfl"
-        "pZblirHpqrA=");
+    this->help_message =
+        u8"WoD定制骰子(.wod或.w)\n"
+        u8"指令.wo4：使用owod规则进行骰池为4的检定\n"
+        u8"指令.wn4：使用nwod规则进行骰池为4的检定\n"
+        u8"指令.wo4d8：指定难度为8\n"
+        u8"指令.wn4b8：指定在8或以上获得奖励骰";
 }
 
 bool entry_wod_dice::resolve_request(std::string const& message,
@@ -102,26 +99,26 @@ bool entry_wod_dice::resolve_request(std::string const& message,
 #pragma endregion
 
 #pragma region coc
+
 entry_coc_dice::entry_coc_dice() {
     this->is_stand_alone = false;
-    this->full_dice =
-        std::regex("^([pb]\\d+ *)* *", std::regex_constants::icase);
     this->identifier_regex = "c(?:oc)?";
     this->identifier_list = {"coc", "c"};
 
-    this->help_message = base64_decode(
-        "Q29D5a6a5Yi26aqw5a2QKC5jb2PmiJYuYykK5oyH"
-        "5LukLmNvY++8mmNvY+WumuWItumqsOWtkArmjIfk"
-        "u6QuY++8muS4iui/sOWRveS7pOeahOeugOWGmeW9"
-        "ouW8jwrmjIfku6QuY29jIHAx77ya5oOp572a6aqw"
-        "Me+8iHBlbmFsdHkgMe+8iQrmjIfku6QuY29jIGIx"
-        "77ya5aWW5Yqx6aqwMe+8iGJvbnVzIDHvvIk=");
+    this->help_message =
+        u8"CoC定制骰子(.coc或.c)\n"
+        u8"指令.coc：coc定制骰子\n"
+        u8"指令.c：上述命令的简写形式\n"
+        u8"指令.coc p1：惩罚骰1（penalty 1）\n"
+        u8"指令.coc b1：奖励骰1（bonus 1）";
 }
 
+static const std::regex coc_full_dice("^([pb]\\d+ *)* *",
+                                      std::regex_constants::icase);
 bool entry_coc_dice::resolve_request(std::string const& message,
                                      event_info& event, std::string& response) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, full_dice);
+    std::regex_search(message, roll_match, coc_full_dice);
     if (!roll_match.empty()) {
         std::string str_roll_message = roll_match.suffix().str();
         std::string str_roll_source = roll_match.str();
@@ -147,21 +144,22 @@ bool entry_coc_dice::resolve_request(std::string const& message,
 #pragma region fate
 entry_fate_dice::entry_fate_dice() {
     this->is_stand_alone = false;
-    this->full_dice = "^([\\+|\\-]\\d+)? *";
     this->identifier_regex = "f(?:ate)?";
     this->identifier_list = {"fate", "f"};
 
-    this->help_message = base64_decode(
-        "RkFUReWumuWItumqsOWtkCguZmF0ZeaIli5mKQrm"
-        "jIfku6QuZu+8mkZBVEXpqrAK5oyH5LukLmYrNO+8"
-        "muaMh+Wumis05L+u5q2j");
+    this->help_message =
+        u8"FATE定制骰子(.fate或.f)\n"
+        u8"指令.f：常规FATE骰\n"
+        u8"指令.f+4：指定+4修正";
 }
+
+static const std::regex fate_full_dice("^([\\+|\\-]\\d+)? *");
 
 bool entry_fate_dice::resolve_request(std::string const& message,
                                       event_info& event,
                                       std::string& response) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, full_dice);
+    std::regex_search(message, roll_match, fate_full_dice);
 
     std::string str_roll_message;
 

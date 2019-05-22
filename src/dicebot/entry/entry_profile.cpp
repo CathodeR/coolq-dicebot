@@ -18,19 +18,13 @@ entry_set_roll::entry_set_roll() noexcept {
     this->identifier_regex = "s(?:et)?";
     this->identifier_list = {"set", "s"};
 
-    this->help_message = base64_decode(
-        "6K6+572u6aqw5a2QKC5zZXTmiJbogIUucykK5oyH"
-        "5LukLnNldCAxZDEwMO+8muiuvuWumum7mOiupOmq"
-        "sOWtkOS4ujFkMTAwCuaMh+S7pC5y77ya5aaC5p6c"
-        "LnLmsqHmnInmjqXku7vkvZXpqrDlrZDml7bvvIzk"
-        "vJrpqrDpu5jorqTpqrAK5oyH5LukLnNldCA0ZDZr"
-        "MyDlsZ7mgKfvvJrorr7lrprkuIDkuKrlkI3np7Dk"
-        "uLrigJzlsZ7mgKfigJ3nmoTpqrDlrZDkuLo0ZDZr"
-        "MwrmjIfku6QucuWxnuaAp++8muWmguaenC5y5ZCO"
-        "6Z2i5piv6aqw5a2Q5ZCN56ew77yM5YiZ6aqw6K+l"
-        "5ZCN56ew55qE6aqw5a2QCuazqOaEj++8mumqsOWt"
-        "kOWQjeensOS4reS4jeiDveWMheWQqystKi/lkozn"
-        "qbrmoLw=");
+    this->help_message =
+        u8"设置骰子(.set或者.s)\n"
+        u8"指令.set 1d100：设定默认骰子为1d100，"
+        u8"如果.r后没有接任何骰子时，会骰默认骰\n"
+        u8"指令.set 4d6k3 属性：设定一个名称为“属性”的骰子为4d6k3\n"
+        u8"指令.r属性：如果.r后面是骰子名称，则骰该名称的骰子\n"
+        u8"注意：骰子名称中不能包含+-*/和空格";
 }
 
 static const std::regex filter_name("^([^\\+\\-\\*/\\(\\)\\s]+)");
@@ -164,24 +158,11 @@ entry_list::entry_list() noexcept {
     this->identifier_regex = "l(?:ist)?";
     this->identifier_list = {"list", "l"};
 
-    this->help_message = base64_decode(
-        "5pi+56S65bey5L+d5a2Y55qE6aqw5a2Q5ZKM5Y+Y"
-        "6YePKC5saXN05oiW6ICFLmwpCuaMh+S7pC5saXN0"
-        "IHJvbGzvvJrmmL7npLrmiYDmnInkv53lrZjnmoTp"
-        "qrDlrZAK5oyH5LukLmxy77ya5LiK6L+w5oyH5Luk"
-        "55qE566A5YaZ5b2i5byPCuaMh+S7pC5saXN0IHZh"
-        "cu+8muaYvuekuuaJgOacieS/neWtmOeahOWPmOmH"
-        "jwrmjIfku6QubHbvvJrkuIrov7DmjIfku6TnmoTn"
-        "roDlhpnlvaLlvI8K5oyH5LukLmxpc3Qgcm9sbCDl"
-        "ipvvvJrmmL7npLrmiYDmnInkv53lrZjnmoTpqrDl"
-        "rZDkuK3vvIzlkI3np7DluKbmnInigJzlipvigJ3n"
-        "moQK5oyH5LukLmxpc3QgdmFyIOazleacr++8muaY"
-        "vuekuuaJgOacieS/neWtmOeahOmqsOWtkOS4re+8"
-        "jOWQjeensOW4puacieKAnOazleacr+KAneeahArm"
-        "jIfku6QubGlzdCBhbGzvvJrmmL7npLrmiYDmnInk"
-        "v53lrZjnmoTpqrDlrZDlkozlj5jph48K5rOo5oSP"
-        "77yaLmxpc3QgYWxs5Lit55qEYWxs5LiN6IO9566A"
-        "5YaZ");
+    this->help_message =
+        u8"显示已保存的骰子(.list或者.l)\n"
+        u8"指令.list：显示所有保存的骰子\n"
+        u8"指令.l：上述指令的简写形式\n"
+        u8"指令.list test：显示所有保存的骰子中，名称带有“test”的";
 }
 
 bool entry_list::resolve_request(std::string const& message, event_info& event,
@@ -218,24 +199,11 @@ entry_delete::entry_delete() noexcept {
     this->identifier_regex = "d(?:elete)?";
     this->identifier_list = {"d", "delete"};
 
-    this->help_message = base64_decode(
-        "5Yig6Zmk5bey5L+d5a2Y55qE6aqw5a2Q5ZKM5Y+Y"
-        "6YePKC5kZWxldGXmiJbogIUuZCkK5oyH5LukLmRl"
-        "bGV0ZSByb2xs77ya5Yig6Zmk5omA5pyJ5L+d5a2Y"
-        "55qE6aqw5a2QCuaMh+S7pC5kcu+8muS4iui/sOaM"
-        "h+S7pOeahOeugOWGmeW9ouW8jwrmjIfku6QuZGVs"
-        "ZXRlIHZhcu+8muWIoOmZpOaJgOacieS/neWtmOea"
-        "hOWPmOmHjwrmjIfku6QuZHbvvJrkuIrov7DmjIfk"
-        "u6TnmoTnroDlhpnlvaLlvI8K5oyH5LukLmRlbGV0"
-        "ZSByb2xsIOWKm+mHj++8muWIoOmZpOWQjeensOS4"
-        "uuKAnOWKm+mHj+KAneeahOmqsOWtkArmjIfku6Qu"
-        "ZGVsZXRlIHZhciDms5XmnK/vvJrliKDpmaTlkI3n"
-        "p7DkuLrigJzms5XmnK/igJ3nmoTlj5jph48K5oyH"
-        "5LukLmRlbGV0ZSBhbGzvvJrmmL7npLrmiYDmnInk"
-        "v53lrZjnmoTpqrDlrZDlkozlj5jph48K5rOo5oSP"
-        "77yaLmRlbGV0ZSBhbGzkuK3nmoRhbGzkuI3og73n"
-        "roDlhpkK5rOo5oSP77ya6buY6K6k6aqw5a2Q5piv"
-        "5peg5rOV5Yig6Zmk55qE");
+    this->help_message =
+        u8"删除已保存的骰子(.delete或者.d)\n"
+        u8"指令.delete：删除所有保存的骰子\n"
+        u8"指令.delete 力量：删除名称为“力量”的骰子\n"
+        u8"注意：默认骰子是无法删除的";
 }
 
 bool entry_delete::resolve_request(std::string const& message,

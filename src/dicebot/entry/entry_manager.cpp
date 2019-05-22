@@ -59,23 +59,21 @@ entry_help::entry_help() noexcept {
     this->is_stand_alone = true;
     this->identifier_regex = "h(?:elp)?";
     this->identifier_list = {"help", "h"};
-    this->help_message = base64_decode(
-        "RGljZUJvdCBieSBkeW5pbGF0aCB2MS42LjIgcHJl"
-        "dmlldwrkvb/nlKjmlrnlvI/nroDku4vvvJoKLnIg"
-        "MWQ4KzFkNiszIOaZrumAmumqsOWtkAouYyBjb2Pp"
-        "qrDlrZAKLndvNCBvd29k6aqw5a2QCi53bjQgbndv"
-        "ZOmqsOWtkAouZiBGQVRF6aqw5a2QCuabtOWkmuaM"
-        "h+S7pO+8mnNldCB2YXIgbGlzdCBkZWxldGUgbWFu"
-        "dWFsIG5hbWUK5L2/55SoIC5oZWxwIFvmjIfku6Tl"
-        "kI3np7BdIOadpeiOt+W+l+WvueW6lOaMh+S7pOea"
-        "hOW4ruWKqQoK6K6/6Zeu6aG555uu5Li76aG1aHR0"
-        "cDovL2dpdGh1Yi5jb20vZHluaWxhdGgvY29vbHEt"
-        "ZGljZWJvdArojrflvpfkvb/nlKjor7TmmI7ku6Xl"
-        "j4rkuobop6Pmm7TlpJrlhoXlrrnjgIIK5aaC5p6c"
-        "5Zyo5L2/55So5Lit6YGH5Yiw5LqGYnVn77yM5oiW"
-        "6ICF5pyJ5LuA5LmI5Yqf6IO95bu66K6u77yM5qyi"
-        "6L+O5Zyo6aG555uu5Li76aG16YCa6L+HaXNzdWXl"
-        "j43ppojvvIzmhJ/osKLmgqjnmoTluK7liqnjgII=");
+    this->help_message =
+        u8"DiceBot by dynilath v1.7.0 preview\n"
+        u8"使用方式简介：\n"
+        u8".r 1d8+1d6+3 普通骰子\n"
+        u8".c coc骰子\n"
+        u8".wo4 owod骰子\n"
+        u8".wn4 nwod骰子\n"
+        u8".f FATE骰子\n"
+        u8"更多指令：name set list delete manual poker\n"
+        u8"使用 .help [指令名称] 来获得对应指令的帮助\n"
+        u8"\n"
+        u8"访问项目主页http://github.com/dynilath/coolq-dicebot\n"
+        u8"获得使用说明以及了解更多内容。\n"
+        u8"如果在使用中遇到了bug，或者有什么功能建议，欢迎在项目主页通过issue反"
+        u8"馈，感谢您的帮助。";
 }
 
 bool entry_help::register_help(p_entry v_entry) noexcept {

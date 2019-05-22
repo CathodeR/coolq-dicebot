@@ -71,7 +71,15 @@ entry_poker::entry_poker() noexcept {
     this->is_stand_alone = false;
     this->identifier_regex = "p(?:oker)?";
     this->identifier_list = {"poker", "p"};
-    this->help_message = "";
+    this->help_message =
+        u8"扑克牌指令（.poker或者.p）\n"
+        u8"指令.poker init standard 初始化一副共54张的扑克牌，并洗牌\n"
+        u8"指令.poker draw 抽一张牌\n"
+        u8"指令.poker shuffle 重新洗牌\n"
+        u8"指令.poker init 8j,8diamond a "
+        u8"初始化一副由8张joker和8张方片A组成的牌堆，并洗牌\n"
+        u8"指令.poker init 战,法,牧 "
+        u8"初始化一副由战,法,牧3张牌组成的牌堆，并洗牌";
 }
 
 bool entry_poker::resolve_request(std::string const &message, event_info &event,
