@@ -13,7 +13,11 @@ namespace dicebot {
     using integer_type = int32_t;
     using float_type = double;
 
-    class zero_divider_exception : public std::exception {};
+    class zero_divider_exception : public std::exception {
+        const char *what() const noexcept override {
+            return "divided by zero or near zero value.";
+        }
+    };
 
     union number_val {
         integer_type i_value;

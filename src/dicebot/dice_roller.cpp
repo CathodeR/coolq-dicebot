@@ -275,7 +275,7 @@ void roll::roll_coc(dice_roll& dice, int const i_bp) {
     } else {
         uint16_t i_dice_count = i_bp > 0 ? (1 + i_bp) : (1 - i_bp);
 
-        check_limits(i_bp + 1, 100);
+        check_limits(i_dice_count, 100);
 
         auto units_distr = random::create_distribution(0, 9);
         auto tens_distr = random::create_distribution(1, 10);

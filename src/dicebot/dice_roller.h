@@ -6,10 +6,26 @@
 
 #include "./constants.h"
 namespace dicebot {
-    class face_exceed : public std::exception {};
-    class dice_exceed : public std::exception {};
-    class unit_exceed : public std::exception {};
-    class invalid_dice : public std::exception {};
+    class face_exceed : public std::exception {
+        const char* what() const noexcept override {
+            return "too many faces for a die.";
+        }
+    };
+    class dice_exceed : public std::exception {
+        const char* what() const noexcept override {
+            return "too many dice for a roll.";
+        }
+    };
+    class unit_exceed : public std::exception {
+        const char* what() const noexcept override {
+            return "too many times for repeating roll.";
+        }
+    };
+    class invalid_dice : public std::exception {
+        const char* what() const noexcept override {
+            return "a positive integer is required.";
+        }
+    };
 } // namespace dicebot
 
 namespace dicebot::roll {
