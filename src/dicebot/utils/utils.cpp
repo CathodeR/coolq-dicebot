@@ -1,8 +1,10 @@
-#include "./dice_utils.h"
-
+#include "./utils.h"
+#include <algorithm>
+#include <vector>
 using namespace dicebot;
 
-void utils::split_line(std::string const& source, std::list<std::string>& source_splits) {
+void utils::split_line(std::string const& source,
+                       std::list<std::string>& source_splits) {
     if (source.length() > 2) {
         std::string::size_type iter_source = 0;
         std::string spliter = "\r\n";
@@ -10,10 +12,13 @@ void utils::split_line(std::string const& source, std::list<std::string>& source
             std::string::size_type i_target = source.find(spliter, iter_source);
             if (i_target == std::string::npos) {
                 if (i_target > iter_source)
-                    source_splits.push_back(source.substr(iter_source, source.length() - iter_source));
+                    source_splits.push_back(source.substr(
+                        iter_source, source.length() - iter_source));
                 break;
             } else {
-                if (i_target > iter_source) source_splits.push_back(source.substr(iter_source, i_target - iter_source));
+                if (i_target > iter_source)
+                    source_splits.push_back(
+                        source.substr(iter_source, i_target - iter_source));
                 iter_source = i_target + spliter.length();
             }
         }
@@ -111,4 +116,17 @@ bool utils::find_space(std::string const& source, size_t& pos) {
             return true;
     } while (++pos);
     return false;
+}
+
+void utils::lower_case(std::string& target) {
+    std::transform(target.cbegin(), target.cend(), target.begin(), tolower);
+}
+
+std::string utils::lower_case_copy(const std::string& target) {
+    std::vector<char> container;
+    container.reserve(target.size() + 1);
+    std::transform(
+        target.cbegin(), target.cend(), std::back_inserter(container), tolower);
+    container.push_back('\0');
+    return std::string(container.data());
 }

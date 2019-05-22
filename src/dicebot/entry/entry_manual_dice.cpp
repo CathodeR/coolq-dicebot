@@ -5,16 +5,18 @@
 #include "../data/manual_dice_control.h"
 #include "../data/nick_manager.h"
 #include "../dice_roller.h"
-#include "../utils/dice_utils.h"
+#include "../utils/utils.h"
 
 using namespace dicebot;
 using namespace dicebot::entry;
 
 entry_manual_dice::entry_manual_dice() {
     this->is_stand_alone = false;
-    this->filter_manual_dice = std::regex("^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
+    this->filter_manual_dice = std::regex(
+        "^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
     this->filter_integer = std::regex("^ *(\\d+) *");
-    this->filter_command = std::regex("^(ka|a|k|r) *", std::regex_constants::icase);
+    this->filter_command =
+        std::regex("^(ka|a|k|r) *", std::regex_constants::icase);
 
     this->identifier_regex = "m(?:annual)?";
     this->identifier_list = {"mannual", "m"};
@@ -36,20 +38,33 @@ entry_manual_dice::entry_manual_dice() {
         "heepuuaJgOacieaJi+WKqOmqsOWtkA==");
 }
 
-bool entry_manual_dice::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_manual_dice::resolve_request(std::string const& message,
+                                        event_info& event,
+                                        std::string& response) {
     std::string str_nickname = event.nickname;
 
     std::smatch match_command;
     std::regex_search(message, match_command, filter_command);
-    if (match_command.empty()) return manualdice_create(*this, message, str_nickname, response, event.group_id, event.user_id);
+    if (match_command.empty())
+        return manualdice_create(*this,
+                                 message,
+                                 str_nickname,
+                                 response,
+                                 event.group_id,
+                                 event.user_id);
 
     std::string str_match = match_command[1];
-    std::transform(str_match.begin(), str_match.end(), str_match.begin(), tolower);
+    utils::lower_case(str_match);
 
     auto iter = this->method_map.find(str_match);
     if (iter != method_map.end()) {
         manual_dice_call dice_call = (*iter).second;
-        return dice_call(*this, match_command.suffix().str(), str_nickname, response, event.group_id, event.user_id);
+        return dice_call(*this,
+                         match_command.suffix().str(),
+                         str_nickname,
+                         response,
+                         event.group_id,
+                         event.user_id);
     }
     return false;
 }
@@ -61,7 +76,9 @@ TMDICE_CALL_NAMESPACE(manualdice_add) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();
         utils::remove_space_and_tab(str_command);
-        manual::p_manual md_manualdice = manual::manual_dice_control::get_instance()->add(user_id, group_id, str_command);
+        manual::p_manual md_manualdice =
+            manual::manual_dice_control::get_instance()->add(
+                user_id, group_id, str_command);
         if (md_manualdice && (*md_manualdice)) {
             ostrs ostr(ostrs::ate);
             ostr << u8" * " << nick_name;
@@ -76,7 +93,8 @@ TMDICE_CALL_NAMESPACE(manualdice_add) {
 }
 
 TMDICE_CALL_NAMESPACE(manualdice_killall) {
-    manual::p_manual md_manualdice = manual::manual_dice_control::get_instance()->killall(user_id, group_id);
+    manual::p_manual md_manualdice =
+        manual::manual_dice_control::get_instance()->killall(user_id, group_id);
     if (md_manualdice && (*md_manualdice)) {
         ostrs ostr(ostrs::ate);
         ostr << u8" * " << nick_name;
@@ -97,7 +115,9 @@ TMDICE_CALL_NAMESPACE(manualdice_kill) {
         std::string str_roll_message = roll_match.suffix().str();
         utils::remove_space_and_tab(str_command);
 
-        manual::p_manual md_manualdice = manual::manual_dice_control::get_instance()->kill(user_id, group_id, str_command);
+        manual::p_manual md_manualdice =
+            manual::manual_dice_control::get_instance()->kill(
+                user_id, group_id, str_command);
         if (md_manualdice && (*md_manualdice)) {
             ostrs ostr(ostrs::ate);
             ostr << u8" * " << nick_name;
@@ -119,7 +139,9 @@ TMDICE_CALL_NAMESPACE(manualdice_roll) {
         std::string str_roll_message = roll_match.suffix().str();
         utils::remove_space_and_tab(str_command);
 
-        manual::p_manual md_manualdice = manual::manual_dice_control::get_instance()->roll(user_id, group_id, str_command);
+        manual::p_manual md_manualdice =
+            manual::manual_dice_control::get_instance()->roll(
+                user_id, group_id, str_command);
         if (md_manualdice && (*md_manualdice)) {
             ostrs ostr(ostrs::ate);
             ostr << u8" * " << nick_name;
@@ -141,7 +163,9 @@ TMDICE_CALL_NAMESPACE(manualdice_create) {
         std::string str_roll_message = roll_match.suffix().str();
         utils::remove_space_and_tab(str_command);
 
-        manual::p_manual md_manualdice = manual::manual_dice_control::get_instance()->create(user_id, group_id, str_command);
+        manual::p_manual md_manualdice =
+            manual::manual_dice_control::get_instance()->create(
+                user_id, group_id, str_command);
         if (md_manualdice && (*md_manualdice)) {
             ostrs ostr(ostrs::ate);
             ostr << u8" * " << nick_name;

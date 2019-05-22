@@ -3,7 +3,7 @@
 #include <chrono>
 #include <random>
 
-#include "./utils/dice_utils.h"
+#include "./utils/utils.h"
 
 #include "./random/random_provider.h"
 
@@ -163,15 +163,22 @@ std::string dice_roll::detail_fate() noexcept {
     return ost.str();
 }
 
-roll_status dice_roll::dice_exceed() noexcept { return this->status = roll_status::TOO_MANY_DICE; }
+roll_status dice_roll::dice_exceed() noexcept {
+    return this->status = roll_status::TOO_MANY_DICE;
+}
 
-roll_status dice_roll::general_err() noexcept { return this->status = roll_status::GENERAL_ERR; }
+roll_status dice_roll::general_err() noexcept {
+    return this->status = roll_status::GENERAL_ERR;
+}
 
 dice_roll::dice_roll(roll_status const& stat) noexcept { this->status = stat; }
 
-dice_roll::operator bool() const noexcept { return this->status == roll_status::FINISHED; }
+dice_roll::operator bool() const noexcept {
+    return this->status == roll_status::FINISHED;
+}
 
-roll_status roll::roll_base(dice_roll& dice, int const i_num_of_dice, int const i_num_of_face) noexcept {
+roll_status roll::roll_base(dice_roll& dice, int const i_num_of_dice,
+                            int const i_num_of_face) noexcept {
     dice.clear();
 
     auto distr = random::create_distribution(1, i_num_of_face);
@@ -188,14 +195,16 @@ roll_status roll::roll_base(dice_roll& dice, int const i_num_of_dice, int const 
     }
 }
 
-roll_status roll::roll_rdk(dice_roll& dice, int const i_num_of_dice, int const i_num_of_face, int const i_keep) noexcept {
+roll_status roll::roll_rdk(dice_roll& dice, int const i_num_of_dice,
+                           int const i_num_of_face, int const i_keep) noexcept {
     dice.clear();
 
     if (i_keep == 0) {
         return dice.general_err();
     }
     int i_num_of_keep = i_keep > 0 ? i_keep : (-i_keep);
-    if (i_num_of_keep >= i_num_of_dice) return roll::roll_base(dice, i_num_of_dice, i_num_of_face);
+    if (i_num_of_keep >= i_num_of_dice)
+        return roll::roll_base(dice, i_num_of_dice, i_num_of_face);
 
     auto distr = random::create_distribution(1, i_num_of_face);
 
@@ -218,7 +227,8 @@ roll_status roll::roll_rdk(dice_roll& dice, int const i_num_of_dice, int const i
     }
 
     flagList.assign(sortList.size(), 0);
-    utils::quick_sort(sortList.data(), pilotList.data(), 0, sortList.size() - 1);
+    utils::quick_sort(
+        sortList.data(), pilotList.data(), 0, sortList.size() - 1);
 
     if (i_keep < 0) {
         for (int i_iter = 0; i_iter < i_num_of_keep; i_iter++) {
@@ -232,12 +242,14 @@ roll_status roll::roll_rdk(dice_roll& dice, int const i_num_of_dice, int const i
     return dice.finish_roll();
 }
 
-roll_status roll::roll_rdk(dice_roll& dice, std::string const& str_dice_command) noexcept {
+roll_status roll::roll_rdk(dice_roll& dice,
+                           std::string const& str_dice_command) noexcept {
     dice.clear();
 
     std::string source(str_dice_command);
 
-    std::regex regex_rd("(\\d+)?[d](\\d+)(?:k(l)?(\\d+))?", std::regex_constants::icase);
+    std::regex regex_rd("(\\d+)?[d](\\d+)(?:k(l)?(\\d+))?",
+                        std::regex_constants::icase);
 
     std::smatch smatch_rd;
     std::regex_match(str_dice_command, smatch_rd, regex_rd);
@@ -262,10 +274,12 @@ roll_status roll::roll_rdk(dice_roll& dice, std::string const& str_dice_command)
             if (!is_keeping_high) i_num_of_keep = -i_num_of_keep;
         }
 
-        if (!CHECK_LIMITS(i_num_of_die, i_num_of_face)) return dice.dice_exceed();
+        if (!CHECK_LIMITS(i_num_of_die, i_num_of_face))
+            return dice.dice_exceed();
 
         if (is_keep) {
-            return roll::roll_rdk(dice, i_num_of_die, i_num_of_face, i_num_of_keep);
+            return roll::roll_rdk(
+                dice, i_num_of_die, i_num_of_face, i_num_of_keep);
         }
         return roll::roll_base(dice, i_num_of_die, i_num_of_face);
     } catch (const std::invalid_argument& ia) {
@@ -324,7 +338,8 @@ roll_status roll::roll_coc(dice_roll& dice, int const i_bp) noexcept {
     }
 }
 
-roll_status roll::roll_coc(dice_roll& dice, std::string const& str_dice_command) noexcept {
+roll_status roll::roll_coc(dice_roll& dice,
+                           std::string const& str_dice_command) noexcept {
     dice.clear();
     try {
         std::string source(str_dice_command);
@@ -336,7 +351,8 @@ roll_status roll::roll_coc(dice_roll& dice, std::string const& str_dice_command)
             if (smatch_coc.empty()) break;
             int this_bp = std::stoi(smatch_coc[2].str());
 
-            if (smatch_coc[1].str()[0] == 'p' || smatch_coc[1].str()[0] == 'P') {
+            if (smatch_coc[1].str()[0] == 'p'
+                || smatch_coc[1].str()[0] == 'P') {
                 i_bp_count -= this_bp;
             } else {
                 i_bp_count += this_bp;
@@ -353,7 +369,8 @@ roll_status roll::roll_coc(dice_roll& dice, std::string const& str_dice_command)
     }
 }
 
-roll_status roll::roll_wod(dice_roll& dice, int const i_val, int const i_d, int const i_bonus, bool failing) noexcept {
+roll_status roll::roll_wod(dice_roll& dice, int const i_val, int const i_d,
+                           int const i_bonus, bool failing) noexcept {
     dice.clear();
 
     auto distr = random::create_distribution(1, 10);
@@ -373,7 +390,8 @@ roll_status roll::roll_wod(dice_roll& dice, int const i_val, int const i_d, int 
     }
 }
 
-roll_status roll::roll_nwod(dice_roll& dice, std::string const& str_dice_command) noexcept {
+roll_status roll::roll_nwod(dice_roll& dice,
+                            std::string const& str_dice_command) noexcept {
     dice.clear();
     try {
         std::string source(str_dice_command);
@@ -397,7 +415,8 @@ roll_status roll::roll_nwod(dice_roll& dice, std::string const& str_dice_command
     }
 }
 
-roll_status roll::roll_owod(dice_roll& dice, std::string const& str_dice_command) noexcept {
+roll_status roll::roll_owod(dice_roll& dice,
+                            std::string const& str_dice_command) noexcept {
     dice.clear();
     try {
         std::string source(str_dice_command);
@@ -449,7 +468,8 @@ roll_status roll::roll_fate(dice_roll& dice, int const i_val) noexcept {
     return dice.finish_roll();
 }
 
-roll_status roll::roll_fate(dice_roll& dice, std::string const& str_dice_command) noexcept {
+roll_status roll::roll_fate(dice_roll& dice,
+                            std::string const& str_dice_command) noexcept {
     dice.clear();
     try {
         std::string source(str_dice_command);

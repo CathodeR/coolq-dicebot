@@ -90,7 +90,7 @@ file(GLOB_RECURSE TEST_SOURCE_ROLL_TEST
   src/dicebot/random/*.cpp
   src/dicebot/data/manual_dice.cpp
   src/dicebot/dice_roller.cpp
-  src/dicebot/utils/dice_utils.cpp
+  src/dicebot/utils/utils.cpp
   src/dicebot/common.cpp
   ${BASE64SRC})
 add_executable(${TEST_BUILD_NAME} ${TEST_SOURCE_ROLL_TEST})
@@ -116,6 +116,7 @@ set(TEST_BUILD_NAME dicebot.gtest.${X})
 add_executable(${TEST_BUILD_NAME} 
   src/tests/${X}.cpp
   src/dicebot/common.cpp
+  src/dicebot/utils/utils.cpp
   src/dicebot/parser/tokenizer.cpp
   src/dicebot/parser/parser.cpp)
 

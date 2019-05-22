@@ -5,7 +5,7 @@
 #include "../data/profile_manager.h"
 #include "../parser/dicenalyzer.h"
 #include "../parser/parser.h"
-#include "../utils/dice_utils.h"
+#include "../utils/utils.h"
 
 using namespace dicebot;
 using namespace dicebot::entry;
@@ -32,13 +32,16 @@ entry_set_roll::entry_set_roll() {
         "qbrmoLw=");
 }
 
-bool entry_set_roll::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_set_roll::resolve_request(std::string const& message,
+                                     event_info& event, std::string& response) {
     auto pfm = profile::profile_manager::get_instance();
 
     std::string message_cp = message;
 
-    auto set_default = [this, pfm, &event, &response](std::string const& str_roll_command) -> bool {
-        pfm->get_profile(event.user_id)->def_roll.set(profile::def_roll_type::def_roll, str_roll_command);
+    auto set_default = [this, pfm, &event, &response](
+                           std::string const& str_roll_command) -> bool {
+        pfm->get_profile(event.user_id)
+            ->def_roll.set(profile::def_roll_type::def_roll, str_roll_command);
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
@@ -48,11 +51,14 @@ bool entry_set_roll::resolve_request(std::string const& message, event_info& eve
         return true;
     };
 
-    auto set_named = [this, pfm, &event, &response](std::string const& str_roll_command, std::string const& str_message) -> bool {
+    auto set_named = [this, pfm, &event, &response](
+                         std::string const& str_roll_command,
+                         std::string const& str_message) -> bool {
         std::smatch m_name;
         std::regex_search(str_message, m_name, this->filter_name);
         if (!m_name[1].matched) return false;
-        pfm->get_profile(event.user_id)->mac_rolls.set(m_name[1], str_roll_command);
+        pfm->get_profile(event.user_id)
+            ->mac_rolls.set(m_name[1], str_roll_command);
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
@@ -65,7 +71,10 @@ bool entry_set_roll::resolve_request(std::string const& message, event_info& eve
     };
 
     diceparser::tokenizer::token_container_t tk_cont;
-    diceparser::tokenizer tknz(tk_cont, diceparser::tokenizer_flag{true, true}, message_cp, &(pfm->get_profile(event.user_id)->mac_rolls));
+    diceparser::tokenizer tknz(tk_cont,
+                               diceparser::tokenizer_flag{true, true},
+                               message_cp,
+                               &(pfm->get_profile(event.user_id)->mac_rolls));
     diceparser::parser parser(tknz);
     auto p_syntax = parser.parse(message_cp);
     if (!p_syntax) return false;
@@ -96,28 +105,36 @@ bool entry_set_roll::resolve_request(std::string const& message, event_info& eve
     if (p_dicelet) {
         if (!parser.tail.empty()) return false;
         p_dicelet->print(cont);
-        return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
+        return set_default(
+            diceparser::result_builder("(", cont, return_same, "", ")"));
     }
 
     auto p_holder = std::dynamic_pointer_cast<diceparser::base_holder>(p_comp);
     if (p_holder) {
         p_comp->print(cont);
         if (!parser.tail.empty())
-            return set_named(diceparser::result_builder("", cont, return_same, "", ""), parser.tail);
+            return set_named(
+                diceparser::result_builder("", cont, return_same, "", ""),
+                parser.tail);
         else
-            return set_default(diceparser::result_builder("", cont, return_same, "", ""));
+            return set_default(
+                diceparser::result_builder("", cont, return_same, "", ""));
     }
 
     p_comp->print(cont);
     if (!parser.tail.empty())
-        return set_named(diceparser::result_builder("(", cont, return_same, "", ")"), parser.tail);
+        return set_named(
+            diceparser::result_builder("(", cont, return_same, "", ")"),
+            parser.tail);
     else
-        return set_default(diceparser::result_builder("(", cont, return_same, "", ")"));
+        return set_default(
+            diceparser::result_builder("(", cont, return_same, "", ")"));
 }
 #pragma endregion
 
 #pragma region list
-static auto defr_msg = [](profile::user_profile::def_roll_map_t const& map, std::string const& head, output_constructor& out) {
+static auto defr_msg = [](profile::user_profile::def_roll_map_t const& map,
+                          std::string const& head, output_constructor& out) {
     if (map.empty()) return;
     out.append_message("\r\n" + head);
     for (auto const& pair : map) {
@@ -125,10 +142,13 @@ static auto defr_msg = [](profile::user_profile::def_roll_map_t const& map, std:
     }
 };
 
-static auto macro_msg = [](profile::user_profile::mac_roll_map_t const& map, std::string const& message, output_constructor& out) {
+static auto macro_msg = [](profile::user_profile::mac_roll_map_t const& map,
+                           std::string const& message,
+                           output_constructor& out) {
     if (map.empty()) return;
     for (auto const& pair : map) {
-        if (!message.empty() && pair.first.find(message) == std::string::npos) continue;
+        if (!message.empty() && pair.first.find(message) == std::string::npos)
+            continue;
         out.append_message(u8"\r\n>");
         out.append_message(pair.first);
         out.append_message(u8":");
@@ -161,9 +181,11 @@ entry_list::entry_list() {
         "5YaZ");
 }
 
-bool entry_list::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_list::resolve_request(std::string const& message, event_info& event,
+                                 std::string& response) {
     if (message.empty()) {
-        auto p_profile = profile::profile_manager::get_instance()->get_profile(event.user_id);
+        auto p_profile = profile::profile_manager::get_instance()->get_profile(
+            event.user_id);
         output_constructor oc(event.nickname);
         oc.append_message(u8"已设置下列骰子指令:");
         defr_msg(p_profile->def_roll, u8"* 默认 :", oc);
@@ -171,7 +193,9 @@ bool entry_list::resolve_request(std::string const& message, event_info& event, 
         response = oc.str();
         return true;
     } else {
-        const auto& macros = profile::profile_manager::get_instance()->get_profile(event.user_id)->mac_rolls;
+        const auto& macros = profile::profile_manager::get_instance()
+                                 ->get_profile(event.user_id)
+                                 ->mac_rolls;
 
         output_constructor oc(event.nickname);
         oc.append_message(u8"已设置如下包含\"");
@@ -211,7 +235,8 @@ entry_delete::entry_delete() {
         "5peg5rOV5Yig6Zmk55qE");
 }
 
-bool entry_delete::resolve_request(std::string const& message, event_info& event, std::string& response) {
+bool entry_delete::resolve_request(std::string const& message,
+                                   event_info& event, std::string& response) {
     auto pfm = profile::profile_manager::get_instance();
     if (message.empty()) {
         pfm->get_profile(event.user_id)->mac_rolls.clear();

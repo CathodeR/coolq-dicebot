@@ -34,7 +34,7 @@ nickname_manager *nickname_manager::create_instance() {
     nickname_manager::instance = std::make_unique<nickname_manager>();
 }
 
-nickname_manager *nickname_manager::destroy_instance() {
+void nickname_manager::destroy_instance() {
     nickname_manager::instance = nullptr;
 }
 
