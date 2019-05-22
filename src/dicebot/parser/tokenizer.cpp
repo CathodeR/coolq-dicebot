@@ -37,7 +37,7 @@ struct punct_container {
 /**
  * just ignore useless parenthesis/braces/commas
  */
-static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
+static size_t regulate_parenthesis(std::string const& str, bool parse_brace) {
     using parenthesis_pair = std::pair<char, size_t>;
     std::deque<parenthesis_pair> chaser;
     bool terminate = false;
@@ -47,7 +47,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
         const char& c_here = str[i];
         switch (c_here) {
         case '{':
-            if (no_brace) {
+            if (!parse_brace) {
                 terminate = true;
                 break;
             }
@@ -56,7 +56,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
             chaser.push_back(parenthesis_pair(c_here, i));
             break;
         case '}':
-            if (no_brace) {
+            if (!parse_brace) {
                 terminate = true;
                 break;
             }
@@ -81,7 +81,7 @@ static size_t regulate_parenthesis(std::string const& str, bool no_brace) {
                 terminate = true;
             break;
         case ',':
-            if (no_brace) {
+            if (!parse_brace) {
                 terminate = true;
                 break;
             }
