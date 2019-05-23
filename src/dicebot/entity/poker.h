@@ -72,7 +72,7 @@ namespace dicebot::poker {
 
     struct card_item {
         poker_type type;
-        uint16_t source_index;
+        size_t source_index;
     };
 
     class poker_deck {

@@ -141,7 +141,8 @@ const std::unordered_map<std::string, poker::poker_type> card_names = {{"h2", he
                                                                        {"cluba", club_A},
                                                                        {"jc", joker_color},
                                                                        {"jb", joker_bw},
-                                                                       {"j", joker_color}};
+                                                                       {"j", joker_color},
+                                                                       {"joker", joker_color}};
 
 auto split_string_ignore_spaces = [](const std::string& source, char splitter, auto& container) -> size_t {
     constexpr char ignores[] = " \t";
@@ -203,13 +204,18 @@ void poker_deck::init(const std::string& params) noexcept {
 
         auto count_and_name = split_into_number_and_name(params, item);
 
-        std::string lc_content = utils::lower_case_copy(count_and_name.second);
-        auto iter = card_names.find(lc_content);
-        if (iter != card_names.end()) {
-            utils::repeat(count_and_name.first, [this, iter](size_t) { this->deck.push_back({iter->second, 0}); });
-        } else {
-            this->deck.push_back({custom, static_cast<uint16_t>(this->card_sources.size())});
-            this->card_sources.push_back(count_and_name.second);
+        if (count_and_name.first > 0) {
+            std::string lc_content = utils::lower_case_copy(count_and_name.second);
+            auto iter = card_names.find(lc_content);
+            if (iter != card_names.end()) {
+                utils::repeat(count_and_name.first, [this, iter](size_t) { this->deck.push_back({iter->second, 0}); });
+            } else {
+                size_t source_idx = this->card_sources.size();
+                utils::repeat(count_and_name.first, [this, iter, source_idx](size_t) {
+                    this->deck.push_back({custom, source_idx});
+                });
+                this->card_sources.push_back(count_and_name.second);
+            }
         }
 
         if (this->deck.size() > MAX_DECK_SIZE) break;
