@@ -326,7 +326,7 @@ void comp_calculus::print(str_container &strlist) const noexcept {
 
 number comp_calculus_reverse::roll_the_dice(str_container &out) const {
     out.emplace_back("-");
-    return this->child->roll_the_dice(out);
+    return -this->child->roll_the_dice(out);
 }
 void comp_calculus_reverse::print(str_container &strlist) const noexcept {
     strlist.emplace_back("-");
