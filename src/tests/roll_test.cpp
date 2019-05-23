@@ -13,6 +13,7 @@
 
 #include "gtest/gtest.h"
 
+#include "./dicebot/dice_excepts.h"
 #include "./dicebot/dice_roller.h"
 #include "./dicebot/entity/manual_dice.h"
 

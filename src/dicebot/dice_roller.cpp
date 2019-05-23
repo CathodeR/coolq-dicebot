@@ -5,9 +5,9 @@
 #include <regex>
 #include <sstream>
 
-#include "./utils/utils.h"
-
+#include "./dice_excepts.h"
 #include "./random/random_provider.h"
+#include "./utils/utils.h"
 
 using namespace dicebot;
 using namespace dicebot::roll;

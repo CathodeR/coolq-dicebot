@@ -18,16 +18,19 @@ namespace dicebot::diceparser {
     using str_container = std::list<std::string>;
     using result_container = std::list<number>;
 
+    template <class item_t>
+    using parser_pointer = std::shared_ptr<item_t>;
+
     class component {
     public:
         virtual number roll_the_dice(str_container &) const = 0;
         virtual void print(str_container &) const noexcept = 0;
-        virtual ~component() {}
+        virtual ~component() = default;
     };
 
     class base_holder {};
 
-    using p_component = std::shared_ptr<component>;
+    using p_component = parser_pointer<component>;
 
     class comp_number : public component {
     public:
@@ -35,6 +38,7 @@ namespace dicebot::diceparser {
         number roll_the_dice(str_container &) const override;
         void print(str_container &) const noexcept override;
     };
+    using p_number = parser_pointer<comp_number>;
 
     class comp_holder : public component, public base_holder {
     public:
@@ -76,11 +80,11 @@ namespace dicebot::diceparser {
 
     class dicelet : public component {
     public:
-        using p_dicelet = std::shared_ptr<dicelet>;
         number roll_the_dice(str_container &) const override { return 0; }
         virtual void roll_dicelet(result_container &,
                                   str_container &) const = 0;
     };
+    using p_dicelet = parser_pointer<dicelet>;
 
     class dicelet_unit_sharp : public dicelet {
     public:

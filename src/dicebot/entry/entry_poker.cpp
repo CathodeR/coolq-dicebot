@@ -1,20 +1,20 @@
 #include "./entry_poker.h"
+
 #include <regex>
+
 #include "../data/poker_manager.h"
+#include "./output_constructor.h"
 using namespace dicebot;
 using namespace entry;
 
-using func_type =
-    std::function<bool(const std::string &, const event_info &, std::string &)>;
+using func_type = std::function<bool(const std::string &, const event_info &, std::string &)>;
 
 using func_map_t = std::unordered_map<std::string, func_type>;
 
-static auto init_poker = [](const std::string &suffix, const event_info &event,
-                            std::string &response) noexcept -> bool {
+static auto init_poker = [](const std::string &suffix, const event_info &event, std::string &response) noexcept -> bool {
     if (suffix.empty()) return false;
 
-    auto p_deck =
-        poker::poker_manager::get_instance()->get_deck(event.group_id);
+    auto p_deck = poker::poker_manager::get_instance()->get_deck(event.group_id);
 
     p_deck->init(suffix);
 
@@ -24,11 +24,9 @@ static auto init_poker = [](const std::string &suffix, const event_info &event,
     return true;
 };
 
-static auto draw_poker = [](const std::string &suffix, const event_info &event,
-                            std::string &response) noexcept -> bool {
+static auto draw_poker = [](const std::string &suffix, const event_info &event, std::string &response) noexcept -> bool {
     poker::card_item card;
-    auto p_deck =
-        poker::poker_manager::get_instance()->get_deck(event.group_id);
+    auto p_deck = poker::poker_manager::get_instance()->get_deck(event.group_id);
 
     auto show_drawer = [p_deck](output_constructor &oc) {
         oc << u8" | 牌堆剩余" << p_deck->size() << "张，已经抽出了: ";
@@ -59,12 +57,9 @@ static auto draw_poker = [](const std::string &suffix, const event_info &event,
     return false;
 };
 
-static auto shuffle_poker = [](const std::string &suffix,
-                               const event_info &event,
-                               std::string &response) noexcept -> bool {
+static auto shuffle_poker = [](const std::string &suffix, const event_info &event, std::string &response) noexcept -> bool {
     poker::poker_type card;
-    auto p_deck =
-        poker::poker_manager::get_instance()->get_deck(event.group_id);
+    auto p_deck = poker::poker_manager::get_instance()->get_deck(event.group_id);
     p_deck->shuffle();
 
     output_constructor oc(event.nickname);
@@ -73,15 +68,11 @@ static auto shuffle_poker = [](const std::string &suffix,
     return true;
 };
 
-static const func_map_t func_map = {{"init", init_poker},
-                                    {"draw", draw_poker},
-                                    {"d", draw_poker},
-                                    {"shuffle", shuffle_poker}
+static const func_map_t func_map = {{"init", init_poker}, {"draw", draw_poker}, {"d", draw_poker}, {"shuffle", shuffle_poker}
 
 };
 
-static const std::regex filter_command("^(init|draw|d|shuffle) *",
-                                       std::regex_constants::icase);
+static const std::regex filter_command("^(init|draw|d|shuffle) *", std::regex_constants::icase);
 entry_poker::entry_poker() noexcept {
     this->is_stand_alone = false;
     this->identifier_regex = "p(?:oker)?";
@@ -97,8 +88,7 @@ entry_poker::entry_poker() noexcept {
         u8"初始化一副由战,法,牧3张牌组成的牌堆，并洗牌";
 }
 
-bool entry_poker::resolve_request(std::string const &message, event_info &event,
-                                  std::string &response) {
+bool entry_poker::resolve_request(std::string const &message, event_info &event, std::string &response) noexcept {
     std::smatch detail_command_match;
     std::regex_search(message, detail_command_match, filter_command);
     if (detail_command_match.empty()) return false;

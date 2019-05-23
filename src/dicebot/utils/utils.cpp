@@ -27,29 +27,41 @@ void utils::split_line(std::string const& source,
     }
 }
 
-void utils::remove_space_and_tab(std::string& source) {
-    // i cant erase(iter,str.end()), so switch to traditional method
-    unsigned int iter = 0;
-    unsigned int i_continuous_space_count = 0;
-    unsigned int i_erase_start = 0;
-    while (iter < source.length()) {
-        if (source[iter] == ' ' || source[iter] == '\t') {
-            if (iter + 1 != source.length()) {
-                if (i_continuous_space_count == 0) i_erase_start = iter;
-                i_continuous_space_count++;
-                iter++;
-            } else {
-                source.erase(i_erase_start, source.length() - i_erase_start);
-                iter++;
-            }
-        } else if (i_continuous_space_count > 0) {
-            source.erase(i_erase_start, i_continuous_space_count);
-            iter = ++i_erase_start;
-            i_continuous_space_count = 0;
-        } else {
-            i_erase_start = ++iter;
+constexpr char new_line[] = "\r\n";
+constexpr size_t new_line_len = 2;
+void utils::split_line_part(
+    std::string const& source,
+    std::list<std::pair<size_t, size_t>>& source_splits) {
+    size_t o_pos = 0;
+    size_t f_pos;
+    while (o_pos < source.size()) {
+        f_pos = source.find(new_line, o_pos);
+        if (f_pos == std::string::npos) {
+            source_splits.push_back({o_pos, source.size() - 1});
+            return;
         }
+        if (f_pos > o_pos) source_splits.push_back({o_pos, f_pos});
+        o_pos = f_pos + new_line_len;
     }
+}
+
+constexpr char trim_chars[] = " \t";
+bool utils::trim_part(std::string const& source,
+                      std::pair<size_t, size_t>& part) {
+    part.first = source.find_first_not_of(trim_chars, part.first);
+    if (part.first > part.second) return false;
+    part.second = source.find_last_not_of(trim_chars, part.second);
+}
+
+void utils::remove_space_and_tab(std::string& source) {
+    std::vector<char> container;
+    container.reserve(source.size() + 1);
+    for (auto& item : source) {
+        if (item == ' ' || item == '\t') continue;
+        container.push_back(item);
+    }
+    container.push_back('\0');
+    source.assign(container.data());
 }
 
 void utils::quick_sort(int* origin, int* pilot, int first, int last) {

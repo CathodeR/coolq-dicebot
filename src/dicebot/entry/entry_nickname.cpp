@@ -3,6 +3,7 @@
 #include <regex>
 
 #include "../data/nick_manager.h"
+#include "./output_constructor.h"
 
 using namespace dicebot;
 using namespace dicebot::entry;
@@ -20,11 +21,9 @@ entry_nickname::entry_nickname() noexcept {
         u8"指令.ns [名字]：上述命令的简写形式";
 }
 
-static std::regex filter_command("^(s)(?:ilence)? *",
-                                 std::regex_constants::icase);
+static std::regex filter_command("^(s)(?:ilence)? *", std::regex_constants::icase);
 
-bool entry_nickname::resolve_request(std::string const& message,
-                                     event_info& event, std::string& response) {
+bool entry_nickname::resolve_request(std::string const& message, event_info& event, std::string& response) noexcept {
     bool is_silence = false;
     std::smatch match_list_silence;
     std::regex_search(message, match_list_silence, filter_command);

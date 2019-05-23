@@ -3,10 +3,10 @@
 #include <regex>
 
 #include "../data/manual_dice_control.h"
-#include "../data/nick_manager.h"
 #include "../dice_roller.h"
 #include "../entity/manual_dice.h"
 #include "../utils/utils.h"
+#include "./output_constructor.h"
 
 using namespace dicebot;
 using namespace dicebot::entry;
@@ -14,16 +14,11 @@ using namespace dicebot::entry;
 using md_ctrl = manual::manual_dice_control;
 
 static const std::regex filter_integer("^ *(\\d+) *");
-static const std::regex filter_manual_dice(
-    "^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
+static const std::regex filter_manual_dice("^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
 
-static auto cur_state = [](output_constructor& oc, const std::string& state) {
-    oc << u8" | 当前状态: " << state;
-};
+static auto cur_state = [](output_constructor& oc, const std::string& state) { oc << u8" | 当前状态: " << state; };
 
-static auto manualdice_add = [](std::string const& message,
-                                const event_info& event,
-                                std::string& response) noexcept -> bool {
+static auto manualdice_add = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
     std::smatch roll_match;
     std::regex_search(message, roll_match, filter_manual_dice);
     if (!roll_match.empty()) {
@@ -47,9 +42,7 @@ static auto manualdice_add = [](std::string const& message,
     return false;
 };
 
-static auto manualdice_killall = [](std::string const& message,
-                                    const event_info& event,
-                                    std::string& response) noexcept -> bool {
+static auto manualdice_killall = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
     auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
     if (md_target->second) {
         md_target->second.killall();
@@ -63,9 +56,7 @@ static auto manualdice_killall = [](std::string const& message,
     return false;
 };
 
-static auto manualdice_kill = [](std::string const& message,
-                                 const event_info& event,
-                                 std::string& response) noexcept -> bool {
+static auto manualdice_kill = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
     std::smatch roll_match;
     std::regex_search(message, roll_match, filter_integer);
     if (!roll_match.empty()) {
@@ -85,9 +76,7 @@ static auto manualdice_kill = [](std::string const& message,
     return false;
 };
 
-static auto manualdice_roll = [](std::string const& message,
-                                 const event_info& event,
-                                 std::string& response) noexcept -> bool {
+static auto manualdice_roll = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
     std::smatch roll_match;
     std::regex_search(message, roll_match, filter_integer);
     if (!roll_match.empty()) {
@@ -110,9 +99,7 @@ static auto manualdice_roll = [](std::string const& message,
     return false;
 };
 
-static auto manualdice_create = [](std::string const& message,
-                                   const event_info& event,
-                                   std::string& response) noexcept -> bool {
+static auto manualdice_create = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
     std::smatch roll_match;
     std::regex_search(message, roll_match, filter_manual_dice);
     if (!roll_match.empty()) {
@@ -134,8 +121,7 @@ static auto manualdice_create = [](std::string const& message,
     return false;
 };
 
-using func_type = std::function<bool(std::string const& message,
-                                     const event_info&, std::string&)>;
+using func_type = std::function<bool(std::string const& message, const event_info&, std::string&)>;
 using func_map_t = std::map<std::string, func_type>;
 
 static const func_map_t func_map = {{"ka", manualdice_killall},
@@ -147,8 +133,7 @@ static const func_map_t func_map = {{"ka", manualdice_killall},
                                     {"kill", manualdice_kill},
                                     {"roll", manualdice_roll}};
 
-std::regex filter_command("^(ka|a|k|r|killall|add|kill|roll) *",
-                          std::regex_constants::icase);
+std::regex filter_command("^(ka|a|k|r|killall|add|kill|roll) *", std::regex_constants::icase);
 
 entry_manual_dice::entry_manual_dice() noexcept {
     this->is_stand_alone = false;
@@ -162,15 +147,12 @@ entry_manual_dice::entry_manual_dice() noexcept {
         u8"指令.mka：清空所有手动骰子";
 }
 
-bool entry_manual_dice::resolve_request(std::string const& message,
-                                        event_info& event,
-                                        std::string& response) {
+bool entry_manual_dice::resolve_request(std::string const& message, event_info& event, std::string& response) noexcept {
     std::string str_nickname = event.nickname;
 
     std::smatch match_command;
     std::regex_search(message, match_command, filter_command);
-    if (match_command.empty())
-        return manualdice_create(message, event, response);
+    if (match_command.empty()) return manualdice_create(message, event, response);
 
     std::string str_match = match_command[1];
     utils::lower_case(str_match);

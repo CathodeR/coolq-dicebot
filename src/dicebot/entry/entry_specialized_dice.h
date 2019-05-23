@@ -9,21 +9,18 @@ namespace dicebot::entry {
     class entry_wod_dice : public entry_base {
     public:
         entry_wod_dice() noexcept;
-        bool resolve_request(std::string const &message, event_info &event,
-                             std::string &response) override;
+        bool resolve_request(std::string const &message, event_info &event, std::string &response) noexcept override;
     };
 
     class entry_coc_dice : public entry_base {
     public:
-        entry_coc_dice();
-        bool resolve_request(std::string const &message, event_info &event,
-                             std::string &response) override;
+        entry_coc_dice() noexcept;
+        bool resolve_request(std::string const &message, event_info &event, std::string &response) noexcept override;
     };
 
     class entry_fate_dice : public entry_base {
     public:
-        entry_fate_dice();
-        bool resolve_request(std::string const &message, event_info &event,
-                             std::string &response) override;
+        entry_fate_dice() noexcept;
+        bool resolve_request(std::string const &message, event_info &event, std::string &response) noexcept override;
     };
 } // namespace dicebot::entry

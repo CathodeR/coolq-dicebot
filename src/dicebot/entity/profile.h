@@ -24,6 +24,9 @@ namespace dicebot::profile {
         var_pair(){};
     };
 
+    const var_pair var_rs_on(1, 1);
+    const var_pair var_rs_off(1, 0);
+
 #pragma region profile template
 
     template <class _profile_Key, class _profile_Val,
@@ -121,7 +124,7 @@ namespace dicebot::profile {
         using sys_var_map_t = profile_template<sys_var_type, var_pair>;
         using def_roll_map_t = profile_template<def_roll_type, std::string>;
         using mac_roll_map_t = profile_template<std::string, std::string>;
-        sys_var_map_t sys_vars = {{sys_var_type::rs_on, var_pair(1, 1)}};
+        sys_var_map_t sys_vars = {{sys_var_type::rs_on, var_rs_on}};
         def_roll_map_t def_roll;
         mac_roll_map_t mac_rolls;
         bool encode(std::vector<std::string> &target) const {

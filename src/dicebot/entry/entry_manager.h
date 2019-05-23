@@ -39,7 +39,6 @@ namespace dicebot::entry {
         entry_help() noexcept;
         bool register_help(p_entry v_entry) noexcept;
         void generate_filter_command() noexcept;
-        bool resolve_request(std::string const& message, event_info& event,
-                             std::string& response) override;
+        bool resolve_request(std::string const& message, event_info& event, std::string& response) noexcept override;
     };
 } // namespace dicebot::entry

@@ -19,29 +19,8 @@ namespace dicebot::diceparser {
         std::string tail;
         std::string source;
         parser(tokenizer const&) noexcept;
-        p_syntax_item parse(std::string const& source);
+        p_syntax_item parse();
         p_syntax_item resolve(uint8_t) const;
         p_syntax_item stack(token_t, std::string&&) const;
-    };
-
-    template <class container_t, class excutable_t,
-              class item_t = typename container_t::value_type>
-    inline std::string result_builder(const char* prefix,
-                                      const container_t& src,
-                                      excutable_t strconv,
-                                      const char* separater,
-                                      const char* suffix) {
-        std::string ret;
-        ret.assign(prefix);
-        bool is_first = true;
-        for (const auto& item : src) {
-            if (is_first)
-                is_first = false;
-            else
-                ret.append(separater);
-            ret.append(strconv(item));
-        }
-        ret.append(suffix);
-        return ret;
     };
 } // namespace dicebot::diceparser

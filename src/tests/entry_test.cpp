@@ -23,8 +23,7 @@ protected:
     ~entry_test() { dicebot::salvage(); }
 
 public:
-    bool test_call(dicebot::event_info &ei, const std::string &source,
-                   const std::regex &reg_test) {
+    bool test_call(dicebot::event_info &ei, const std::string &source, const std::regex &reg_test) {
         std::string output;
         dicebot::try_fill_nickname(ei);
         dicebot::message_pipeline(source, ei, output);
@@ -54,8 +53,7 @@ TEST_F(entry_test, roll_2d20plus4) {
         u8"^ \\* dice 掷骰: 2d20 \\+ 4 = \\[\\d{1,2} \\+ \\d{1,2}\\] \\+ 4 = "
         u8"\\d{1,2}$");
     std::regex result_reg_s(u8"^ \\* dice 掷骰: 2d20 \\+ 4 = \\d{1,2}$");
-    std::regex result_reg_s_msg(
-        u8"^ \\* dice test 掷骰: 2d20 \\+ 4 = \\d{1,2}$");
+    std::regex result_reg_s_msg(u8"^ \\* dice test 掷骰: 2d20 \\+ 4 = \\d{1,2}$");
 
     std::regex roll_source_on(u8"^ \\* dice 启用骰子详细输出$");
     ASSERT_TRUE(this->test_call(ei, ".rson", roll_source_on));
@@ -90,7 +88,7 @@ TEST_F(entry_test, roll_2d20plus4) {
     ASSERT_TRUE(this->test_call(ei, ".r 2d20+4 test", result_reg_s_msg));
 }
 
-TEST_F(entry_test, roll_6sharp4d6kl3) {
+TEST_F(entry_test, roll_sharp) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
@@ -106,8 +104,7 @@ TEST_F(entry_test, roll_6sharp4d6kl3) {
         u8"){5}\\d{1,2}\\}$");
     ASSERT_TRUE(this->test_call(ei, source, result_reg));
 
-    ASSERT_TRUE(this->test_call(
-        ei, ".rsoff", std::regex(u8"^ \\* dice 关闭骰子详细输出$")));
+    ASSERT_TRUE(this->test_call(ei, ".rsoff", std::regex(u8"^ \\* dice 关闭骰子详细输出$")));
     std::regex result_reg_s(
         u8"^ \\* dice 掷骰: 6\\#4d6kl3 = \\{(\\d{1,2}, "
         u8"){5}\\d{1,2}\\}$");
@@ -137,24 +134,16 @@ TEST_F(entry_test, name) {
     ei.nickname = "dynilath";
 
     ei.group_id = 10001;
-    ASSERT_TRUE(this->test_call(
-        ei, ".ndice1", std::regex(u8"^ \\* .* 的新名字是 dice1$")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".namedice1", std::regex(u8"^ \\* dice1 的新名字是 dice1$")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".n   dice1", std::regex(u8"^ \\* dice1 的新名字是 dice1$")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".name   dice1", std::regex(u8"^ \\* dice1 的新名字是 dice1$")));
+    ASSERT_TRUE(this->test_call(ei, ".ndice1", std::regex(u8"^ \\* .* 的新名字是 dice1$")));
+    ASSERT_TRUE(this->test_call(ei, ".namedice1", std::regex(u8"^ \\* dice1 的新名字是 dice1$")));
+    ASSERT_TRUE(this->test_call(ei, ".n   dice1", std::regex(u8"^ \\* dice1 的新名字是 dice1$")));
+    ASSERT_TRUE(this->test_call(ei, ".name   dice1", std::regex(u8"^ \\* dice1 的新名字是 dice1$")));
 
     ei.group_id = 10002;
-    ASSERT_TRUE(this->test_call(
-        ei, ".ndice2", std::regex(u8"^ \\* .* 的新名字是 dice2$")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".namedice2", std::regex(u8"^ \\* dice2 的新名字是 dice2$")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".n   dice2", std::regex(u8"^ \\* dice2 的新名字是 dice2$")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".name   dice2", std::regex(u8"^ \\* dice2 的新名字是 dice2$")));
+    ASSERT_TRUE(this->test_call(ei, ".ndice2", std::regex(u8"^ \\* .* 的新名字是 dice2$")));
+    ASSERT_TRUE(this->test_call(ei, ".namedice2", std::regex(u8"^ \\* dice2 的新名字是 dice2$")));
+    ASSERT_TRUE(this->test_call(ei, ".n   dice2", std::regex(u8"^ \\* dice2 的新名字是 dice2$")));
+    ASSERT_TRUE(this->test_call(ei, ".name   dice2", std::regex(u8"^ \\* dice2 的新名字是 dice2$")));
 
     std::regex result_reg_r1(
         u8"^ \\* dice1 掷骰: 2d20 \\+ 4 = \\[\\d{1,2} \\+ \\d{1,2}\\] \\+ 4 = "
@@ -170,12 +159,10 @@ TEST_F(entry_test, name) {
     ASSERT_TRUE(this->test_call(ei, ".rs2d20+4", result_reg_r2));
 
     ei.group_id = 10001;
-    ASSERT_TRUE(this->test_call(
-        ei, ".ndice", std::regex(u8"^ \\* dice1 的新名字是 dice$")));
+    ASSERT_TRUE(this->test_call(ei, ".ndice", std::regex(u8"^ \\* dice1 的新名字是 dice$")));
 
     ei.group_id = 10002;
-    ASSERT_TRUE(this->test_call(
-        ei, ".ndice", std::regex(u8"^ \\* dice2 的新名字是 dice$")));
+    ASSERT_TRUE(this->test_call(ei, ".ndice", std::regex(u8"^ \\* dice2 的新名字是 dice$")));
 }
 
 TEST_F(entry_test, macro_recall) {
@@ -183,12 +170,8 @@ TEST_F(entry_test, macro_recall) {
     ei.nickname = "dynilath";
 
     this->base_call(ei, ".ndice");
-    ASSERT_TRUE(this->test_call(
-        ei, ".s 4d6", std::regex(u8"^ \\* dice 设置默认骰子指令: \\(4d6\\)")));
-    ASSERT_TRUE(this->test_call(
-        ei,
-        ".set 4d6",
-        std::regex(u8"^ \\* dice 设置默认骰子指令: \\(4d6\\)")));
+    ASSERT_TRUE(this->test_call(ei, ".s 4d6", std::regex(u8"^ \\* dice 设置默认骰子指令: \\(4d6\\)")));
+    ASSERT_TRUE(this->test_call(ei, ".set 4d6", std::regex(u8"^ \\* dice 设置默认骰子指令: \\(4d6\\)")));
 
     std::regex result_reg(
         u8"^ \\* dice 掷骰: \\(4d6\\) = \\(\\[\\d \\+ \\d \\+ \\d \\+ "
@@ -199,21 +182,14 @@ TEST_F(entry_test, macro_recall) {
     ASSERT_TRUE(this->test_call(ei, ".rs", result_reg));
     ASSERT_TRUE(this->test_call(ei, ".r", result_reg_s));
 
-    ASSERT_TRUE(this->test_call(
-        ei,
-        ".s 4d6 test",
-        std::regex(u8"^ \\* dice 设置指令: \\(4d6\\) 为 test")));
-    ASSERT_TRUE(this->test_call(
-        ei,
-        ".set 4d6 test",
-        std::regex(u8"^ \\* dice 设置指令: \\(4d6\\) 为 test")));
+    ASSERT_TRUE(this->test_call(ei, ".s 4d6 test", std::regex(u8"^ \\* dice 设置指令: \\(4d6\\) 为 test")));
+    ASSERT_TRUE(this->test_call(ei, ".set 4d6 test", std::regex(u8"^ \\* dice 设置指令: \\(4d6\\) 为 test")));
 
     this->base_call(ei, ".rsoff");
     ASSERT_TRUE(this->test_call(ei, ".rs test", result_reg));
     ASSERT_TRUE(this->test_call(ei, ".r test", result_reg_s));
 
-    ASSERT_TRUE(this->test_call(
-        ei, ".s 4 test", std::regex(u8"^ \\* dice 设置指令: 4 为 test")));
+    ASSERT_TRUE(this->test_call(ei, ".s 4 test", std::regex(u8"^ \\* dice 设置指令: 4 为 test")));
 
     std::regex result2_reg(
         u8"^ \\* dice 掷骰: 4d6 = \\[\\d \\+ \\d \\+ \\d \\+ \\d\\] = "
@@ -227,29 +203,22 @@ TEST_F(entry_test, macro_recall) {
     ASSERT_TRUE(this->test_call(ei, ".r test d 6", result2_reg_s));
 
     this->base_call(ei, ".s 4d6k3");
-    ASSERT_TRUE(
-        this->test_call(ei, ".l", std::regex(u8"\\n\\* 默认 : \\(4d6k3\\)")));
+    ASSERT_TRUE(this->test_call(ei, ".l", std::regex(u8"\\n\\* 默认 : \\(4d6k3\\)")));
     this->base_call(ei, ".s 4d6kl3");
-    ASSERT_TRUE(
-        this->test_call(ei, ".l", std::regex(u8"\\n\\* 默认 : \\(4d6kl3\\)")));
+    ASSERT_TRUE(this->test_call(ei, ".l", std::regex(u8"\\n\\* 默认 : \\(4d6kl3\\)")));
     this->base_call(ei, ".s 4d6k3 str");
-    ASSERT_TRUE(
-        this->test_call(ei, ".l", std::regex(u8"\\n> str : \\(4d6k3\\)")));
+    ASSERT_TRUE(this->test_call(ei, ".l", std::regex(u8"\\n> str : \\(4d6k3\\)")));
     this->base_call(ei, ".s 4d6kl3 str");
-    ASSERT_TRUE(
-        this->test_call(ei, ".l", std::regex(u8"\\n> str : \\(4d6kl3\\)")));
+    ASSERT_TRUE(this->test_call(ei, ".l", std::regex(u8"\\n> str : \\(4d6kl3\\)")));
 
-    ASSERT_TRUE(this->test_call(
-        ei, ".d str", std::regex(u8"^ \\* dice 已删除骰子指令: str")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".d", std::regex(u8"^ \\* dice 已删除所有骰子指令")));
+    ASSERT_TRUE(this->test_call(ei, ".d str", std::regex(u8"^ \\* dice 已删除骰子指令: str")));
+    ASSERT_TRUE(this->test_call(ei, ".d", std::regex(u8"^ \\* dice 已删除所有骰子指令")));
 
     this->base_call(ei, ".s 4d6k3 test1");
     this->base_call(ei, ".s 4d6k3 test2");
     this->base_call(ei, ".s 4d6k3 test3");
     this->base_call(ei, ".s 4d6k3 tess");
-    ASSERT_TRUE(this->test_call(
-        ei, ".l test", std::regex(u8"(\\r\\n> test\\d : \\(4d6k3\\)){3}$")));
+    ASSERT_TRUE(this->test_call(ei, ".l test", std::regex(u8"(\\r\\n> test\\d : \\(4d6k3\\)){3}$")));
 }
 
 TEST_F(entry_test, roll_coc) {
@@ -257,28 +226,19 @@ TEST_F(entry_test, roll_coc) {
     ei.nickname = "dynilath";
 
     this->base_call(ei, ".ndice");
-    ASSERT_TRUE(this->test_call(
-        ei, ".c", std::regex(u8"^ \\* dice 掷骰: CoC = \\d{1,3}")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".coc", std::regex(u8"^ \\* dice 掷骰: CoC = \\d{1,3}")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".c test", std::regex(u8"^ \\* dice test 掷骰: CoC = \\d{1,3}")));
-    ASSERT_TRUE(this->test_call(
-        ei, ".coc test", std::regex(u8"^ \\* dice test 掷骰: CoC = \\d{1,3}")));
+    ASSERT_TRUE(this->test_call(ei, ".c", std::regex(u8"^ \\* dice 掷骰: CoC = \\d{1,3}")));
+    ASSERT_TRUE(this->test_call(ei, ".coc", std::regex(u8"^ \\* dice 掷骰: CoC = \\d{1,3}")));
+    ASSERT_TRUE(this->test_call(ei, ".c test", std::regex(u8"^ \\* dice test 掷骰: CoC = \\d{1,3}")));
+    ASSERT_TRUE(this->test_call(ei, ".coc test", std::regex(u8"^ \\* dice test 掷骰: CoC = \\d{1,3}")));
 
     std::string regex_prefix = u8" \\* dice 掷骰: CoC";
-    std::string regex_suffix =
-        u8" = \\[\\d{1,2}\\*? \\+ \\d{1,2}\\*?\\] \\[\\d\\] = \\d{1,3}";
+    std::string regex_suffix = u8" = \\[\\d{1,2}\\*? \\+ \\d{1,2}\\*?\\] \\[\\d\\] = \\d{1,3}";
 
-    ASSERT_TRUE(this->test_call(
-        ei, ".cb1", std::regex(regex_prefix + "b1" + regex_suffix)));
-    ASSERT_TRUE(this->test_call(
-        ei, ".cp1", std::regex(regex_prefix + "p1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cb1", std::regex(regex_prefix + "b1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cp1", std::regex(regex_prefix + "p1" + regex_suffix)));
 
-    ASSERT_TRUE(this->test_call(
-        ei, ".cb2p1", std::regex(regex_prefix + "b2p1" + regex_suffix)));
-    ASSERT_TRUE(this->test_call(
-        ei, ".cp2b1", std::regex(regex_prefix + "p2b1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cb2p1", std::regex(regex_prefix + "b2p1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cp2b1", std::regex(regex_prefix + "p2b1" + regex_suffix)));
 }
 
 TEST_F(entry_test, roll_wod) {
@@ -313,12 +273,9 @@ TEST_F(entry_test, roll_fate) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
-    std::regex reg_fate(
-        u8"^ \\* dice 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d");
-    std::regex reg_fate1(
-        u8"^ \\* dice 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = -?\\d");
-    std::regex reg_fate_msg(
-        u8"^ \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d");
+    std::regex reg_fate(u8"^ \\* dice 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d");
+    std::regex reg_fate1(u8"^ \\* dice 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = -?\\d");
+    std::regex reg_fate_msg(u8"^ \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d");
     std::regex reg_fate1_msg(
         u8"^ \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = "
         u8"-?\\d");
@@ -338,17 +295,12 @@ TEST_F(entry_test, manual_dice) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
-    std::string cur_state_4 =
-        "\\| 当前状态: (\\d\\(6\\) \\+ ){3}\\d\\(6\\) = \\d{1,2}";
-    std::string cur_state_3 =
-        "\\| 当前状态: (\\d\\(6\\) \\+ ){2}\\d\\(6\\) = \\d{1,2}";
+    std::string cur_state_4 = "\\| 当前状态: (\\d\\(6\\) \\+ ){3}\\d\\(6\\) = \\d{1,2}";
+    std::string cur_state_3 = "\\| 当前状态: (\\d\\(6\\) \\+ ){2}\\d\\(6\\) = \\d{1,2}";
 
-    std::regex reg_init(std::string(u8"^ \\* dice 在桌上放了这些骰子: 4d6 ")
-                        + cur_state_4);
-    std::regex reg_r4(std::string(u8"^ \\* dice 重骰桌上的第4个骰子 ")
-                      + cur_state_4);
-    std::regex reg_k4(std::string(u8"^ \\* dice 杀死桌上的第4个骰子 ")
-                      + cur_state_3);
+    std::regex reg_init(std::string(u8"^ \\* dice 在桌上放了这些骰子: 4d6 ") + cur_state_4);
+    std::regex reg_r4(std::string(u8"^ \\* dice 重骰桌上的第4个骰子 ") + cur_state_4);
+    std::regex reg_k4(std::string(u8"^ \\* dice 杀死桌上的第4个骰子 ") + cur_state_3);
     std::regex reg_ka(" \\* dice 杀掉了所有的骰子 \\| 当前状态: 没有骰子了");
 
     this->base_call(ei, ".ndice");
@@ -370,12 +322,9 @@ TEST_F(entry_test, poker) {
     std::string prefix = "^ \\* dice 抽出了([abcd])";
     std::regex re_draw1(prefix + " \\| 牌堆剩余3张，已经抽出了: \\1");
     std::regex re_draw2(prefix + " \\| 牌堆剩余2张，已经抽出了: [abcd], \\1");
-    std::regex re_draw3(prefix
-                        + " \\| 牌堆剩余1张，已经抽出了: ([abcd], ){2}\\1");
-    std::regex re_draw4(prefix
-                        + " \\| 牌堆剩余0张，已经抽出了: ([abcd], ){3}\\1");
-    std::regex re_draw_out(
-        " \\* dice 无牌可抽 \\| 牌堆剩余0张，已经抽出了: ([abcd], ){3}[abcd]");
+    std::regex re_draw3(prefix + " \\| 牌堆剩余1张，已经抽出了: ([abcd], ){2}\\1");
+    std::regex re_draw4(prefix + " \\| 牌堆剩余0张，已经抽出了: ([abcd], ){3}\\1");
+    std::regex re_draw_out(" \\* dice 无牌可抽 \\| 牌堆剩余0张，已经抽出了: ([abcd], ){3}[abcd]");
 
     ASSERT_TRUE(this->test_call(ei, ".pd", re_draw1));
     ASSERT_TRUE(this->test_call(ei, ".poker draw", re_draw2));
@@ -383,8 +332,7 @@ TEST_F(entry_test, poker) {
     ASSERT_TRUE(this->test_call(ei, ".pdraw", re_draw4));
     ASSERT_TRUE(this->test_call(ei, ".p d", re_draw_out));
 
-    ASSERT_TRUE(this->test_call(
-        ei, ".pshuffle", std::regex(" \\* dice 已将牌堆重新切洗")));
+    ASSERT_TRUE(this->test_call(ei, ".pshuffle", std::regex(" \\* dice 已将牌堆重新切洗")));
     ASSERT_TRUE(this->test_call(ei, ".pd", re_draw1));
     ASSERT_TRUE(this->test_call(ei, ".poker draw", re_draw2));
     ASSERT_TRUE(this->test_call(ei, ".p draw", re_draw3));

@@ -37,8 +37,7 @@ void entry_manager::finish_initialization() noexcept {
         ostrs_stream << (*iter)->identifier_regex;
     }
     ostrs_stream << ") *";
-    this->regex_command =
-        std::regex(ostrs_stream.str(), std::regex_constants::icase);
+    this->regex_command = std::regex(ostrs_stream.str(), std::regex_constants::icase);
 }
 
 p_entry const entry_manager::get_entry(std::string command) const {
@@ -50,9 +49,7 @@ p_entry const entry_manager::get_entry(std::string command) const {
         return (*iter).second;
 }
 
-std::regex const* entry_manager::get_regex_command() const {
-    return &(this->regex_command);
-}
+std::regex const* entry_manager::get_regex_command() const { return &(this->regex_command); }
 
 entry_help::entry_help() noexcept {
     this->is_stand_alone = true;
@@ -97,12 +94,10 @@ void entry_help::generate_filter_command() noexcept {
         ostrs_stream << (*iter);
     }
     ostrs_stream << ")";
-    this->filter_command =
-        std::regex(ostrs_stream.str(), std::regex_constants::icase);
+    this->filter_command = std::regex(ostrs_stream.str(), std::regex_constants::icase);
 }
 
-bool entry_help::resolve_request(std::string const& message, event_info& event,
-                                 std::string& response) {
+bool entry_help::resolve_request(std::string const& message, event_info& event, std::string& response) noexcept {
     std::smatch m;
     std::regex_search(message, m, this->filter_command);
 

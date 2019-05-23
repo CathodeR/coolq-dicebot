@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <deque>
 #include <memory>
@@ -28,8 +30,8 @@ namespace dicebot::diceparser {
         using sources_container_t = std::deque<const std::string *>;
 
     private:
-        // string source, sources[0] is original source, the others are expanded macros, ordered by the sequence where it presents in the
-        // original input
+        // string source, sources[0] is original source, the others are expanded macros, ordered by the sequence where it presents
+        // in the original input
         std::unique_ptr<sources_container_t> sources;
         // tail string separated from input by parenthesis check
         std::string rtail;

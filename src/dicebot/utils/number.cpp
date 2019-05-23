@@ -1,5 +1,5 @@
 #include "./number.h"
-
+#include "../dice_excepts.h"
 using namespace dicebot;
 
 constexpr integer_type P_INT32_MIN = -(INT32_MAX);

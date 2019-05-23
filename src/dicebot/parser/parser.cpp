@@ -352,7 +352,7 @@ terminals translate(token_index what) {
 }
 
 parser::parser(tokenizer const& tknz) noexcept : tknzer(tknz){};
-p_syntax_item parser::parse(std::string const& source) {
+p_syntax_item parser::parse() {
     std::deque<uint8_t> _status = {0};
     this->vec_symbols = std::make_unique<std::vector<p_syntax_item>>();
 
