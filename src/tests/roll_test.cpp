@@ -291,8 +291,9 @@ namespace dicebot::test {
         int max_val = 5;
 
         std::vector<int> result;
-        generate_roll_result(
-            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_owod(dr, "5D8"); });
+        generate_roll_result(result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) {
+            dicebot::roll::roll_wod(dr, 5, 8, 11, true);
+        });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 0);

@@ -17,16 +17,34 @@ static bool roll_owod(std::string const& message, const event_info& event, std::
     std::smatch command_match;
     std::regex_search(message, command_match, wod_full_dice);
     if (!command_match.empty()) {
-        std::string str_roll_source = command_match.str();
-        utils::remove_space_and_tab(str_roll_source);
+        try {
+            int dice = stoi(command_match[1]);
 
-        roll::dice_roll dr;
-        roll::roll_owod(dr, str_roll_source);
-        output_constructor oc(event.nickname);
-        if (command_match.suffix().length()) oc << command_match.suffix().str() << " ";
-        oc.append_roll("oWoD", dr.detail(), dr.summary);
-        response = oc;
-        return true;
+            std::ostringstream strs;
+            strs << "oWoD";
+
+            int difficulty = 6;
+            if (command_match[2].matched) {
+                difficulty = stoi(command_match[2]);
+                strs << " D" << difficulty;
+            }
+
+            int bonus = 11;
+            if (command_match[3].matched) {
+                bonus = stoi(command_match[3]);
+                if (bonus < 6) bonus = 6;
+                strs << " B" << bonus;
+            }
+
+            roll::dice_roll dr;
+            roll::roll_wod(dr, dice, difficulty, bonus, true);
+            output_constructor oc(event.nickname, command_match.suffix());
+            oc.append_roll(strs.str(), dr.detail(), dr.summary);
+            response = oc;
+            return true;
+        } catch (std::invalid_argument& ia) {
+            return false;
+        }
     }
     return false;
 };
@@ -35,17 +53,34 @@ static bool roll_nwod(std::string const& message, const event_info& event, std::
     std::smatch command_match;
     std::regex_search(message, command_match, wod_full_dice);
     if (!command_match.empty()) {
-        std::string str_roll_source = command_match.str();
-        utils::remove_space_and_tab(str_roll_source);
+        try {
+            int dice = stoi(command_match[1]);
 
-        roll::dice_roll dr;
-        roll::roll_nwod(dr, str_roll_source);
-        output_constructor oc(event.nickname);
-        if (command_match.suffix().length()) oc << command_match.suffix().str() << " ";
-        oc.append_roll("nWoD", dr.detail(), dr.summary);
-        response = oc;
+            std::ostringstream strs;
+            strs << "nWoD";
 
-        return true;
+            int difficulty = 8;
+            if (command_match[2].matched) {
+                difficulty = stoi(command_match[2]);
+                strs << " D" << difficulty;
+            }
+
+            int bonus = 10;
+            if (command_match[3].matched) {
+                bonus = stoi(command_match[3]);
+                if (bonus < 6) bonus = 6;
+                strs << " B" << bonus;
+            }
+
+            roll::dice_roll dr;
+            roll::roll_wod(dr, dice, difficulty, bonus, false);
+            output_constructor oc(event.nickname, command_match.suffix());
+            oc.append_roll(strs.str(), dr.detail(), dr.summary);
+            response = oc;
+            return true;
+        } catch (std::invalid_argument& ia) {
+            return false;
+        }
     }
     return false;
 }

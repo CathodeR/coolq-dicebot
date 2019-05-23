@@ -17,12 +17,12 @@ namespace dicebot {
         output_constructor(std::string const &nickname, any_t &&message) {
             _ot.clear();
             _ot << " * " << nickname << " ";
-            if (!message.empty()) _ot << std::forward<decltype(message)>(message) << " ";
+            if (message.length() > 0) _ot << std::forward<decltype(message)>(message) << " ";
         }
 
         template <class any_t>
         void append_message(any_t &&message) {
-            if (!message.empty()) _ot << std::forward<decltype(message)>(message) << " ";
+            if (message.length() > 0) _ot << std::forward<decltype(message)>(message) << " ";
         }
 
         template <class any_t>
