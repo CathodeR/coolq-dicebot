@@ -222,21 +222,21 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
 }
 
 number comp_number::roll_the_dice(str_container &out) const {
-    out.emplace_back(this->what);
+    out << this->what;
     return this->what;
 }
-void comp_number::print(str_container &strlist) const noexcept { strlist.push_back(this->what); }
+void comp_number::print(str_container &strlist) const noexcept { strlist << this->what; }
 
 number comp_holder::roll_the_dice(str_container &out) const {
-    out.emplace_back("(");
+    out << "(";
     number ret = this->child->roll_the_dice(out);
-    out.emplace_back(")");
+    out << ")";
     return ret;
 }
 void comp_holder::print(str_container &strlist) const noexcept {
-    strlist.emplace_back("(");
+    strlist << "(";
     this->child->print(strlist);
-    strlist.emplace_back(")");
+    strlist << ")";
 }
 
 static auto fit_for_dice = [](const number &num) -> int {
@@ -271,7 +271,7 @@ number comp_dice_rdk::roll_the_dice(str_container &out) const {
         break;
     }
 
-    out.emplace_back(dr.detail());
+    out << dr.detail();
     return dr.summary;
 }
 void comp_dice_rdk::print(str_container &strlist) const noexcept {
@@ -290,7 +290,7 @@ void comp_dice_rdk::print(str_container &strlist) const noexcept {
         strss << this->dice.str_holder() << "d" << this->face.str_holder() << "kl" << this->keep.str_holder();
         break;
     }
-    strlist.emplace_back(strss.str());
+    strlist << strss.str();
 }
 
 static auto space_caculus_space = [](const char in) -> std::string {
@@ -300,11 +300,9 @@ static auto space_caculus_space = [](const char in) -> std::string {
 };
 
 number comp_calculus::roll_the_dice(str_container &out) const {
-    str_container temp_list;
-    number left = this->lchild->roll_the_dice(temp_list);
-    temp_list.emplace_back(space_caculus_space(this->what));
-    number right = this->rchild->roll_the_dice(temp_list);
-    out.splice(out.end(), temp_list);
+    number left = this->lchild->roll_the_dice(out);
+    out << (space_caculus_space(this->what));
+    number right = this->rchild->roll_the_dice(out);
     switch (this->what) {
     case '+':
         return left + right;
@@ -320,23 +318,23 @@ number comp_calculus::roll_the_dice(str_container &out) const {
 }
 void comp_calculus::print(str_container &strlist) const noexcept {
     this->lchild->print(strlist);
-    strlist.push_back(space_caculus_space(this->what));
+    strlist << (space_caculus_space(this->what));
     this->rchild->print(strlist);
 }
 
 number comp_calculus_reverse::roll_the_dice(str_container &out) const {
-    out.emplace_back("-");
+    out << ("-");
     return -this->child->roll_the_dice(out);
 }
 void comp_calculus_reverse::print(str_container &strlist) const noexcept {
-    strlist.emplace_back("-");
+    strlist << ("-");
     this->child->print(strlist);
 }
 
 void dicelet_unit_sharp::roll_dicelet(result_container &rets, str_container &out) const {
-    str_container str_temp;
+    // str_container str_temp;
     bool is_first = true;
-    str_temp.emplace_back("{");
+    out << "{";
 
     int counter = fit_for_dice(this->count);
     if (counter > MAX_DICE_UNIT_COUNT) throw unit_exceed();
@@ -345,69 +343,68 @@ void dicelet_unit_sharp::roll_dicelet(result_container &rets, str_container &out
         if (is_first)
             is_first = false;
         else
-            str_temp.emplace_back(", ");
-        rets.push_back(this->child->roll_the_dice(str_temp));
+            out << ", ";
+        rets.push_back(this->child->roll_the_dice(out));
     }
-    str_temp.emplace_back("}");
-    out.splice(out.end(), str_temp);
+    out << "}";
+    // out << str_temp.str();
 }
 void dicelet_unit_sharp::print(str_container &strlist) const noexcept {
-    strlist.emplace_back(this->count.str_holder());
-    strlist.emplace_back("#");
+    strlist << (this->count.str_holder());
+    strlist << "#";
     this->child->print(strlist);
 }
 
 void dicelet_unit_brace::roll_dicelet(result_container &rets, str_container &out) const {
-    str_container str_temp;
+    // str_container str_temp;
     bool is_first = true;
-    str_temp.emplace_back("{");
+    out << "{";
     for (const p_component &comp : this->dicelets) {
         if (is_first)
             is_first = false;
         else
-            str_temp.emplace_back(", ");
-        rets.push_back(comp->roll_the_dice(str_temp));
+            out << (", ");
+        rets.push_back(comp->roll_the_dice(out));
     }
-    str_temp.emplace_back("}");
-    out.splice(out.end(), str_temp);
+    out << "}";
+    // out.splice(out.end(), str_temp);
 }
 void dicelet_unit_brace::print(str_container &strlist) const noexcept {
-    strlist.emplace_back("{");
+    strlist << "{";
     bool is_first = true;
     for (p_component const &dlp : this->dicelets) {
         if (is_first)
             is_first = false;
         else
-            strlist.emplace_back(", ");
+            strlist << ", ";
         dlp->print(strlist);
     }
-    strlist.emplace_back("}");
+    strlist << "}";
 }
 
 void dicelet_holder::roll_dicelet(result_container &rets, str_container &out) const {
-    str_container str_temp;
-    result_container ret_temp;
-    str_temp.push_back("(");
-    this->child->roll_dicelet(ret_temp, str_temp);
-    str_temp.push_back(")");
-    rets.splice(rets.end(), ret_temp);
-    out.splice(out.end(), str_temp);
+    // str_container str_temp;
+    // result_container ret_temp;
+    out << "(";
+    this->child->roll_dicelet(rets, out);
+    out << ")";
+    // rets ret_temp);
+    // out.splice(out.end(), str_temp);
 }
 void dicelet_holder::print(str_container &strlist) const noexcept {
-    strlist.emplace_back("(");
+    strlist << "(";
     this->child->print(strlist);
-    strlist.emplace_back(")");
+    strlist << ")";
 }
 
 void dicelet_calculus::roll_dicelet(result_container &rets, str_container &out) const {
     result_container ret_temp_l;
     result_container ret_temp_r;
-    str_container str_temp;
-    this->lchild->roll_dicelet(ret_temp_l, str_temp);
+    this->lchild->roll_dicelet(ret_temp_l, out);
 
-    str_temp.emplace_back(space_caculus_space(this->what));
+    out << space_caculus_space(this->what);
 
-    this->rchild->roll_dicelet(ret_temp_r, str_temp);
+    this->rchild->roll_dicelet(ret_temp_r, out);
     std::size_t n = std::max(ret_temp_l.size(), ret_temp_r.size());
 
     auto iter_l = ret_temp_l.begin();
@@ -418,16 +415,16 @@ void dicelet_calculus::roll_dicelet(result_container &rets, str_container &out) 
     while (n--) {
         switch (this->what) {
         case '+':
-            ret_temp.emplace_back(*iter_l + *iter_r);
+            rets.emplace_back(*iter_l + *iter_r);
             break;
         case '-':
-            ret_temp.emplace_back(*iter_l - *iter_r);
+            rets.emplace_back(*iter_l - *iter_r);
             break;
         case '*':
-            ret_temp.emplace_back(*iter_l * *iter_r);
+            rets.emplace_back(*iter_l * *iter_r);
             break;
         case '/':
-            ret_temp.emplace_back(*iter_l / *iter_r);
+            rets.emplace_back(*iter_l / *iter_r);
             break;
         default:
             break;
@@ -437,26 +434,22 @@ void dicelet_calculus::roll_dicelet(result_container &rets, str_container &out) 
         if (iter_l == ret_temp_l.end()) iter_l = ret_temp_l.begin();
         if (iter_r == ret_temp_r.end()) iter_r = ret_temp_r.begin();
     }
-    rets.splice(rets.end(), ret_temp);
-    out.splice(out.end(), str_temp);
 }
 void dicelet_calculus::print(str_container &strlist) const noexcept {
     this->lchild->print(strlist);
-    strlist.emplace_back(space_caculus_space(this->what));
+    strlist << space_caculus_space(this->what);
     this->rchild->print(strlist);
 }
 
 void dicelet_calculus_reverse::roll_dicelet(result_container &rets, str_container &out) const {
     result_container ret_temp;
-    str_container str_temp;
-    this->child->roll_dicelet(ret_temp, str_temp);
+    out << "-";
+    this->child->roll_dicelet(ret_temp, out);
     for (number &num : ret_temp) {
-        num = number(0) - num;
+        rets.push_back(number(0) - num);
     }
-    rets.splice(rets.end(), ret_temp);
-    out.splice(out.end(), str_temp);
 }
 void dicelet_calculus_reverse::print(str_container &strlist) const noexcept {
-    strlist.emplace_back("-");
+    strlist << "-";
     this->child->print(strlist);
 }

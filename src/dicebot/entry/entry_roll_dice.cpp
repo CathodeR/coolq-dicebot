@@ -95,10 +95,10 @@ static bool request_with_except(std::string const& message, event_info& event, s
         str_container strs_detail;
         result_container results;
         rpointer->roll_dicelet(results, strs_detail);
-
-        str_result.assign(result_builder<result_container>(
-            "{", results, [](const dicebot::number& var) -> std::string { return var; }, ", ", "}"));
-        if (detailed_roll) str_roll_detail.assign(result_builder<str_container>("", strs_detail, return_same, "", ""));
+        str_result.append("{");
+        std::for_each(results.begin(), results.end() - 1, [&str_result](auto& num) { str_result.append(num).append(", "); });
+        str_result.append(results.back()).append("}");
+        if (detailed_roll) str_roll_detail.assign(strs_detail.str());
         return true;
     };
 
@@ -106,7 +106,7 @@ static bool request_with_except(std::string const& message, event_info& event, s
         str_container strs_detail;
         number result = rpointer->roll_the_dice(strs_detail);
         str_result.append(result);
-        if (detailed_roll) str_roll_detail.assign(result_builder<str_container>("", strs_detail, return_same, "", ""));
+        if (detailed_roll) str_roll_detail.assign(strs_detail.str());
         return true;
     };
 

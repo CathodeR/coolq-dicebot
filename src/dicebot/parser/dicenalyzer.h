@@ -7,16 +7,10 @@
 #include "./syntax.h"
 
 namespace dicebot::diceparser {
-    enum class cal_err {
-        fine,
-        negative_dice,
-        dice_num_exceed,
-        dice_face_exceed,
-        div_zero
-    };
+    enum class cal_err { fine, negative_dice, dice_num_exceed, dice_face_exceed, div_zero };
 
-    using str_container = std::list<std::string>;
-    using result_container = std::list<number>;
+    using str_container = std::stringstream;
+    using result_container = std::deque<number>;
 
     template <class item_t>
     using parser_pointer = std::shared_ptr<item_t>;
@@ -47,12 +41,7 @@ namespace dicebot::diceparser {
         void print(str_container &) const noexcept override;
     };
 
-    enum class dice_rdk_mode {
-        single_d,
-        numbered_d,
-        numbered_d_k,
-        numbered_d_kl
-    };
+    enum class dice_rdk_mode { single_d, numbered_d, numbered_d_k, numbered_d_kl };
 
     class comp_dice_rdk : public component {
     public:
@@ -81,8 +70,7 @@ namespace dicebot::diceparser {
     class dicelet : public component {
     public:
         number roll_the_dice(str_container &) const override { return 0; }
-        virtual void roll_dicelet(result_container &,
-                                  str_container &) const = 0;
+        virtual void roll_dicelet(result_container &, str_container &) const = 0;
     };
     using p_dicelet = parser_pointer<dicelet>;
 

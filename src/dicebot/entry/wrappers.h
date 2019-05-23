@@ -72,9 +72,11 @@ namespace dicebot {
             auto p_dice = build_component_from_syntax(p_syntax.get());
             if (!p_dice) return false;
 
-            str_container strs_command;
-            p_dice->print(strs_command);
-            for (const auto& str : strs_command) cmd_out.append(str);
+            {
+                str_container strs_command;
+                p_dice->print(strs_command);
+                cmd_out.append(strs_command.str());
+            }
 
             tail_out = std::move(parser.tail);
 

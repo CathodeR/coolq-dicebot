@@ -84,23 +84,23 @@ static bool set_request_with_except(std::string const& message, const event_info
     if (p_dicelet) {
         if (!parser.tail.empty()) return false;
         p_dicelet->print(cont);
-        return set_default(result_builder("(", cont, return_same, "", ")"));
+        return set_default("(" + cont.str() + ")");
     }
 
     auto p_holder = std::dynamic_pointer_cast<diceparser::base_holder>(p_comp);
     if (p_holder) {
         p_comp->print(cont);
         if (!parser.tail.empty())
-            return set_named(result_builder("", cont, return_same, "", ""), parser.tail);
+            return set_named("(" + cont.str() + ")", parser.tail);
         else
-            return set_default(result_builder("", cont, return_same, "", ""));
+            return set_default("(" + cont.str() + ")");
     }
 
     p_comp->print(cont);
     if (!parser.tail.empty())
-        return set_named(result_builder("(", cont, return_same, "", ")"), parser.tail);
+        return set_named("(" + cont.str() + ")", parser.tail);
     else
-        return set_default(result_builder("(", cont, return_same, "", ")"));
+        return set_default("(" + cont.str() + ")");
 }
 
 bool entry_set_roll::resolve_request(std::string const& message, event_info& event, std::string& response) noexcept {
