@@ -43,14 +43,14 @@ static bool roll_source(std::string::const_iterator begin, std::string::const_it
             pfm->force_update(event.user_id);
             output_constructor oc(event.nickname);
             oc << u8"启用骰子详细输出";
-            response = oc.str();
+            response = oc;
             return true;
         } else {
             pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, profile::var_rs_off);
             pfm->force_update(event.user_id);
             output_constructor oc(event.nickname);
             oc << u8"关闭骰子详细输出";
-            response = oc.str();
+            response = oc;
             return true;
         }
     } else {
@@ -97,7 +97,7 @@ static bool request_with_except(std::string const& message, event_info& event, s
         rpointer->roll_dicelet(results, strs_detail);
 
         str_result.assign(result_builder<result_container>(
-            "{", results, [](const dicebot::number& var) -> std::string { return var.str(); }, ", ", "}"));
+            "{", results, [](const dicebot::number& var) -> std::string { return var; }, ", ", "}"));
         if (detailed_roll) str_roll_detail.assign(result_builder<str_container>("", strs_detail, return_same, "", ""));
         return true;
     };
@@ -105,7 +105,7 @@ static bool request_with_except(std::string const& message, event_info& event, s
     auto do_other = [&str_result, &str_roll_detail, detailed_roll](p_component const& rpointer) -> bool {
         str_container strs_detail;
         number result = rpointer->roll_the_dice(strs_detail);
-        str_result.append(result.str());
+        str_result.append(result);
         if (detailed_roll) str_roll_detail.assign(result_builder<str_container>("", strs_detail, return_same, "", ""));
         return true;
     };
@@ -127,7 +127,7 @@ static bool request_with_except(std::string const& message, event_info& event, s
         oc.append_roll(str_roll_command, str_roll_detail, str_result);
     else
         oc.append_roll(str_roll_command, "", str_result);
-    response = oc.str();
+    response = oc;
     return true;
 }
 

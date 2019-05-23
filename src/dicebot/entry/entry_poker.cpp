@@ -20,7 +20,7 @@ static auto init_poker = [](const std::string &suffix, const event_info &event, 
 
     output_constructor oc(event.nickname);
     oc << u8"已初始化牌库，总计" << p_deck->size() << u8"张牌";
-    response = oc.str();
+    response = oc;
     return true;
 };
 
@@ -45,13 +45,13 @@ static auto draw_poker = [](const std::string &suffix, const event_info &event, 
         output_constructor oc(event.nickname);
         oc << u8"抽出了" << p_deck->render_name(card);
         show_drawer(oc);
-        response = oc.str();
+        response = oc;
         return true;
     } else {
         output_constructor oc(event.nickname);
         oc << u8"无牌可抽";
         show_drawer(oc);
-        response = oc.str();
+        response = oc;
         return true;
     }
     return false;
@@ -64,7 +64,7 @@ static auto shuffle_poker = [](const std::string &suffix, const event_info &even
 
     output_constructor oc(event.nickname);
     oc << u8"已将牌堆重新切洗";
-    response = oc.str();
+    response = oc;
     return true;
 };
 

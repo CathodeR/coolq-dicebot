@@ -18,9 +18,7 @@ manual_dice::manual_dice() {
     this->status = roll::roll_status::FINISHED;
 }
 
-manual_dice::operator bool() const noexcept {
-    return this->status == roll::roll_status::FINISHED;
-}
+manual_dice::operator bool() const noexcept { return this->status == roll::roll_status::FINISHED; }
 
 void manual_dice::roll(const std::string& source) {
     try {
@@ -59,8 +57,7 @@ void manual_dice::kill(const std::string& source) {
         vec_mdice::iterator iter_list = (this->begin()) + target;
         i_sum_result -= (*iter_list).second;
         this->erase((iter_list));
-        if (this->status == roll::roll_status::UNINITIALIZED)
-            this->status = roll::roll_status::FINISHED;
+        if (this->status == roll::roll_status::UNINITIALIZED) this->status = roll::roll_status::FINISHED;
     } catch (const std::invalid_argument& ia) {
 #ifdef _DEBUG
         logger::log("manual_dice", ia.what());
@@ -76,13 +73,11 @@ void manual_dice::add(const std::string& source) {
         std::string str_source_copy(source);
         std::smatch smatch_single;
         while (!str_source_copy.empty()) {
-            std::regex_search(
-                str_source_copy, smatch_single, regex_manual_part);
+            std::regex_search(str_source_copy, smatch_single, regex_manual_part);
             if (smatch_single.begin() == smatch_single.end()) return;
             int i_dice = 1;
-            if (smatch_single[1].matched)
-                i_dice = std::stoi(smatch_single[1].str());
-            int i_face = std::stoi(smatch_single[2].str());
+            if (smatch_single[1].matched) i_dice = std::stoi(smatch_single[1]);
+            int i_face = std::stoi(smatch_single[2]);
 
             if (!CHECK_LIMITS((this->size() + i_dice), i_face)) {
                 this->status = roll::roll_status::TOO_MANY_DICE;
@@ -95,7 +90,7 @@ void manual_dice::add(const std::string& source) {
                 this->push_back(pair_mdice(i_face, dr.summary));
                 this->i_sum_result += dr.summary;
             }
-            str_source_copy.assign(smatch_single.suffix().str());
+            str_source_copy.assign(smatch_single.suffix());
         }
         this->status = roll::roll_status::FINISHED;
     } catch (const std::invalid_argument& ia) {
@@ -111,8 +106,7 @@ void manual_dice::killall() {
     try {
         this->clear();
         this->i_sum_result = 0;
-        if (this->status == roll::roll_status::UNINITIALIZED)
-            this->status = roll::roll_status::FINISHED;
+        if (this->status == roll::roll_status::UNINITIALIZED) this->status = roll::roll_status::FINISHED;
     } catch (const std::invalid_argument& ia) {
 #ifdef _DEBUG
         logger::log("manual_dice", ia.what());
@@ -130,8 +124,7 @@ std::string manual_dice::encode() const {
         oa << ((*iter_list).first);
         oa << ((*iter_list).second);
     }
-    return base64_encode((const unsigned char*)(strs.str().c_str()),
-                         strs.str().size());
+    return base64_encode((const unsigned char*)(strs.str().c_str()), strs.str().size());
 }
 
 void manual_dice::decode(const std::string& source) {

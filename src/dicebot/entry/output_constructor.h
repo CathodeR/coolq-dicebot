@@ -13,17 +13,16 @@ namespace dicebot {
             _ot.clear();
             _ot << " * " << nickname << " ";
         }
-        output_constructor(std::string const &nickname, std::string const &message) {
+        template <class any_t>
+        output_constructor(std::string const &nickname, any_t &&message) {
             _ot.clear();
             _ot << " * " << nickname << " ";
-            if (!message.empty()) _ot << message << " ";
+            if (!message.empty()) _ot << std::forward<decltype(message)>(message) << " ";
         }
-
-        void append_message(std::string const &message) { _ot << " " << message; }
 
         template <class any_t>
         void append_message(any_t &&message) {
-            _ot << std::forward<decltype(message)>(message) << " ";
+            if (!message.empty()) _ot << std::forward<decltype(message)>(message) << " ";
         }
 
         template <class any_t>
@@ -33,7 +32,7 @@ namespace dicebot {
             _ot << " = " << std::forward<decltype(roll_result)>(roll_result);
         }
 
-        std::string str() noexcept { return _ot.str(); }
+        operator std::string() const noexcept { return _ot.str(); }
 
         template <class any_t>
         output_constructor &operator<<(any_t &&message) {

@@ -194,7 +194,7 @@ bool number::operator==(const float_type val1) const {
         return this->value.i_value == val1;
 }
 
-std::string number::str() const noexcept {
+number::operator std::string() const noexcept {
     if (this->is_using_int)
         return std::to_string(this->value.i_value);
     else {

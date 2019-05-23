@@ -37,7 +37,7 @@ static bool set_request_with_except(std::string const& message, const event_info
 
         output_constructor oc(event.nickname);
         oc << u8"设置默认骰子指令: " << str_roll_command;
-        response = oc.str();
+        response = oc;
         return true;
     };
 
@@ -50,7 +50,7 @@ static bool set_request_with_except(std::string const& message, const event_info
 
         output_constructor oc(event.nickname);
         oc << u8"设置指令: " << str_roll_command << u8" 为 " << m_name[1];
-        response = oc.str();
+        response = oc;
         return true;
     };
 
@@ -70,9 +70,9 @@ static bool set_request_with_except(std::string const& message, const event_info
         number result = p_number->roll_the_dice(cont);
 
         if (!parser.tail.empty()) {
-            return set_named(result.str(), parser.tail);
+            return set_named(result, parser.tail);
         } else {
-            return set_default(result.str());
+            return set_default(result);
         }
     }
 
@@ -145,7 +145,7 @@ bool entry_list::resolve_request(std::string const& message, event_info& event, 
         oc << u8"已设置下列骰子指令: ";
         defr_msg(p_profile->def_roll, u8"* 默认 : ", oc);
         macro_msg(p_profile->mac_rolls, "", oc);
-        response = oc.str();
+        response = oc;
         return true;
     } else {
         const auto& macros = profile::profile_manager::get_instance()->get_profile(event.user_id)->mac_rolls;
@@ -153,7 +153,7 @@ bool entry_list::resolve_request(std::string const& message, event_info& event, 
         output_constructor oc(event.nickname);
         oc << u8"已设置如下包含 \"" << message << "\" 的骰子指令:";
         macro_msg(macros, message, oc);
-        response = oc.str();
+        response = oc;
         return true;
     }
     return false;
@@ -181,7 +181,7 @@ bool entry_delete::resolve_request(std::string const& message, event_info& event
 
         output_constructor oc(event.nickname);
         oc << u8"已删除所有骰子指令";
-        response = oc.str();
+        response = oc;
         return true;
     } else {
         const auto& p_macro = pfm->get_profile(event.user_id)->mac_rolls;
@@ -192,7 +192,7 @@ bool entry_delete::resolve_request(std::string const& message, event_info& event
 
         output_constructor oc(event.nickname);
         oc << u8"已删除骰子指令: " << message;
-        response = oc.str();
+        response = oc;
         return true;
     }
     return false;

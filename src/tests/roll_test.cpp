@@ -44,9 +44,8 @@ namespace dicebot::test {
         return chi_square;
     }
 
-    void generate_roll_result(
-        std::vector<int>& result_container, int sample_size, int max_val,
-        int min_val, std::function<void(dicebot::roll::dice_roll&)> func) {
+    void generate_roll_result(std::vector<int>& result_container, int sample_size, int max_val, int min_val,
+                              std::function<void(dicebot::roll::dice_roll&)> func) {
         result_container.assign(max_val - min_val + 1, 0);
         int repeat = sample_size;
         while (repeat--) {
@@ -89,13 +88,8 @@ namespace dicebot::test {
         int max_val = 100;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_base(dr, 1, 100);
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_base(dr, 1, 100); });
 
         std::vector<int> compare;
         compare.assign(result.size(), 1);
@@ -113,13 +107,8 @@ namespace dicebot::test {
         int max_val = 12;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_base(dr, 2, 6);
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_base(dr, 2, 6); });
 
         std::vector<int> compare;
         compare.assign(result.size(), 0);
@@ -142,13 +131,8 @@ namespace dicebot::test {
         int max_val = 18;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_rdk(dr, 4, 6, 3);
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_rdk(dr, 4, 6, 3); });
 
         std::vector<int> compare;
         compare.assign(result.size(), 0);
@@ -179,13 +163,8 @@ namespace dicebot::test {
         int max_val = 18;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_rdk(dr, 4, 6, -3);
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_rdk(dr, 4, 6, -3); });
 
         std::vector<int> compare;
         compare.assign(result.size(), 0);
@@ -216,13 +195,8 @@ namespace dicebot::test {
         int max_val = 100;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_coc(dr, 0);
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_coc(dr, 0); });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 1);
@@ -239,13 +213,8 @@ namespace dicebot::test {
         int min_val = 1;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_coc(dr, 2);
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_coc(dr, 2); });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 0);
@@ -292,14 +261,11 @@ namespace dicebot::test {
     TEST(RollTest, DICE_LIMIT) {
         dicebot::roll::dice_roll dr;
 
-        ASSERT_FALSE(
-            limit_test<std::exception>(dicebot::roll::roll_base, dr, 1, 6));
+        ASSERT_FALSE(limit_test<std::exception>(dicebot::roll::roll_base, dr, 1, 6));
 
-        ASSERT_TRUE(limit_test<dice_exceed>(
-            dicebot::roll::roll_base, dr, MAX_DICE_NUM + 1, 2));
+        ASSERT_TRUE(limit_test<dice_exceed>(dicebot::roll::roll_base, dr, MAX_DICE_NUM + 1, 2));
 
-        ASSERT_TRUE(limit_test<face_exceed>(
-            dicebot::roll::roll_base, dr, 1, MAX_DICE_FACE + 1));
+        ASSERT_TRUE(limit_test<face_exceed>(dicebot::roll::roll_base, dr, 1, MAX_DICE_FACE + 1));
 
         /*
         ASSERT_TRUE(limit_test<dice_exceed>(
@@ -325,13 +291,8 @@ namespace dicebot::test {
         int max_val = 5;
 
         std::vector<int> result;
-        generate_roll_result(result,
-                             sample_sum,
-                             max_val,
-                             min_val,
-                             [](dicebot::roll::dice_roll& dr) {
-                                 dicebot::roll::roll_owod(dr, "5D8");
-                             });
+        generate_roll_result(
+            result, sample_sum, max_val, min_val, [](dicebot::roll::dice_roll& dr) { dicebot::roll::roll_owod(dr, "5D8"); });
 
         std::vector<int> compare;
         compare.assign(max_val - min_val + 1, 0);
@@ -339,8 +300,7 @@ namespace dicebot::test {
         while (drs.increase()) {
             int result = 0;
             for (uint16_t i = 0; i < drs.d_vals.size(); i++) {
-                int t_r =
-                    drs.d_vals[i] >= 8 ? 1 : (drs.d_vals[i] == 1 ? -1 : 0);
+                int t_r = drs.d_vals[i] >= 8 ? 1 : (drs.d_vals[i] == 1 ? -1 : 0);
                 result += t_r;
             }
             if (result < 0) result = 0;
@@ -364,7 +324,7 @@ namespace dicebot::test {
         int t = sample_sum;
         while (t--) {
             roll::dice_roll dr;
-            roll::roll_fate(dr);
+            roll::roll_fate(dr, 0);
             result[dr.summary + 4]++;
         }
 

@@ -47,7 +47,7 @@ namespace dicebot::test {
             compare.assign(compare.substr(0, pos + 1));
         else
             compare = std::to_string(double_oper((double)val1, (double)val2));
-        ASSERT_EQ(ret.str(), compare);
+        ASSERT_EQ(std::string(ret), compare);
         ASSERT_EQ(ret.is_using_int, false);
     }
 
@@ -67,7 +67,7 @@ namespace dicebot::test {
             int pos = compare.find_last_not_of('0');
             if (pos != std::string::npos) compare.assign(compare.substr(0, pos + 1));
         }
-        ASSERT_EQ(ret.str(), compare);
+        ASSERT_EQ(std::string(ret), compare);
         ASSERT_EQ(ret.is_using_int, is_int);
     }
 

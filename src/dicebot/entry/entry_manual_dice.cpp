@@ -35,7 +35,7 @@ static auto manualdice_add = [](std::string const& message, const event_info& ev
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
             oc << u8"在桌上增加了这些骰子:" << str_command;
             cur_state(oc, md_target->second.str());
-            response = oc.str();
+            response = oc;
             return true;
         }
     }
@@ -50,7 +50,7 @@ static auto manualdice_killall = [](std::string const& message, const event_info
         if (!message.empty()) oc << message;
         oc << u8"杀掉了所有的骰子";
         cur_state(oc, md_target->second.str());
-        response = oc.str();
+        response = oc;
         return true;
     }
     return false;
@@ -69,7 +69,7 @@ static auto manualdice_kill = [](std::string const& message, const event_info& e
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
             oc << u8"杀死桌上的第" << str_command << u8"个骰子";
             cur_state(oc, md_target->second.str());
-            response = oc.str();
+            response = oc;
             return true;
         }
     }
@@ -92,7 +92,7 @@ static auto manualdice_roll = [](std::string const& message, const event_info& e
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
             oc << u8"重骰桌上的第" << str_command << u8"个骰子";
             cur_state(oc, md_target->second.str());
-            response = oc.str();
+            response = oc;
             return true;
         }
     }
@@ -114,7 +114,7 @@ static auto manualdice_create = [](std::string const& message, const event_info&
             if (roll_match.suffix().length()) oc << roll_match.suffix().str();
             oc << u8"在桌上放了这些骰子: " << str_command;
             cur_state(oc, md_target->second.str());
-            response = oc.str();
+            response = oc;
             return true;
         }
     }

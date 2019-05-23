@@ -44,12 +44,12 @@ bool entry_nickname::resolve_request(std::string const& message, event_info& eve
 
             output_constructor oc(str_origin_name);
             oc << u8"的新名字是 " << event.nickname;
-            response = oc.str();
+            response = oc;
             return true;
         } else {
             output_constructor oc(str_origin_name);
             oc << u8"的名字是 " << event.nickname;
-            response = oc.str();
+            response = oc;
             return true;
         }
     } else {

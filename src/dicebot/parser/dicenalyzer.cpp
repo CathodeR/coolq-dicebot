@@ -222,10 +222,10 @@ p_component diceparser::build_component_from_syntax(const syntax_item *root) {
 }
 
 number comp_number::roll_the_dice(str_container &out) const {
-    out.emplace_back(this->what.str());
+    out.emplace_back(this->what);
     return this->what;
 }
-void comp_number::print(str_container &strlist) const noexcept { strlist.push_back(this->what.str()); }
+void comp_number::print(str_container &strlist) const noexcept { strlist.push_back(this->what); }
 
 number comp_holder::roll_the_dice(str_container &out) const {
     out.emplace_back("(");

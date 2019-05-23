@@ -25,7 +25,7 @@ static bool roll_owod(std::string const& message, const event_info& event, std::
         output_constructor oc(event.nickname);
         if (command_match.suffix().length()) oc << command_match.suffix().str() << " ";
         oc.append_roll("oWoD", dr.detail(), dr.summary);
-        response = oc.str();
+        response = oc;
         return true;
     }
     return false;
@@ -43,7 +43,7 @@ static bool roll_nwod(std::string const& message, const event_info& event, std::
         output_constructor oc(event.nickname);
         if (command_match.suffix().length()) oc << command_match.suffix().str() << " ";
         oc.append_roll("nWoD", dr.detail(), dr.summary);
-        response = oc.str();
+        response = oc;
 
         return true;
     }
@@ -104,25 +104,49 @@ entry_coc_dice::entry_coc_dice() noexcept {
 }
 
 static const std::regex coc_full_dice("^([pb]\\d+ *)* *", std::regex_constants::icase);
+static const std::regex coc_single_dice("^([pb])(\\d+) *", std::regex_constants::icase);
 
 static bool coc_request_with_except(std::string const& message, event_info& event, std::string& response) {
+    std::string::const_iterator work_point = message.begin();
+    std::string::const_iterator end_point = message.end();
+
     std::smatch roll_match;
-    std::regex_search(message, roll_match, coc_full_dice);
-    if (!roll_match.empty()) {
-        std::string str_roll_message = roll_match.suffix().str();
-        std::string str_roll_source = roll_match.str();
-        dicebot::utils::remove_space_and_tab(str_roll_source);
-
-        // roll::dice_roller diceRoll(str_roll_source, roll::roll_mode::COC_PB);
-        roll::dice_roll dr;
-        roll::roll_coc(dr, str_roll_source);
-        output_constructor oc(event.nickname, str_roll_message);
-        oc.append_roll("CoC" + str_roll_source, dr.detail_coc(), dr.summary);
-        response = oc.str();
-
-        return true;
+    std::ostringstream roll_source;
+    roll_source << "CoC";
+    int i_pb = 0;
+    bool is_pb_exist = false;
+    try {
+        std::regex_search(work_point, end_point, roll_match, coc_single_dice);
+        while (!roll_match.empty()) {
+            if (!is_pb_exist) {
+                roll_source << " ";
+                is_pb_exist = true;
+            }
+            if (*(roll_match[1].first) == 'p') {
+                roll_source << 'p' << roll_match[2];
+                i_pb -= stoi(roll_match[2]);
+            } else {
+                roll_source << 'b' << roll_match[2];
+                i_pb += stoi(roll_match[2]);
+            }
+            work_point += roll_match[0].length();
+            std::regex_search(work_point, end_point, roll_match, coc_single_dice);
+        }
+    } catch (const std::invalid_argument& ia) {
+        return false;
     }
-    return false;
+
+    roll::dice_roll dr;
+    roll::roll_coc(dr, i_pb);
+    output_constructor oc(event.nickname);
+    if (is_pb_exist)
+        oc.append_message(roll_match.suffix().str());
+    else
+        oc.append_message(message);
+    oc.append_roll(roll_source.str(), dr.detail_coc(), dr.summary);
+    response = oc;
+
+    return true;
 }
 
 bool entry_coc_dice::resolve_request(std::string const& message, event_info& event, std::string& response) noexcept {
@@ -142,27 +166,39 @@ entry_fate_dice::entry_fate_dice() noexcept {
         u8"指令.f+4：指定+4修正";
 }
 
-static const std::regex fate_full_dice("^([\\+|\\-]\\d+)? *");
+static const std::regex fate_full_dice("^([\\+\\-]\\d+) *");
 
 bool entry_fate_dice::resolve_request(std::string const& message, event_info& event, std::string& response) noexcept {
+    std::string::const_iterator work_point = message.begin();
+    std::string::const_iterator end_point = message.end();
+
     std::smatch roll_match;
-    std::regex_search(message, roll_match, fate_full_dice);
+    std::regex_search(work_point, end_point, roll_match, fate_full_dice);
 
-    std::string str_roll_message;
-
-    roll::dice_roll dr;
-    if (roll_match[1].matched) {
-        std::string str_command = roll_match[1];
-        str_roll_message = roll_match.suffix();
-        roll::roll_fate(dr, str_command);
-    } else {
-        str_roll_message = message;
-        roll::roll_fate(dr);
+    int i_modifier = 0;
+    bool is_modifier_exist = false;
+    std::ostringstream roll_source;
+    roll_source << "FATE";
+    try {
+        if (!roll_match.empty()) {
+            roll_source << " " << roll_match[1];
+            i_modifier = stoi(roll_match[1]);
+            is_modifier_exist = true;
+        }
+    } catch (const std::invalid_argument& ia) {
+        return false;
     }
 
-    output_constructor oc(event.nickname, str_roll_message);
-    oc.append_roll("FATE", dr.detail_fate(), dr.summary);
-    response = oc.str();
+    roll::dice_roll dr;
+    roll::roll_fate(dr, i_modifier);
+
+    output_constructor oc(event.nickname);
+    if (is_modifier_exist)
+        oc.append_message(roll_match.suffix().str());
+    else
+        oc.append_message(message);
+    oc.append_roll(roll_source.str(), dr.detail_fate(), dr.summary);
+    response = oc;
     return true;
 }
 #pragma endregion

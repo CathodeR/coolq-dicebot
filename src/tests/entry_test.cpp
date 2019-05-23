@@ -27,7 +27,6 @@ public:
         std::string output;
         dicebot::try_fill_nickname(ei);
         dicebot::message_pipeline(source, ei, output);
-        const char *s = output.c_str();
         return std::regex_search(output, reg_test);
     }
 
@@ -234,11 +233,11 @@ TEST_F(entry_test, roll_coc) {
     std::string regex_prefix = u8" \\* dice 掷骰: CoC";
     std::string regex_suffix = u8" = \\[\\d{1,2}\\*? \\+ \\d{1,2}\\*?\\] \\[\\d\\] = \\d{1,3}";
 
-    ASSERT_TRUE(this->test_call(ei, ".cb1", std::regex(regex_prefix + "b1" + regex_suffix)));
-    ASSERT_TRUE(this->test_call(ei, ".cp1", std::regex(regex_prefix + "p1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cb1", std::regex(regex_prefix + " b1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cp1", std::regex(regex_prefix + " p1" + regex_suffix)));
 
-    ASSERT_TRUE(this->test_call(ei, ".cb2p1", std::regex(regex_prefix + "b2p1" + regex_suffix)));
-    ASSERT_TRUE(this->test_call(ei, ".cp2b1", std::regex(regex_prefix + "p2b1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cb2p1", std::regex(regex_prefix + " b2p1" + regex_suffix)));
+    ASSERT_TRUE(this->test_call(ei, ".cp2b1", std::regex(regex_prefix + " p2b1" + regex_suffix)));
 }
 
 TEST_F(entry_test, roll_wod) {
@@ -274,10 +273,10 @@ TEST_F(entry_test, roll_fate) {
     ei.nickname = "dynilath";
 
     std::regex reg_fate(u8"^ \\* dice 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d");
-    std::regex reg_fate1(u8"^ \\* dice 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = -?\\d");
+    std::regex reg_fate1(u8"^ \\* dice 掷骰: FATE \\+1 = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = -?\\d");
     std::regex reg_fate_msg(u8"^ \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d");
     std::regex reg_fate1_msg(
-        u8"^ \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = "
+        u8"^ \\* dice test 掷骰: FATE \\+1 = \\[([o+\\-] ){3}[o+\\-]\\] \\+ 1 = "
         u8"-?\\d");
 
     this->base_call(ei, ".ndice");

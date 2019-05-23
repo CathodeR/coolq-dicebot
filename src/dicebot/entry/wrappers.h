@@ -17,27 +17,27 @@ namespace dicebot {
         } catch (dicebot::zero_divider_exception const& e) {
             output_constructor oc(event.nickname);
             oc << u8"指令中以0为除数";
-            response = oc.str();
+            response = oc;
             return true;
         } catch (dicebot::dice_exceed const& e) {
             output_constructor oc(event.nickname);
             oc << u8"投掷过多骰子，最大为" << MAX_DICE_NUM;
-            response = oc.str();
+            response = oc;
             return true;
         } catch (dicebot::face_exceed const& e) {
             output_constructor oc(event.nickname);
             oc << u8"投掷骰子面数过多，最大为" << MAX_DICE_FACE;
-            response = oc.str();
+            response = oc;
             return true;
         } catch (dicebot::unit_exceed const& e) {
             output_constructor oc(event.nickname);
             oc << u8"过多重复投掷骰子，最大为" << MAX_DICE_UNIT_COUNT;
-            response = oc.str();
+            response = oc;
             return true;
         } catch (dicebot::invalid_dice const& e) {
             output_constructor oc(event.nickname);
             oc << u8"骰子的数量、面数、重复次数必须为正整数";
-            response = oc.str();
+            response = oc;
             return true;
         }
     }

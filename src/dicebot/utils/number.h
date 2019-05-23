@@ -55,7 +55,7 @@ namespace dicebot {
         bool operator==(const integer_type val1) const;
         bool operator==(const float_type val1) const;
 
-        std::string str() const noexcept;
+        operator std::string() const noexcept;
         std::string str_holder() const noexcept;
 
         integer_type force_positive_int();
