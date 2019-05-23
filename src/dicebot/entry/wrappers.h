@@ -34,6 +34,11 @@ namespace dicebot {
             oc << u8"过多重复投掷骰子，最大为" << MAX_DICE_UNIT_COUNT;
             response = oc.str();
             return true;
+        } catch (dicebot::invalid_dice const& e) {
+            output_constructor oc(event.nickname);
+            oc << u8"骰子的数量、面数、重复次数必须为正整数";
+            response = oc.str();
+            return true;
         }
     }
 
