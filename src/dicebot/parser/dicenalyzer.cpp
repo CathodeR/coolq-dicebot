@@ -332,7 +332,6 @@ void comp_calculus_reverse::print(str_container &strlist) const noexcept {
 }
 
 void dicelet_unit_sharp::roll_dicelet(result_container &rets, str_container &out) const {
-    // str_container str_temp;
     bool is_first = true;
     out << "{";
 
@@ -347,7 +346,6 @@ void dicelet_unit_sharp::roll_dicelet(result_container &rets, str_container &out
         rets.push_back(this->child->roll_the_dice(out));
     }
     out << "}";
-    // out << str_temp.str();
 }
 void dicelet_unit_sharp::print(str_container &strlist) const noexcept {
     strlist << (this->count.str_holder());
@@ -356,7 +354,6 @@ void dicelet_unit_sharp::print(str_container &strlist) const noexcept {
 }
 
 void dicelet_unit_brace::roll_dicelet(result_container &rets, str_container &out) const {
-    // str_container str_temp;
     bool is_first = true;
     out << "{";
     for (const p_component &comp : this->dicelets) {
@@ -367,7 +364,6 @@ void dicelet_unit_brace::roll_dicelet(result_container &rets, str_container &out
         rets.push_back(comp->roll_the_dice(out));
     }
     out << "}";
-    // out.splice(out.end(), str_temp);
 }
 void dicelet_unit_brace::print(str_container &strlist) const noexcept {
     strlist << "{";
@@ -383,13 +379,9 @@ void dicelet_unit_brace::print(str_container &strlist) const noexcept {
 }
 
 void dicelet_holder::roll_dicelet(result_container &rets, str_container &out) const {
-    // str_container str_temp;
-    // result_container ret_temp;
     out << "(";
     this->child->roll_dicelet(rets, out);
     out << ")";
-    // rets ret_temp);
-    // out.splice(out.end(), str_temp);
 }
 void dicelet_holder::print(str_container &strlist) const noexcept {
     strlist << "(";
