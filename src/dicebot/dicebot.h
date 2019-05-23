@@ -59,17 +59,13 @@ namespace dicebot {
         poker::poker_manager::destroy_instance();
     }
 
-    void set_logger(std::function<void(std::string, std::string)> varlog) {
-        logger::_log = varlog;
-    }
+    void set_logger(std::function<void(std::string, std::string)> varlog) { logger::_log = varlog; }
 
     bool try_fill_nickname(event_info& event) {
-        return nickname::nickname_manager::instance->get_nickname(
-            event, event.nickname);
+        return nickname::nickname_manager::instance->get_nickname(event, event.nickname);
     }
 
-    bool message_pipeline(std::string const& source, event_info& event,
-                          std::string& output) {
+    bool message_pipeline(std::string const& source, event_info& event, std::string& output) {
         std::list<std::string> source_splits;
 
         utils::split_line(source, source_splits);
@@ -90,8 +86,7 @@ namespace dicebot {
 
             std::smatch match_command;
 
-            std::regex_search(
-                content, match_command, *(dice_ptcs->get_regex_command()));
+            std::regex_search(content, match_command, *(dice_ptcs->get_regex_command()));
 
             if (!match_command[1].matched) continue;
 
@@ -99,14 +94,12 @@ namespace dicebot {
             auto target_entry = dice_ptcs->get_entry(command);
 
             if (target_entry->is_stand_alone) {
-                if (target_entry->resolve_request(
-                        match_command.suffix().str(), event, output)) {
+                if (target_entry->resolve_request(match_command.suffix().str(), event, output)) {
                     return is_output_available = true;
                 }
             } else {
                 std::string response;
-                if (target_entry->resolve_request(
-                        match_command.suffix().str(), event, response)) {
+                if (target_entry->resolve_request(match_command.suffix().str(), event, response)) {
                     if (is_output_available) ot << std::endl;
                     ot << response;
                     is_output_available = true;

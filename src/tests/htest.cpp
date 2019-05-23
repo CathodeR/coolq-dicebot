@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <string>
 #include "dicebot/dicebot.h"
@@ -18,12 +19,12 @@ int main(int argc, char const *argv[]) {
         if (in.size() < 1) continue;
         if (in == "quit" | in == "q") break;
         std::string out;
-        clock_t start = clock();
+        auto t1 = std::chrono::high_resolution_clock::now();
         dicebot::try_fill_nickname(ei);
         dicebot::message_pipeline(in, ei, out);
-        clock_t end = clock();
+        auto t2 = std::chrono::high_resolution_clock::now();
         std::cout << out << std::endl;
-        std::cout << end - start << "/" << CLOCKS_PER_SEC << std::endl;
+        std::cout << "full time : " << (t2 - t1) / std::chrono::nanoseconds(1) / 1000.0 << "us" << std::endl;
     }
 
     dicebot::salvage();

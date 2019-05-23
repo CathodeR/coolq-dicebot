@@ -1,7 +1,6 @@
 #include "./dice_roller.h"
 
 #include <algorithm>
-#include <chrono>
 #include <random>
 #include <regex>
 #include <sstream>
