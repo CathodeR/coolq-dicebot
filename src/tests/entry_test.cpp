@@ -115,15 +115,15 @@ TEST_F(entry_test, roll_brace_calculus) {
     dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
     ei.nickname = "dynilath";
 
-    std::string source = ".r2#d20-{1,2}";
+    std::string source = ".r2#d20-{1,10}";
 
     this->base_call(ei, ".ndice");
     this->base_call(ei, ".rson");
 
     std::regex result(
-        "^ \\* dice 掷骰: 2\\#d20 - \\{1, 2\\} = "
-        "\\{\\[\\d{1,2}\\], \\[\\d{1,2}\\]\\} - \\{1, 2\\} = "
-        "\\{\\d{1,2}, \\d{1,2}\\}");
+        u8"^ \\* dice 掷骰: 2\\#d20 - \\{1, 10\\} = "
+        u8"\\{\\[\\d{1,2}\\], \\[\\d{1,2}\\]\\} - \\{1, 10\\} = "
+        u8"\\{\\d{1,2}, -?\\d{1,2}\\}");
 
     ASSERT_TRUE(this->test_call(ei, source, result));
 }
@@ -337,6 +337,29 @@ TEST_F(entry_test, poker) {
     ASSERT_TRUE(this->test_call(ei, ".p draw", re_draw3));
     ASSERT_TRUE(this->test_call(ei, ".pdraw", re_draw4));
     ASSERT_TRUE(this->test_call(ei, ".p d", re_draw_out));
+}
+
+TEST_F(entry_test, multiline_case_fullcmd) {
+    dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
+    ei.nickname = "dynilath";
+
+    this->base_call(ei, ".ndice");
+
+    std::stringstream builder;
+    builder << " \\* .+ 的新名字是 dice" << std::endl
+            << " \\* dice 关闭骰子详细输出" << std::endl
+            << " \\* dice test 掷骰: 2d20 \\+ 4 = \\d{1,2}" << std::endl
+            << " \\* dice test 掷骰: CoC = \\d{1,3}" << std::endl
+            << " \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = \\d";
+
+    std::regex reg_out(" * dice 的新名字是 dice");
+
+    ASSERT_TRUE(this->test_call(ei, ".ndice\r\n.rsoff\r\n.r2d20+4test\r\n.ctest\r\n.ftest", reg_out));
+    ASSERT_TRUE(this->test_call(ei, ".n  dice\r\n  . r  s off  \r\n . r 2d20 + 4 test \r\n . c test \r\n . f test", reg_out));
+    ASSERT_TRUE(this->test_call(
+        ei, ".name  dice\r\n  . roll source off  \r\n . roll 2d20 + 4 test \r\n . coc test \r\n . fate test", reg_out));
+    ASSERT_TRUE(this->test_call(
+        ei, ".name dice \r\n  . ROLL source off  \r\n . roLL 2d20 + 4 test \r\n . cOc test \r\n . FATE test", reg_out));
 }
 
 int main(int argc, char **argv) {

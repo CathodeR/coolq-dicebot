@@ -24,7 +24,7 @@ static auto manualdice_add = [](std::string const& message, const event_info& ev
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();
-        utils::remove_space_and_tab(str_command);
+        utils::remove_blank(str_command);
 
         auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
         if (md_target->second) {
@@ -61,7 +61,7 @@ static auto manualdice_kill = [](std::string const& message, const event_info& e
     std::regex_search(message, roll_match, filter_integer);
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
-        utils::remove_space_and_tab(str_command);
+        utils::remove_blank(str_command);
         auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
         if (md_target->second) {
             md_target->second.kill(str_command);
@@ -82,7 +82,7 @@ static auto manualdice_roll = [](std::string const& message, const event_info& e
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
         std::string str_roll_message = roll_match.suffix().str();
-        utils::remove_space_and_tab(str_command);
+        utils::remove_blank(str_command);
 
         auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
         if (md_target->second) {
@@ -104,7 +104,7 @@ static auto manualdice_create = [](std::string const& message, const event_info&
     std::regex_search(message, roll_match, filter_manual_dice);
     if (!roll_match.empty()) {
         std::string str_command = roll_match.str();
-        utils::remove_space_and_tab(str_command);
+        utils::remove_blank(str_command);
 
         auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
         if (md_target->second) {
