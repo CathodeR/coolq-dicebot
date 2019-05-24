@@ -115,7 +115,7 @@
         "roll_test linux64",
         "entry_test linux64",
         "number_test linux64",
-        "interpreter_test linux64"
+        "data_test linux64"
     ],
     "gtest-adapter.supportLocation": true,
     "files.eol": "\n"

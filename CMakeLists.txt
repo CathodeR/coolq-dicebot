@@ -80,7 +80,7 @@ set(TEST_NAME_GROUP
   roll_test 
   entry_test
   number_test
-  interpreter_test)
+  data_test)
 
 # roll test
 set(X roll_test)
@@ -110,15 +110,13 @@ add_executable(${TEST_BUILD_NAME}
   src/tests/${X}.cpp
   src/dicebot/utils/number.cpp)
 
-# interpreter test
-set(X interpreter_test)
+# data test
+set(X data_test)
 set(TEST_BUILD_NAME dicebot.gtest.${X})
 add_executable(${TEST_BUILD_NAME} 
+  ${BASE64SRC}
   src/tests/${X}.cpp
-  src/dicebot/utils/number.cpp
-  src/dicebot/utils/utils.cpp
-  src/dicebot/parser/tokenizer.cpp
-  src/dicebot/parser/parser.cpp)
+  ${DICEBOT_SOURCE})
 
 foreach(X IN LISTS TEST_NAME_GROUP)
   set(TEST_BUILD_NAME dicebot.gtest.${X})

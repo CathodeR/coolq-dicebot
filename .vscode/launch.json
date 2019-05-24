@@ -42,11 +42,11 @@
             "program": "${workspaceFolder}/build/Debug/dicebot.gtest.number_test",
         },
         {
-            "name": "interpreter_test linux64",
+            "name": "data_test linux64",
             "type": "cppdbg",
             "request": "launch",
             "cwd": "${workspaceFolder}",
-            "program": "${workspaceFolder}/build/Debug/dicebot.gtest.interpreter_test",
+            "program": "${workspaceFolder}/build/Debug/dicebot.gtest.data_test",
         },
         {
             "name": "Debug",
