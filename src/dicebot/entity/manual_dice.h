@@ -10,17 +10,15 @@ namespace dicebot::manual {
     class manual_dice : vec_mdice {
     public:
         manual_dice();
-        void roll(const std::string& source);
-        void kill(const std::string& source);
-        void add(const std::string& source);
+        void roll(size_t target) noexcept;
+        void kill(size_t target) noexcept;
+        void add(const std::vector<int>&);
         void killall();
         std::string encode() const;
-        std::string str();
+        explicit operator std::string() const noexcept;
 
-        roll::roll_status status;
         int i_sum_result;
 
         void decode(const std::string& source);
-        explicit operator bool() const noexcept;
     };
 } // namespace dicebot::manual

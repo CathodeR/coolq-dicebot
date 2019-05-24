@@ -29,18 +29,13 @@ namespace dicebot::profile {
 
 #pragma region profile template
 
-    template <class _profile_Key, class _profile_Val,
-              class _container_t =
-                  std::unordered_map<_profile_Key, _profile_Val>>
+    template <class _profile_Key, class _profile_Val, class _container_t = std::unordered_map<_profile_Key, _profile_Val>>
     class profile_template : public _container_t {
     public:
         profile_template(){};
-        profile_template(
-            std::initializer_list<typename _container_t::value_type> l)
-            : _container_t(l){};
+        profile_template(std::initializer_list<typename _container_t::value_type> l) : _container_t(l){};
 
-        profile_status get(_profile_Key const &var_type,
-                           _profile_Val &var) const noexcept {
+        profile_status get(_profile_Key const &var_type, _profile_Val &var) const noexcept {
             auto target = this->find(var_type);
             if (target != this->cend()) {
                 var = target->second;
@@ -49,15 +44,13 @@ namespace dicebot::profile {
                 return profile_status::not_exist;
         }
 
-        profile_status set(_profile_Key const &var_type,
-                           _profile_Val const &new_var) noexcept {
+        profile_status set(_profile_Key const &var_type, _profile_Val const &new_var) noexcept {
             auto target = this->find(var_type);
             if (target != this->end()) {
                 target->second = new_var;
                 return profile_status::finished;
             } else {
-                auto t = this->insert(
-                    typename _container_t::value_type(var_type, new_var));
+                auto t = this->insert(typename _container_t::value_type(var_type, new_var));
                 if (t.second)
                     return profile_status::finished;
                 else
@@ -65,12 +58,10 @@ namespace dicebot::profile {
             }
         }
 
-        profile_status add(_profile_Key const &var_type,
-                           _profile_Val const &new_var) noexcept {
+        profile_status add(_profile_Key const &var_type, _profile_Val const &new_var) noexcept {
             auto target = this->find(var_type);
             if (target == this->end()) {
-                this->insert(
-                    typename _container_t::value_type(var_type, new_var));
+                this->insert(typename _container_t::value_type(var_type, new_var));
                 return profile_status::finished;
             } else
                 return profile_status::exceed;
@@ -85,8 +76,7 @@ namespace dicebot::profile {
                 oa << ((*iter_list).first);
                 oa << ((*iter_list).second);
             }
-            return base64_encode((const unsigned char *)(strs.str().c_str()),
-                                 strs.str().size());
+            return base64_encode((const unsigned char *)(strs.str().c_str()), strs.str().size());
         }
 
         bool decode(std::string const &source) noexcept {
@@ -99,13 +89,12 @@ namespace dicebot::profile {
             size_t len = 0;
             ia >> len;
             try {
-                for (uint32_t i_iter = 0; i_iter < len; i_iter++) {
+                for (size_t i_iter = 0; i_iter < len; i_iter++) {
                     _profile_Key first;
                     ia >> first;
                     _profile_Val second;
                     ia >> second;
-                    this->insert(
-                        typename _container_t::value_type(first, second));
+                    this->insert(typename _container_t::value_type(first, second));
                 }
             } catch (std::exception e) {
 #ifdef _DEBUG

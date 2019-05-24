@@ -418,7 +418,7 @@ p_syntax_item parser::resolve(uint8_t prod_index) const {
     int prodl = PRODUCTION[prod_index].len;
     auto iter = this->vec_symbols->rbegin();
 
-    while (--prodl >= 0) {
+    while (prodl--) {
         item->items[prodl] = *iter;
         iter++;
     }

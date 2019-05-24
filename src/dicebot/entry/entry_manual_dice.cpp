@@ -3,6 +3,7 @@
 #include <regex>
 
 #include "../data/manual_dice_control.h"
+#include "../dice_excepts.h"
 #include "../dice_roller.h"
 #include "../entity/manual_dice.h"
 #include "../utils/utils.h"
@@ -13,113 +14,150 @@ using namespace dicebot::entry;
 
 using md_ctrl = manual::manual_dice_control;
 
-static const std::regex filter_integer("^ *(\\d+) *");
+static const std::regex filter_integer("^(\\d+) *");
 static const std::regex filter_manual_dice("^ *((\\+)?\\d*d\\d+)(\\+\\d*d\\d+)* *", std::regex_constants::icase);
 
-static auto cur_state = [](output_constructor& oc, const std::string& state) { oc << u8" | 当前状态: " << state; };
+static const std::regex single_dice("^(?:\\+)?(\\d*)d(\\d+) *", std::regex_constants::icase);
 
-static auto manualdice_add = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
+static auto cur_state = [](output_constructor& oc, auto&& state) { oc << u8" | 当前状态: " << std::string(state); };
+
+static bool manualdice_dissemble(std::string const& message, std::vector<int>& dice_cont, std::string& str_cmd,
+                                 std::string& roll_msg) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, filter_manual_dice);
-    if (!roll_match.empty()) {
-        std::string str_command = roll_match.str();
-        std::string str_roll_message = roll_match.suffix().str();
-        utils::remove_blank(str_command);
+    auto work_point = message.begin();
+    auto end_point = message.end();
+    bool is_cmd_exist = false;
 
-        auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
-        if (md_target->second) {
-            md_target->second.add(str_command);
-            md_ctrl::get_instance()->sync_database(md_target);
-
-            output_constructor oc(event.nickname);
-            if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"在桌上增加了这些骰子:" << str_command;
-            cur_state(oc, md_target->second.str());
-            response = oc;
-            return true;
+    std::regex_search(work_point, end_point, roll_match, single_dice);
+    while (!roll_match.empty()) {
+        size_t count = 1;
+        if (roll_match[1].length()) count = stoi(roll_match[1]);
+        int dface = stoi(roll_match[2]);
+        while (count--) {
+            dice_cont.push_back(dface);
         }
-    }
-    return false;
-};
+        if (dice_cont.size() > MAX_DICE_NUM) throw dice_exceed();
 
-static auto manualdice_killall = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
-    auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
-    if (md_target->second) {
-        md_target->second.killall();
-        output_constructor oc(event.nickname);
-        if (!message.empty()) oc << message;
-        oc << u8"杀掉了所有的骰子";
-        cur_state(oc, md_target->second.str());
+        str_cmd.append(roll_match[1]).append("d").append(roll_match[2]);
+        if (!is_cmd_exist)
+            is_cmd_exist = true;
+        else
+            str_cmd.append("+");
+
+        work_point += roll_match[0].length();
+        std::regex_search(work_point, end_point, roll_match, filter_manual_dice);
+    }
+    if (is_cmd_exist) {
+        roll_msg = roll_match.suffix();
+    }
+    return is_cmd_exist;
+}
+
+static bool manualdice_add(std::string const& message, const event_info& event, std::string& response) {
+    std::vector<int> dice_cont;
+    bool is_cmd_exist = false;
+    std::string str_cmd;
+    std::string roll_msg;
+    try {
+        is_cmd_exist = manualdice_dissemble(message, dice_cont, str_cmd, roll_msg);
+    } catch (std::invalid_argument&) {
+        return false;
+    }
+
+    if (is_cmd_exist) {
+        auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
+        md_target->second.add(dice_cont);
+        md_ctrl::get_instance()->sync_database(md_target);
+
+        output_constructor oc(event.nickname, roll_msg);
+        oc << u8"在桌上增加了这些骰子:" << str_cmd;
+        cur_state(oc, md_target->second);
         response = oc;
         return true;
     }
     return false;
 };
 
-static auto manualdice_kill = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
-    std::smatch roll_match;
-    std::regex_search(message, roll_match, filter_integer);
-    if (!roll_match.empty()) {
-        std::string str_command = roll_match.str();
-        utils::remove_blank(str_command);
-        auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
-        if (md_target->second) {
-            md_target->second.kill(str_command);
-            output_constructor oc(event.nickname);
-            if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"杀死桌上的第" << str_command << u8"个骰子";
-            cur_state(oc, md_target->second.str());
-            response = oc;
-            return true;
-        }
-    }
-    return false;
+static auto manualdice_killall = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
+    auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
+    md_target->second.killall();
+    md_ctrl::get_instance()->sync_database(md_target);
+
+    output_constructor oc(event.nickname, message);
+    oc << u8"杀掉了所有的骰子";
+    cur_state(oc, md_target->second);
+    response = oc;
+    return true;
 };
 
-static auto manualdice_roll = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
+static bool manualdice_kill(std::string const& message, const event_info& event, std::string& response) {
     std::smatch roll_match;
     std::regex_search(message, roll_match, filter_integer);
     if (!roll_match.empty()) {
-        std::string str_command = roll_match.str();
-        std::string str_roll_message = roll_match.suffix().str();
-        utils::remove_blank(str_command);
-
         auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
-        if (md_target->second) {
-            md_target->second.roll(str_command);
+
+        try {
+            md_target->second.kill(stoi(roll_match[1]));
             md_ctrl::get_instance()->sync_database(md_target);
-            output_constructor oc(event.nickname);
-            if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"重骰桌上的第" << str_command << u8"个骰子";
-            cur_state(oc, md_target->second.str());
-            response = oc;
-            return true;
+        } catch (std::invalid_argument&) {
+            return false;
         }
+
+        output_constructor oc(event.nickname, roll_match.suffix());
+        oc << u8"杀死桌上的第" << roll_match[1] << u8"个骰子";
+        cur_state(oc, md_target->second);
+        response = oc;
+
+        return true;
     }
     return false;
 };
 
-static auto manualdice_create = [](std::string const& message, const event_info& event, std::string& response) noexcept -> bool {
+static bool manualdice_roll(std::string const& message, const event_info& event, std::string& response) {
     std::smatch roll_match;
-    std::regex_search(message, roll_match, filter_manual_dice);
+    std::regex_search(message, roll_match, filter_integer);
     if (!roll_match.empty()) {
-        std::string str_command = roll_match.str();
-        utils::remove_blank(str_command);
-
         auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
-        if (md_target->second) {
-            md_target->second.killall();
-            md_target->second.add(str_command);
-            output_constructor oc(event.nickname);
-            if (roll_match.suffix().length()) oc << roll_match.suffix().str();
-            oc << u8"在桌上放了这些骰子: " << str_command;
-            cur_state(oc, md_target->second.str());
-            response = oc;
-            return true;
+
+        try {
+            md_target->second.roll(stoi(roll_match[1]));
+            md_ctrl::get_instance()->sync_database(md_target);
+        } catch (std::invalid_argument&) {
+            return false;
         }
+
+        output_constructor oc(event.nickname, roll_match.suffix());
+        oc << u8"重骰桌上的第" << roll_match[1] << u8"个骰子";
+        cur_state(oc, md_target->second);
+        response = oc;
+        return true;
     }
     return false;
-};
+}
+
+static bool manualdice_create(std::string const& message, const event_info& event, std::string& response) {
+    std::vector<int> dice_cont;
+    bool is_cmd_exist = false;
+    std::string str_cmd;
+    std::string roll_msg;
+    try {
+        is_cmd_exist = manualdice_dissemble(message, dice_cont, str_cmd, roll_msg);
+    } catch (std::invalid_argument&) {
+        return false;
+    }
+    if (!is_cmd_exist) return false;
+
+    auto md_target = md_ctrl::get_instance()->find_manual_dice(event);
+    md_target->second.killall();
+    md_target->second.add(dice_cont);
+    md_ctrl::get_instance()->sync_database(md_target);
+
+    output_constructor oc(event.nickname, roll_msg);
+    oc << u8"在桌上放了这些骰子: " << str_cmd;
+    cur_state(oc, md_target->second);
+    response = oc;
+    return true;
+}
 
 using func_type = std::function<bool(std::string const& message, const event_info&, std::string&)>;
 using func_map_t = std::map<std::string, func_type>;

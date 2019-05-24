@@ -6,123 +6,70 @@
 #include <regex>
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
+#include "../dice_excepts.h"
 #include "../dice_roller.h"
+#include "../random/random_provider.h"
 
 using namespace dicebot;
 using namespace dicebot::manual;
 
+static auto check_limits = [](int num, int face) {
+    if (num > MAX_DICE_NUM) throw dice_exceed();
+    if (face > MAX_DICE_FACE) throw face_exceed();
+    if (face < 1 || num < 1) throw invalid_dice();
+};
+
 std::regex regex_filter_manual_dice_part("^(?:\\+)?(\\d+)?[dD](\\d+)");
 
-manual_dice::manual_dice() {
-    i_sum_result = 0;
-    this->status = roll::roll_status::FINISHED;
-}
+manual_dice::manual_dice() { i_sum_result = 0; }
 
-manual_dice::operator bool() const noexcept { return this->status == roll::roll_status::FINISHED; }
-
-void manual_dice::roll(const std::string& source) {
-    try {
-        this->status = roll::roll_status::UNINITIALIZED;
-        unsigned int target = std::stoi(source) - 1;
-        if (target >= this->size()) {
-            this->status = roll::roll_status::FINISHED;
-            return;
-        } else if (target < 0)
-            return;
-        vec_mdice::iterator iter_list = this->begin() + target;
-        int i_face_of_die = (*iter_list).first;
-        roll::dice_roll dr;
-        roll::roll_base(dr, 1, i_face_of_die);
-        this->i_sum_result -= (*iter_list).second;
-        (*iter_list).second = dr.summary;
-        this->i_sum_result += dr.summary;
-        this->status = roll::roll_status::FINISHED;
-    } catch (const std::invalid_argument& ia) {
-#ifdef _DEBUG
-        logger::log("manual_dice", ia.what());
-#endif
-        this->status = roll::roll_status::DICE_NOT_AVAILABLE;
+void manual_dice::roll(size_t target) noexcept {
+    if (target > this->size() || target < 1) {
+        return;
     }
+
+    auto item = this->at(target - 1);
+    auto new_result = random::rand_int(1, item.first);
+    this->i_sum_result = this->i_sum_result - item.second + new_result;
+    item.second = new_result;
 }
 
-void manual_dice::kill(const std::string& source) {
-    this->status = roll::roll_status::UNINITIALIZED;
-    try {
-        unsigned int target = std::stoi(source) - 1;
-        if (target >= this->size()) {
-            this->status = roll::roll_status::FINISHED;
-            return;
-        } else if (target < 0)
-            return;
-        vec_mdice::iterator iter_list = (this->begin()) + target;
-        i_sum_result -= (*iter_list).second;
-        this->erase((iter_list));
-        if (this->status == roll::roll_status::UNINITIALIZED) this->status = roll::roll_status::FINISHED;
-    } catch (const std::invalid_argument& ia) {
-#ifdef _DEBUG
-        logger::log("manual_dice", ia.what());
-#endif
-        this->status = roll::roll_status::DICE_NOT_AVAILABLE;
+void manual_dice::kill(size_t target) noexcept {
+    if (target > this->size() || target < 1) {
+        return;
     }
+    auto iter = this->begin() + target - 1;
+    i_sum_result -= (*iter).second;
+    this->erase(iter);
 }
 
-void manual_dice::add(const std::string& source) {
+void manual_dice::add(const std::vector<int>& source) {
     std::regex regex_manual_part("^(?:\\+)?(\\d+)?[dD](\\d+)");
-    try {
-        this->status = roll::roll_status::DICE_NOT_AVAILABLE;
-        std::string str_source_copy(source);
-        std::smatch smatch_single;
-        while (!str_source_copy.empty()) {
-            std::regex_search(str_source_copy, smatch_single, regex_manual_part);
-            if (smatch_single.begin() == smatch_single.end()) return;
-            int i_dice = 1;
-            if (smatch_single[1].matched) i_dice = std::stoi(smatch_single[1]);
-            int i_face = std::stoi(smatch_single[2]);
 
-            if (!CHECK_LIMITS((this->size() + i_dice), i_face)) {
-                this->status = roll::roll_status::TOO_MANY_DICE;
-                return;
-            }
-
-            for (int i_iter = 0; i_iter < i_dice; i_iter++) {
-                roll::dice_roll dr;
-                roll::roll_base(dr, 1, i_face);
-                this->push_back(pair_mdice(i_face, dr.summary));
-                this->i_sum_result += dr.summary;
-            }
-            str_source_copy.assign(smatch_single.suffix());
-        }
-        this->status = roll::roll_status::FINISHED;
-    } catch (const std::invalid_argument& ia) {
-#ifdef _DEBUG
-        logger::log("manual_dice", ia.what());
-#endif
-        this->status = roll::roll_status::DICE_NOT_AVAILABLE;
+    size_t fin_size = source.size() + this->size();
+    this->reserve(source.size());
+    for (auto& item : source) {
+        check_limits(fin_size, item);
+        this->emplace_back(item, random::rand_int(1, item));
+    }
+    this->i_sum_result = 0;
+    for (auto& item : *this) {
+        this->i_sum_result += item.second;
     }
 }
 
 void manual_dice::killall() {
-    this->status = roll::roll_status::UNINITIALIZED;
-    try {
-        this->clear();
-        this->i_sum_result = 0;
-        if (this->status == roll::roll_status::UNINITIALIZED) this->status = roll::roll_status::FINISHED;
-    } catch (const std::invalid_argument& ia) {
-#ifdef _DEBUG
-        logger::log("manual_dice", ia.what());
-#endif
-        this->status = roll::roll_status::DICE_NOT_AVAILABLE;
-    }
+    this->clear();
+    this->i_sum_result = 0;
 }
 
 std::string manual_dice::encode() const {
     std::ostringstream strs;
     boost::archive::binary_oarchive oa(strs);
     oa << this->size();
-    auto iter_list = this->cbegin();
-    for (; iter_list != this->cend(); iter_list++) {
-        oa << ((*iter_list).first);
-        oa << ((*iter_list).second);
+    for (auto& item : *this) {
+        oa << (item.first);
+        oa << (item.second);
     }
     return base64_encode((const unsigned char*)(strs.str().c_str()), strs.str().size());
 }
@@ -147,20 +94,20 @@ void manual_dice::decode(const std::string& source) {
     }
 }
 
-std::string manual_dice::str() {
+manual_dice::operator std::string() const noexcept {
     std::ostringstream ostrs_result;
     int i_sum_result = 0;
-    vec_mdice::iterator iter_list = this->begin();
-
-    bool hasDice = iter_list != this->end();
-    for (; iter_list != this->end(); iter_list++) {
-        if (iter_list != this->begin()) {
+    bool is_first = true;
+    for (auto& item : *this) {
+        if (is_first)
+            is_first = false;
+        else
             ostrs_result << " + ";
-        }
-        ostrs_result << (*iter_list).second << "(" << (*iter_list).first << ")";
-        i_sum_result += (*iter_list).second;
+        ostrs_result << item.second << "(" << item.first << ")";
+        i_sum_result += item.second;
     }
-    if (!hasDice)
+
+    if (this->empty())
         ostrs_result << u8"没有骰子了";
     else
         ostrs_result << " = " << i_sum_result;

@@ -359,23 +359,23 @@ namespace dicebot::test {
         int repeat = sample_sum;
         while (repeat--) {
             manual::manual_dice md;
-            md.add("4d6+1d8");
+            md.add({6, 6, 6, 6, 8});
             int result = 0;
             result = md.i_sum_result;
             ASSERT_GE(result, 5);
             ASSERT_LE(result, 32);
 
-            md.kill("1");
+            md.kill(1);
             result = md.i_sum_result;
             ASSERT_GE(result, 4);
             ASSERT_LE(result, 26);
 
-            md.kill("4");
+            md.kill(4);
             result = md.i_sum_result;
             ASSERT_GE(result, 3);
             ASSERT_LE(result, 18);
 
-            md.add("2d6");
+            md.add({6, 6});
             result = md.i_sum_result;
             ASSERT_GE(result, 5);
             ASSERT_LE(result, 30);
@@ -398,23 +398,23 @@ namespace dicebot::test {
         int repeat = sample_sum;
         while (repeat--) {
             manual::manual_dice md;
-            md.add("4D6+1D8");
+            md.add({6, 6, 6, 6, 8});
             int result = 0;
             result = md.i_sum_result;
             ASSERT_GE(result, 5);
             ASSERT_LE(result, 32);
 
-            md.kill("1");
+            md.kill(1);
             result = md.i_sum_result;
             ASSERT_GE(result, 4);
             ASSERT_LE(result, 26);
 
-            md.kill("4");
+            md.kill(4);
             result = md.i_sum_result;
             ASSERT_GE(result, 3);
             ASSERT_LE(result, 18);
 
-            md.add("2D6");
+            md.add({6, 6});
             result = md.i_sum_result;
             ASSERT_GE(result, 5);
             ASSERT_LE(result, 30);

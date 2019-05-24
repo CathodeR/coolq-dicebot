@@ -28,13 +28,13 @@ void entry_manager::finish_initialization() noexcept {
     std::ostringstream ostrs_stream;
     ostrs_stream << "^(";
     bool is_first = true;
-    auto iter = this->entry_list.cbegin();
-    for (; iter != this->entry_list.cend(); iter++) {
+
+    for (auto& item : this->entry_list) {
         if (is_first) {
             is_first = false;
         } else
             ostrs_stream << "|";
-        ostrs_stream << (*iter)->identifier_regex;
+        ostrs_stream << item->identifier_regex;
     }
     ostrs_stream << ") *";
     this->regex_command = std::regex(ostrs_stream.str(), std::regex_constants::icase);
@@ -86,12 +86,12 @@ void entry_help::generate_filter_command() noexcept {
     ostrs_stream << "^(";
     bool is_first = true;
     auto iter = this->entry_regex_list.cbegin();
-    for (; iter != this->entry_regex_list.cend(); iter++) {
+    for (auto& item : this->entry_regex_list) {
         if (is_first) {
             is_first = false;
         } else
             ostrs_stream << "|";
-        ostrs_stream << (*iter);
+        ostrs_stream << item;
     }
     ostrs_stream << ")";
     this->filter_command = std::regex(ostrs_stream.str(), std::regex_constants::icase);
