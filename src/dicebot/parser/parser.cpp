@@ -365,7 +365,7 @@ p_syntax_item parser::parse() {
     bool err = false;
     while (not_finished) {
         token_t next = deque_input_tokens.front();
-        uint8_t status = *(_status.rbegin());
+        uint8_t status = _status.back();
         terminals next_terminal = translate(next.id);
         action_item const& ai = ACTION[status][next_terminal];
         switch (ai.operation) {
@@ -383,7 +383,7 @@ p_syntax_item parser::parse() {
                 this->vec_symbols->pop_back();
                 _status.pop_back();
             }
-            uint8_t status_new = *(_status.rbegin());
+            uint8_t status_new = _status.back();
             this->vec_symbols->emplace_back(std::move(p));
             _status.push_back(GOTO[status_new][this->vec_symbols->back()->type].status);
             break;
