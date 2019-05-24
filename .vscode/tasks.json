@@ -79,6 +79,11 @@
                 "-File",
                 "'${workspaceFolder}/scripts/generate_linux_test.ps1'"
             ],
+            "options": {
+                "env": {
+                    "VCPKG_ROOT": "~/git/vcpkg"
+                }
+            },
             "group": "build",
             "problemMatcher": [
                 "$gcc"
