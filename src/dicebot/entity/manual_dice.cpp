@@ -24,57 +24,57 @@ std::regex regex_filter_manual_dice_part("^(?:\\+)?(\\d+)?[dD](\\d+)");
 manual_dice::manual_dice() { i_sum_result = 0; }
 
 void manual_dice::roll(size_t target) noexcept {
-    if (target > this->size() || target < 1) {
+    if (target > this->mdice.size() || target < 1) {
         return;
     }
 
-    auto& item = this->at(target - 1);
+    auto& item = this->mdice.at(target - 1);
     this->i_sum_result -= item.second;
     item.second = random::rand_int(1, item.first);
     this->i_sum_result += item.second;
 }
 
 void manual_dice::kill(size_t target) noexcept {
-    if (target > this->size() || target < 1) {
+    if (target > this->mdice.size() || target < 1) {
         return;
     }
-    auto iter = this->begin() + target - 1;
+    auto iter = this->mdice.begin() + target - 1;
     i_sum_result -= (*iter).second;
-    this->erase(iter);
+    this->mdice.erase(iter);
 }
 
 void manual_dice::add(const std::vector<int>& source) {
     std::regex regex_manual_part("^(?:\\+)?(\\d+)?[dD](\\d+)");
 
-    size_t fin_size = source.size() + this->size();
-    this->reserve(source.size());
+    size_t fin_size = source.size() + this->mdice.size();
+    this->mdice.reserve(source.size());
     for (auto& item : source) {
         check_limits(fin_size, item);
-        this->emplace_back(item, random::rand_int(1, item));
+        this->mdice.emplace_back(item, random::rand_int(1, item));
     }
     this->i_sum_result = 0;
-    for (auto& item : *this) {
+    for (auto& item : this->mdice) {
         this->i_sum_result += item.second;
     }
 }
 
 void manual_dice::killall() {
-    this->clear();
+    this->mdice.clear();
     this->i_sum_result = 0;
 }
 
 std::string manual_dice::encode() const {
     std::ostringstream strs;
     boost::archive::binary_oarchive oa(strs);
-    strs << this->size() << " ";
-    for (auto& item : *this) {
+    strs << this->mdice.size() << " ";
+    for (auto& item : this->mdice) {
         strs << item.first << " " << item.second << " ";
     }
     return base64_encode((const unsigned char*)(strs.str().c_str()), strs.str().size());
 }
 
 void manual_dice::decode(const std::string& source) {
-    this->clear();
+    this->mdice.clear();
     std::string source_copy = base64_decode(source);
     std::istringstream iss(source_copy);
     boost::archive::binary_iarchive ia(iss);
@@ -86,7 +86,7 @@ void manual_dice::decode(const std::string& source) {
         int first, second;
         iss >> first >> second;
         this->i_sum_result += second;
-        this->push_back(pair_mdice(first, second));
+        this->mdice.push_back(pair_mdice(first, second));
     }
 }
 
@@ -94,7 +94,7 @@ manual_dice::operator std::string() const noexcept {
     std::ostringstream ostrs_result;
     int i_sum_result = 0;
     bool is_first = true;
-    for (auto& item : *this) {
+    for (auto& item : this->mdice) {
         if (is_first)
             is_first = false;
         else
@@ -103,7 +103,7 @@ manual_dice::operator std::string() const noexcept {
         i_sum_result += item.second;
     }
 
-    if (this->empty())
+    if (this->mdice.empty())
         ostrs_result << u8"没有骰子了";
     else
         ostrs_result << " = " << i_sum_result;

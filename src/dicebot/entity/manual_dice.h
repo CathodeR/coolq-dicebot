@@ -7,8 +7,9 @@
 namespace dicebot::manual {
     using vec_mdice = std::vector<std::pair<int, int>>;
     using pair_mdice = std::pair<int, int>;
-    class manual_dice : vec_mdice {
+    class manual_dice {
     public:
+        vec_mdice mdice;
         manual_dice();
         void roll(size_t target) noexcept;
         void kill(size_t target) noexcept;
