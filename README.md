@@ -8,7 +8,7 @@ Just a simple dicebot for coolq in development.
 
 # 特性
 * 强大的算式支持  
-* 所有的骰子指令支持多行输入。  
+* 支持多行输入。  
 * 使用系统随机器，如果系统随机器不可用，则改用mt19937随机器。  
 * 为coc，wod，fate规则定制骰子。  
 * 骰子指令支持算式，并且可以使用整数、小数、百分数。  
@@ -289,11 +289,13 @@ QQ：1701687847
 
 骰子指令可以结合在算式中使用
 
-> dynilath：`.r 猛力攻击-2 恶心状态`
-> DiceBot：` * dynilath 恶心状态 掷骰: (1d20 + 14) - 2 = ([11] + 14) - 2 = 23`
-> dynilath：`.set 1d12+22 猛力攻击伤害`
-> DiceBot：` * dynilath 设置指令: (1d12 + 22) 为 猛力攻击伤害`
-> dynilath：`.r {猛力攻击,猛力攻击伤害}`
+> dynilath：`.r 猛力攻击-2 恶心状态`  
+> DiceBot：` * dynilath 恶心状态 掷骰: (1d20 + 14) - 2 = ([11] + 14) - 2 = 23`  
+
+> dynilath：`.set 1d12+22 猛力攻击伤害`  
+> DiceBot：` * dynilath 设置指令: (1d12 + 22) 为 猛力攻击伤害`  
+
+> dynilath：`.r {猛力攻击,猛力攻击伤害}`  
 > DiceBot：` * dynilath 掷骰: {(1d20 + 14), (1d12 + 22)} = {([5] + 14), ([1] + 22)} = {19, 23}`
 
 * 注意：骰子指令名称不能使用`+-*/{},()#=<>&|:%.`和空格。
@@ -326,26 +328,21 @@ QQ：1701687847
 > ``` 
 > * dynilath 的个人信息如下: 
 > 默认骰子: 
-> > 4d6 + 3 
-> 已设置下列骰子指令: 
-> > 法术骰 : 1d20 + 13 
-> > 猛力攻击 : 1d20 + 14 
-> 已设置下列变量: 
-> > 1环法术 : 3 / 4 
-> > 2环法术 : 3 / 3 
-> > bab : 4 / 4
+> * 默认 : (4d6)
+> > test : (4d6)
+> > test1 : (4d6)
+> > 猛力攻击 : (1d20 + 14)
 > ```  
 
-### 展示部分骰子(`.list roll`或`.lr`)
+### 展示部分骰子(`.list [筛选字段]`)
 使用`.list [筛选字段]`指令来只显示你所保存的部分骰子。    
  
 > dynilath：`.l猛力`
 
 > DiceBot：
 > ``` 
-> * dynilath 的个人信息如下: 
-> 已设置下列骰子指令: 
-> > 猛力攻击 : 1d20 + 14 
+> * dynilath 已设置如下包含 "猛力" 的骰子指令:
+> > 猛力攻击 : (1d20 + 14)
 > ```  
 
 ## 删除骰子(`.delete`)
@@ -445,8 +442,10 @@ oWoD规则下，默认困难度为6，出1会扣除一个成功。
 
 > dynilath：`.p init core,8joker`  
 > DiceBot：` * dynilath 已初始化牌库，总计60张牌`  
+
 > dynilath：`.poker draw`  
-> DiceBot：` * dynilath 抽出了Spade 8 | 牌堆剩余59张，已经抽出了: Spade 8`
+> DiceBot：` * dynilath 抽出了Spade 8 | 牌堆剩余59张，已经抽出了: Spade 8`  
+
 > dynilath：`.pd`  
 > DiceBot：` * dynilath 抽出了Club J | 牌堆剩余58张，已经抽出了: Spade 8, Club J`
 
@@ -454,8 +453,10 @@ oWoD规则下，默认困难度为6，出1会扣除一个成功。
 
 > dynilath：`.p init joker`  
 > DiceBot：` * dynilath 已初始化牌库，总计1张牌`  
+
 > dynilath：`.pd`  
-> DiceBot：` * dynilath 抽出了Joker | 牌堆剩余0张，已经抽出了: Joker`   
+> DiceBot：` * dynilath 抽出了Joker | 牌堆剩余0张，已经抽出了: Joker`    
+
 > dynilath：`.pd`  
 > DiceBot：` * dynilath 无牌可抽 | 牌堆剩余0张，已经抽出了: Joker`
 
@@ -466,10 +467,13 @@ oWoD规则下，默认困难度为6，出1会扣除一个成功。
 
 > dynilath：`.pinit core`  
 > DiceBot：` * dynilath 已初始化牌库，总计52张牌`  
+
 > dynilath：`.pd`  
 > DiceBot：` * dynilath 抽出了Heart A | 牌堆剩余51张，已经抽出了: Heart A`  
+
 > dynilath：`.pshuffle`  
 > DiceBot：` * dynilath 已将牌堆重新切洗`  
+
 > dynilath：`.pd`  
 > DiceBot：` * dynilath 抽出了Heart 4 | 牌堆剩余51张，已经抽出了: Heart 4`
 
@@ -479,8 +483,10 @@ oWoD规则下，默认困难度为6，出1会扣除一个成功。
 
 > dynilath：`.pinit 战士,法师,牧师,德,武僧,蛮子,术士,圣爹`  
 > DiceBot：` * dynilath 已初始化牌库，总计8张牌`  
+
 > dynilath：`.pd`  
 > DiceBot：` * dynilath 抽出了圣爹 | 牌堆剩余7张，已经抽出了: 圣爹`  
+
 > dynilath：`.pd`  
 > DiceBot：` * dynilath 抽出了武僧 | 牌堆剩余6张，已经抽出了: 圣爹, 武僧`
 
