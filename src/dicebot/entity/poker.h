@@ -70,10 +70,12 @@ namespace dicebot::poker {
         custom
     };
 
-    struct card_item {
-        poker_type type;
-        size_t source_index;
-    };
+    // struct card_item {
+    //     poker_type type;
+    //     size_t source_index;
+    // };
+
+    using card_item = std::pair<poker_type, size_t>;
 
     class poker_deck {
         std::deque<card_item> deck;

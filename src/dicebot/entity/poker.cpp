@@ -144,7 +144,8 @@ const std::unordered_map<std::string, poker::poker_type> card_names = {{"h2", he
                                                                        {"j", joker_color},
                                                                        {"joker", joker_color}};
 
-auto split_string_ignore_spaces = [](const std::string& source, char splitter, auto& container) -> size_t {
+static size_t split_string_ignore_spaces(const std::string& source, char splitter,
+                                         std::deque<std::pair<size_t, size_t>>& container) {
     constexpr char ignores[] = " \t";
     size_t o_pos_found = 0;
     size_t pos_found;
@@ -163,8 +164,8 @@ auto split_string_ignore_spaces = [](const std::string& source, char splitter, a
     return container.size();
 };
 
-auto split_into_number_and_name = [](const std::string& source,
-                                     const std::pair<size_t, size_t>& item) -> std::pair<uint32_t, std::string> {
+static std::pair<uint32_t, std::string> split_into_number_and_name(const std::string& source,
+                                                                   const std::pair<size_t, size_t>& item) {
     constexpr char numbers[] = "0123456789";
     int counts_of_item = 1;
     size_t item_number_part = source.find_first_not_of(numbers, item.first);
@@ -230,13 +231,11 @@ void poker_deck::shuffle() noexcept {
     }
     this->drawer.clear();
     std::deque<card_item> sequencer;
-    size_t o_size = this->deck.size();
-    while (o_size > 0) {
-        size_t target = random::rand_int(0, o_size - 1);
+    utils::repeat(this->deck.size(), [&sequencer, this](size_t a) {
+        size_t target = random::rand_int(0, a);
         sequencer.push_back(this->deck[target]);
         this->deck.erase(this->deck.begin() + target);
-        o_size--;
-    }
+    });
     this->deck = std::move(sequencer);
 }
 
@@ -258,9 +257,9 @@ void poker_deck::clear() noexcept {
 }
 
 std::string poker_deck::render_name(const card_item& item) const noexcept {
-    if (item.type == custom) {
-        return this->card_sources.at(item.source_index);
+    if (item.first == custom) {
+        return this->card_sources.at(item.second);
     } else {
-        return poker_name_ascii[item.type];
+        return poker_name_ascii[item.first];
     }
 }
