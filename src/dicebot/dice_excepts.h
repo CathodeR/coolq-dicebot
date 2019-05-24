@@ -18,4 +18,7 @@ namespace dicebot {
     class invalid_dice : public std::exception {
         const char* what() const noexcept override { return "a positive integer is required."; }
     };
+    class invalid_macro : public std::exception {
+        const char* what() const noexcept override { return "invalid char in macro name."; }
+    };
 } // namespace dicebot

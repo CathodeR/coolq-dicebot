@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <deque>
 #include <map>
 #include <string>
 #include <vector>
@@ -36,8 +35,6 @@ namespace dicebot::diceparser {
         punct_rparenthesis,
         punct_sharp
     };
-
-    constexpr char illegal_identifier[] = " +-*/{},()#=<>&|:%.";
 
     struct token_t {
         token_index id;

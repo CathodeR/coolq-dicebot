@@ -39,6 +39,11 @@ namespace dicebot {
             oc << u8"骰子的数量、面数、重复次数必须为正整数";
             response = oc;
             return true;
+        } catch (dicebot::invalid_macro const& e) {
+            output_constructor oc(event.nickname);
+            oc << u8"骰子指令名称中包含不可用字符";
+            response = oc;
+            return true;
         }
     }
 

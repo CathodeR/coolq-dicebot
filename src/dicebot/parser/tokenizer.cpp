@@ -1,8 +1,8 @@
 #include "./tokenizer.h"
 
 #include <algorithm>
-#include <deque>
 #include <list>
+#include "../constants.h"
 #include "../utils/utils.h"
 
 using namespace dicebot;

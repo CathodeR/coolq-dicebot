@@ -24,8 +24,6 @@ entry_set_roll::entry_set_roll() noexcept {
         u8"注意：骰子名称中不能包含+-*/和空格";
 }
 
-static const std::regex filter_name("^([^\\+\\-\\*/\\(\\)\\s]+)");
-
 static bool set_request_with_except(std::string const& message, const event_info& event, std::string& response) {
     auto pfm = profile::profile_manager::get_instance();
 
@@ -42,14 +40,13 @@ static bool set_request_with_except(std::string const& message, const event_info
     };
 
     auto set_named = [pfm, &event, &response](std::string const& str_roll_command, std::string const& str_message) -> bool {
-        std::smatch m_name;
-        std::regex_search(str_message, m_name, filter_name);
-        if (!m_name[1].matched) return false;
-        pfm->get_profile(event.user_id)->mac_rolls.set(m_name[1], str_roll_command);
+        size_t find_pos = str_message.find_first_of(illegal_identifier);
+        if (find_pos != std::string::npos) throw invalid_macro();
+        pfm->get_profile(event.user_id)->mac_rolls.set(str_message, str_roll_command);
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
-        oc << u8"设置指令: " << str_roll_command << u8" 为 " << m_name[1];
+        oc << u8"设置指令: " << str_roll_command << u8" 为 " << str_message;
         response = oc;
         return true;
     };
