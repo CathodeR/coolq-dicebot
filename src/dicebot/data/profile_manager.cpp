@@ -45,7 +45,7 @@ static bool exist_database(int64_t const user_id) {
     bool ret = false;
     db_manager::get_instance()->exec(
         ostrs_sql_command.str().c_str(), &ret, [](void *data, int argc, char **argv, char **azColName) -> int {
-            *reinterpret_cast<bool *>(data) = true;
+            *reinterpret_cast<bool *>(data) = std::stoi(argv[0]) > 0;
             return SQLITE_OK;
         });
     return ret;
@@ -53,17 +53,16 @@ static bool exist_database(int64_t const user_id) {
 
 static bool insert_database(user_profile const &profile, int64_t const user_id) {
     std::ostringstream ostrs_sql_command;
-    ostrs_sql_command.str("insert into " PROFILE_TABLE_NAME " (system_variables,default_roll,macro_roll) values ( ");
-    ostrs_sql_command << user_id << " system_variables ='" << profile.sys_vars.encode() << "'"
-                      << ", default_roll='" << profile.def_roll.encode() << "'"
-                      << ", macro_roll='" << profile.mac_rolls.encode() << "'"
+    ostrs_sql_command << "insert into " PROFILE_TABLE_NAME " (qqid,system_variables,default_roll,macro_roll) "
+                      << "values ( " << user_id << " ,'" << profile.sys_vars.encode() << "'"
+                      << ", '" << profile.def_roll.encode() << "'"
+                      << ", '" << profile.mac_rolls.encode() << "'"
                       << ");";
 
     return db_manager::get_instance()->exec_noquery(ostrs_sql_command.str().c_str());
 }
 
 static bool update_database(user_profile const &profile, int64_t const user_id) {
-    sqlite3 *database = db_manager::get_instance()->get_database();
     char *pchar_err_message = nullptr;
 
     std::ostringstream ostrs_sql_command;
@@ -122,11 +121,11 @@ sptr_user_profile profile_manager::get_profile(int64_t const user_id) {
 
         if (!t.second) return nullptr;
 
-        if (!read_database(t.first->second, user_id)) {
-            write_database(t.first->second, user_id);
-            return &(t.first->second);
+        if (exist_database(user_id)) {
+            read_database(t.first->second, user_id);
         } else {
-            return &(t.first->second);
+            insert_database(t.first->second, user_id);
         }
+        return &(t.first->second);
     }
 }

@@ -28,10 +28,10 @@ void manual_dice::roll(size_t target) noexcept {
         return;
     }
 
-    auto item = this->at(target - 1);
-    auto new_result = random::rand_int(1, item.first);
-    this->i_sum_result = this->i_sum_result - item.second + new_result;
-    item.second = new_result;
+    auto& item = this->at(target - 1);
+    this->i_sum_result -= item.second;
+    item.second = random::rand_int(1, item.first);
+    this->i_sum_result += item.second;
 }
 
 void manual_dice::kill(size_t target) noexcept {
@@ -66,29 +66,25 @@ void manual_dice::killall() {
 std::string manual_dice::encode() const {
     std::ostringstream strs;
     boost::archive::binary_oarchive oa(strs);
-    oa << this->size();
+    strs << this->size() << " ";
     for (auto& item : *this) {
-        oa << (item.first);
-        oa << (item.second);
+        strs << item.first << " " << item.second << " ";
     }
     return base64_encode((const unsigned char*)(strs.str().c_str()), strs.str().size());
 }
 
 void manual_dice::decode(const std::string& source) {
     this->clear();
-    std::string source_copy(source);
-    source_copy = base64_decode(source_copy);
+    std::string source_copy = base64_decode(source);
     std::istringstream iss(source_copy);
     boost::archive::binary_iarchive ia(iss);
 
     this->i_sum_result = 0;
     int len = 0;
-    ia >> len;
+    iss >> len;
     for (int i_iter = 0; i_iter < len; i_iter++) {
-        int first = 0;
-        ia >> first;
-        int second = 0;
-        ia >> second;
+        int first, second;
+        iss >> first >> second;
         this->i_sum_result += second;
         this->push_back(pair_mdice(first, second));
     }
