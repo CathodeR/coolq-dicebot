@@ -242,8 +242,22 @@ void comp_holder::print(str_container &strlist) const noexcept {
 static auto fit_for_dice = [](const number &num) -> int {
     if (num.is_using_int && num.value.i_value > 0)
         return num.value.i_value;
-    else
+    else {
+        if (num.value.f_value > MAX_DICE_NUM) {
+            throw dice_exceed();
+        }
         throw invalid_dice();
+    }
+};
+static auto fit_for_face = [](const number &num) -> int {
+    if (num.is_using_int && num.value.i_value > 0)
+        return num.value.i_value;
+    else {
+        if (num.value.f_value > MAX_DICE_FACE) {
+            throw face_exceed();
+        }
+        throw invalid_dice();
+    }
 };
 
 number comp_dice_rdk::roll_the_dice(str_container &out) const {
@@ -256,15 +270,15 @@ number comp_dice_rdk::roll_the_dice(str_container &out) const {
         break;
     }
     case dice_rdk_mode::numbered_d: {
-        roll_base(dr, fit_for_dice(this->dice), fit_for_dice(this->face));
+        roll_base(dr, fit_for_dice(this->dice), fit_for_face(this->face));
         break;
     }
     case dice_rdk_mode::numbered_d_k: {
-        roll_rdk(dr, fit_for_dice(this->dice), fit_for_dice(this->face), fit_for_dice(this->keep));
+        roll_rdk(dr, fit_for_dice(this->dice), fit_for_face(this->face), fit_for_dice(this->keep));
         break;
     }
     case dice_rdk_mode::numbered_d_kl: {
-        roll_rdk(dr, fit_for_dice(this->dice), fit_for_dice(this->face), -fit_for_dice(this->keep));
+        roll_rdk(dr, fit_for_dice(this->dice), fit_for_face(this->face), -fit_for_dice(this->keep));
         break;
     }
     default:

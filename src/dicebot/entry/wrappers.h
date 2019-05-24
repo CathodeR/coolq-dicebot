@@ -44,6 +44,11 @@ namespace dicebot {
             oc << u8"骰子指令名称中包含不可用字符";
             response = oc;
             return true;
+        } catch (std::out_of_range const&) {
+            output_constructor oc(event.nickname);
+            oc << u8"数值超出计算范围";
+            response = oc;
+            return true;
         }
     }
 

@@ -60,7 +60,9 @@ static bool manualdice_add(std::string const& message, const event_info& event, 
     std::string roll_msg;
     try {
         is_cmd_exist = manualdice_dissemble(message, dice_cont, str_cmd, roll_msg);
-    } catch (std::invalid_argument&) {
+    } catch (const std::invalid_argument&) {
+        return false;
+    } catch (const std::out_of_range&) {
         return false;
     }
 
@@ -99,7 +101,9 @@ static bool manualdice_kill(std::string const& message, const event_info& event,
         try {
             md_target->second.kill(stoi(roll_match[1]));
             md_ctrl::get_instance()->sync_database(md_target);
-        } catch (std::invalid_argument&) {
+        } catch (const std::invalid_argument&) {
+            return false;
+        } catch (const std::out_of_range&) {
             return false;
         }
 
@@ -122,7 +126,9 @@ static bool manualdice_roll(std::string const& message, const event_info& event,
         try {
             md_target->second.roll(stoi(roll_match[1]));
             md_ctrl::get_instance()->sync_database(md_target);
-        } catch (std::invalid_argument&) {
+        } catch (const std::invalid_argument&) {
+            return false;
+        } catch (const std::out_of_range&) {
             return false;
         }
 
@@ -142,7 +148,9 @@ static bool manualdice_create(std::string const& message, const event_info& even
     std::string roll_msg;
     try {
         is_cmd_exist = manualdice_dissemble(message, dice_cont, str_cmd, roll_msg);
-    } catch (std::invalid_argument&) {
+    } catch (const std::invalid_argument&) {
+        return false;
+    } catch (const std::out_of_range&) {
         return false;
     }
     if (!is_cmd_exist) return false;

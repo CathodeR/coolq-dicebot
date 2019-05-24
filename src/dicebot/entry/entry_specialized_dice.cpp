@@ -44,6 +44,8 @@ static bool roll_owod(std::string const& message, const event_info& event, std::
             return true;
         } catch (std::invalid_argument& ia) {
             return false;
+        } catch (std::out_of_range&) {
+            return false;
         }
     }
     return false;
@@ -79,6 +81,8 @@ static bool roll_nwod(std::string const& message, const event_info& event, std::
             response = oc;
             return true;
         } catch (std::invalid_argument& ia) {
+            return false;
+        } catch (std::out_of_range&) {
             return false;
         }
     }
@@ -167,7 +171,9 @@ static bool coc_request_with_except(std::string const& message, event_info& even
             work_point += roll_match[0].length();
             std::regex_search(work_point, end_point, roll_match, coc_single_dice);
         }
-    } catch (const std::invalid_argument& ia) {
+    } catch (const std::invalid_argument&) {
+        return false;
+    } catch (const std::out_of_range&) {
         return false;
     }
 
@@ -220,7 +226,9 @@ bool entry_fate_dice::resolve_request(std::string const& message, event_info& ev
             i_modifier = stoi(roll_match[1]);
             is_modifier_exist = true;
         }
-    } catch (const std::invalid_argument& ia) {
+    } catch (const std::invalid_argument&) {
+        return false;
+    } catch (const std::out_of_range&) {
         return false;
     }
 
