@@ -346,13 +346,13 @@ TEST_F(entry_test, multiline_case_fullcmd) {
     this->base_call(ei, ".ndice");
 
     std::stringstream builder;
-    builder << " \\* .+ 的新名字是 dice" << std::endl
-            << " \\* dice 关闭骰子详细输出" << std::endl
-            << " \\* dice test 掷骰: 2d20 \\+ 4 = \\d{1,2}" << std::endl
-            << " \\* dice test 掷骰: CoC = \\d{1,3}" << std::endl
-            << " \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = \\d";
+    builder << " \\* .+ 的新名字是 dice\\n"
+            << " \\* dice 关闭骰子详细输出\\n"
+            << " \\* dice test 掷骰: 2d20 \\+ 4 = \\d{1,2}\\n"
+            << " \\* dice test 掷骰: CoC = \\d{1,3}\\n"
+            << " \\* dice test 掷骰: FATE = \\[([o+\\-] ){3}[o+\\-]\\] = -?\\d";
 
-    std::regex reg_out(" * dice 的新名字是 dice");
+    std::regex reg_out(builder.str());
 
     ASSERT_TRUE(this->test_call(ei, ".ndice\r\n.rsoff\r\n.r2d20+4test\r\n.ctest\r\n.ftest", reg_out));
     ASSERT_TRUE(this->test_call(ei, ".n  dice\r\n  . r  s off  \r\n . r 2d20 + 4 test \r\n . c test \r\n . f test", reg_out));
@@ -360,6 +360,21 @@ TEST_F(entry_test, multiline_case_fullcmd) {
         ei, ".name  dice\r\n  . roll source off  \r\n . roll 2d20 + 4 test \r\n . coc test \r\n . fate test", reg_out));
     ASSERT_TRUE(this->test_call(
         ei, ".name dice \r\n  . ROLL source off  \r\n . roLL 2d20 + 4 test \r\n . cOc test \r\n . FATE test", reg_out));
+}
+
+TEST_F(entry_test, range_exceed) {
+    dicebot::event_info ei(123456, 10000, dicebot::event_type::group);
+    ei.nickname = "dynilath";
+
+    this->base_call(ei, ".ndice");
+
+    ASSERT_TRUE(this->test_call(ei, ".r100d6", std::regex(" \\* dice 投掷过多骰子，最大为50")));
+    ASSERT_TRUE(this->test_call(ei, ".r1d1001", std::regex(" \\* dice 投掷骰子面数过多，最大为1000")));
+    ASSERT_TRUE(this->test_call(ei, ".r(-1)d10", std::regex(" \\* dice 骰子的数量、面数、重复次数必须为正整数")));
+    ASSERT_TRUE(this->test_call(ei, ".r1d(3.6)", std::regex(" \\* dice 骰子的数量、面数、重复次数必须为正整数")));
+    ASSERT_TRUE(this->test_call(ei, ".r1d10k(-2)", std::regex(" \\* dice 骰子的数量、面数、重复次数必须为正整数")));
+    ASSERT_TRUE(
+        this->test_call(ei, ".r12345678901234567890123456789012345678901234567890d6", std::regex(" \\* dice 数值超出计算范围")));
 }
 
 int main(int argc, char **argv) {
