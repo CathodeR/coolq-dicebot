@@ -6,6 +6,8 @@
 #endif
 #endif
 
+#include <experimental/filesystem>
+
 #include "../dicebot/dicebot.h"
 #include "gtest/gtest.h"
 
@@ -17,7 +19,7 @@ namespace dicebot::test {
 
         std::deque<int> result;
 
-        std::string test_db = "./build/test_db/";
+        std::string test_db = "./build/test_db_1/";
 
         dicebot::initialize(test_db.c_str());
         auto md = manual::manual_dice_control::get_instance()->find_manual_dice(ei);
@@ -46,19 +48,19 @@ namespace dicebot::test {
 
         std::deque<int> result;
 
-        std::string test_db = "./build/test_db/";
+        std::string test_db = "./build/test_db_2/";
 
         dicebot::initialize(test_db.c_str());
         auto pf = profile::profile_manager::get_instance()->get_profile(ei.user_id);
-        pf->sys_vars.set(profile::sys_var_type::rs_on, profile::var_rs_on);
-        pf->sys_vars.set(profile::sys_var_type::rs_on, profile::var_rs_off);
+        pf->sys_vars[profile::sys_var_type::rs_on] = profile::var_rs_on;
+        pf->sys_vars[profile::sys_var_type::rs_on] = profile::var_rs_off;
 
         std::string def_roll = "(4d6)";
-        pf->def_roll.set(profile::def_roll_type::def_roll, def_roll);
+        pf->def_roll[profile::def_roll_type::def_roll] = def_roll;
 
         std::string test_roll = "(4d6k3)";
         std::string test_roll_name = "strength";
-        pf->mac_rolls.set(test_roll_name, test_roll);
+        pf->mac_rolls[test_roll_name] = test_roll;
         profile::profile_manager::get_instance()->force_update(ei.user_id);
         dicebot::salvage();
 

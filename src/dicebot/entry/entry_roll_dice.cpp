@@ -39,14 +39,14 @@ static bool roll_source(std::string::const_iterator begin, std::string::const_it
     if (!detail_match.empty()) {
         auto pfm = profile::profile_manager::get_instance();
         if (detail_match[1] == "on") {
-            pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, profile::var_rs_on);
+            pfm->get_profile(event.user_id)->sys_vars[profile::sys_var_type::rs_on] = profile::var_rs_on;
             pfm->force_update(event.user_id);
             output_constructor oc(event.nickname);
             oc << u8"启用骰子详细输出";
             response = oc;
             return true;
         } else {
-            pfm->get_profile(event.user_id)->sys_vars.set(profile::sys_var_type::rs_on, profile::var_rs_off);
+            pfm->get_profile(event.user_id)->sys_vars[profile::sys_var_type::rs_on] = profile::var_rs_off;
             pfm->force_update(event.user_id);
             output_constructor oc(event.nickname);
             oc << u8"关闭骰子详细输出";
@@ -79,8 +79,7 @@ static bool request_with_except(std::string const& message, event_info& event, s
             return true;
         }
     } else {
-        profile::var_pair var;
-        pfm->get_profile(event.user_id)->sys_vars.get(profile::sys_var_type::rs_on, var);
+        profile::var_pair var = pfm->get_profile(event.user_id)->sys_vars[profile::sys_var_type::rs_on];
         detailed_roll = static_cast<bool>(var.second);
     }
 

@@ -7,7 +7,7 @@
 using namespace dicebot;
 using namespace dicebot::database;
 
-const char* cstr_file_db = "com.dynilath.coolqdicebot.nickname.db";
+constexpr char cstr_file_db[] = "com.dynilath.coolqdicebot.db";
 
 std::unique_ptr<database_manager> database_manager::instance;
 
@@ -31,8 +31,8 @@ database_manager::database_manager(const char* str_app_dir) {
     str_db_path.append(cstr_file_db);
     is_ready = false;
     int i_ret_code = sqlite3_open(str_db_path.c_str(), &database);
-    if (i_ret_code == SQLITE_OK) {
-        is_ready = true;
+    if (i_ret_code != SQLITE_OK) {
+        is_no_sql_mode = true;
     }
 }
 
@@ -60,7 +60,6 @@ int database_manager::register_table(const char* str_table_name, const char* str
 inline int database_manager::is_table_exist(const char* table_name, bool& is_exist) {
     is_exist = false;
     if (is_no_sql_mode) return SQLITE_ABORT;
-
     std::string sql_command = "select count(*) from sqlite_master where type ='table' and name ='";
     sql_command.append(table_name).append("'");
     char* pchar_err_message = nullptr;
@@ -90,6 +89,7 @@ inline int database_manager::is_table_exist(const char* table_name, bool& is_exi
 }
 
 bool database_manager::exec_noquery(const char* sql) const noexcept {
+    if (is_no_sql_mode) return false;
     char* pchar_err_message;
     int ret_code = sqlite3_exec(this->database,
                                 sql,
@@ -111,6 +111,7 @@ bool database_manager::exec_noquery(const char* sql) const noexcept {
 }
 
 bool database_manager::exec(const char* sql, void* data, int (*callback)(void*, int, char**, char**)) const noexcept {
+    if (is_no_sql_mode) return false;
     char* pchar_err_message;
     int ret_code = sqlite3_exec(this->database, sql, callback, data, &pchar_err_message);
     if (ret_code != SQLITE_OK) {

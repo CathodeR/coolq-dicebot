@@ -7,6 +7,12 @@ if (-not (Test-Path -Path "build\$config_type")) {
 if (-not (Test-Path -Path "build\test_db")) {
     New-Item -Path "build\test_db" -ItemType "directory"
 }
+if (-not (Test-Path -Path "build\test_db_1")) {
+    New-Item -Path "build\test_db_1" -ItemType "directory"
+}
+if (-not (Test-Path -Path "build\test_db_2")) {
+    New-Item -Path "build\test_db_2" -ItemType "directory"
+}
 Set-Location .\build\$config_type  # enter the build folder
 
 if (-not (Test-Path -Path "$env:VCPKG_ROOT")) {

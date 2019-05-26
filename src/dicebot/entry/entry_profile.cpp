@@ -30,7 +30,7 @@ static bool set_request_with_except(std::string const& message, const event_info
     std::string message_cp = message;
 
     auto set_default = [pfm, &event, &response](std::string const& str_roll_command) -> bool {
-        pfm->get_profile(event.user_id)->def_roll.set(profile::def_roll_type::def_roll, str_roll_command);
+        pfm->get_profile(event.user_id)->def_roll[profile::def_roll_type::def_roll] = str_roll_command;
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
@@ -42,7 +42,7 @@ static bool set_request_with_except(std::string const& message, const event_info
     auto set_named = [pfm, &event, &response](std::string const& str_roll_command, std::string const& str_message) -> bool {
         size_t find_pos = str_message.find_first_of(illegal_identifier);
         if (find_pos != std::string::npos) throw invalid_macro();
-        pfm->get_profile(event.user_id)->mac_rolls.set(str_message, str_roll_command);
+        pfm->get_profile(event.user_id)->mac_rolls[str_message] = str_roll_command;
         pfm->force_update(event.user_id);
 
         output_constructor oc(event.nickname);
