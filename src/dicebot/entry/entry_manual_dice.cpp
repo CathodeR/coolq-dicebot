@@ -168,7 +168,7 @@ static bool manualdice_create(std::string const& message, const event_info& even
 }
 
 using func_type = std::function<bool(std::string const& message, const event_info&, std::string&)>;
-using func_map_t = std::map<std::string, func_type>;
+using func_map_t = std::unordered_map<std::string, func_type>;
 
 static const func_map_t func_map = {{"ka", manualdice_killall},
                                     {"a", manualdice_add},

@@ -23,7 +23,7 @@ CQ_MAIN {
     cqapp::on_enable = [] {
         // cqlogging、api、dir 等命名空间下的函数只能在事件回调函数内部调用，而不能直接在 CQ_MAIN 中调用
         std::string dir = cq::dir::app();
-        dicebot::initialize(dir);
+        dicebot::initialize(dir.c_str());
         dicebot::set_logger(cqlogging::debug);
         cqlogging::debug(u8"启用", u8"插件已启动");
     };

@@ -7,6 +7,9 @@
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../constants.h"
+#ifdef _DEBUG
+#include "../utils/logger.h"
+#endif
 
 namespace dicebot::profile {
 

@@ -14,32 +14,32 @@ namespace dicebot {
     static bool shoot_exceptions(work_t fun, std::string const& message, event_info& event, std::string& response) {
         try {
             return fun(message, event, response);
-        } catch (dicebot::zero_divider_exception const& e) {
+        } catch (dicebot::zero_divider_exception const&) {
             output_constructor oc(event.nickname);
             oc << u8"指令中以0为除数";
             response = oc;
             return true;
-        } catch (dicebot::dice_exceed const& e) {
+        } catch (dicebot::dice_exceed const&) {
             output_constructor oc(event.nickname);
             oc << u8"投掷过多骰子，最大为" << MAX_DICE_NUM;
             response = oc;
             return true;
-        } catch (dicebot::face_exceed const& e) {
+        } catch (dicebot::face_exceed const&) {
             output_constructor oc(event.nickname);
             oc << u8"投掷骰子面数过多，最大为" << MAX_DICE_FACE;
             response = oc;
             return true;
-        } catch (dicebot::unit_exceed const& e) {
+        } catch (dicebot::unit_exceed const&) {
             output_constructor oc(event.nickname);
             oc << u8"过多重复投掷骰子，最大为" << MAX_DICE_UNIT_COUNT;
             response = oc;
             return true;
-        } catch (dicebot::invalid_dice const& e) {
+        } catch (dicebot::invalid_dice const&) {
             output_constructor oc(event.nickname);
             oc << u8"骰子的数量、面数、重复次数必须为正整数";
             response = oc;
             return true;
-        } catch (dicebot::invalid_macro const& e) {
+        } catch (dicebot::invalid_macro const&) {
             output_constructor oc(event.nickname);
             oc << u8"骰子指令名称中包含不可用字符";
             response = oc;

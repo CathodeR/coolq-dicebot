@@ -1,5 +1,6 @@
 #include "./string_part.h"
 #include <algorithm>
+#include <locale>
 
 using namespace dicebot;
 
@@ -20,14 +21,14 @@ void utils::split_line_part(std::string const& source, std::list<string_part>& s
 }
 
 bool utils::trim_part(std::string const& source, utils::string_part& part) {
-    while (std::isblank(*part.first) && part.first != source.end()) part.first++;
+    while (std::isblank(*part.first, std::locale("")) && part.first != source.end()) part.first++;
     if (part.first == source.end()) return false;
-    while (std::isblank(*(part.second - 1))) part.second--;
+    while (std::isblank(*(part.second - 1), std::locale(""))) part.second--;
     return true;
 }
 
 bool utils::jump_to_point_part(std::string const& source, utils::string_part& part) {
-    while (std::isblank(*part.first) && part.first != source.end()) part.first++;
+    while (std::isblank(*part.first, std::locale("")) && part.first != source.end()) part.first++;
     if (part.first == source.end())
         return false;
     else if (*part.first == '.') {

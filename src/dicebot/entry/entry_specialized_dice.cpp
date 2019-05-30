@@ -1,5 +1,7 @@
 #include "./entry_specialized_dice.h"
 
+#include <functional>
+
 #include "../dice_roller.h"
 #include "../utils/utils.h"
 #include "./wrappers.h"
@@ -42,7 +44,7 @@ static bool roll_owod(std::string const& message, const event_info& event, std::
             oc.append_roll(strs.str(), dr.detail(), dr.summary);
             response = oc;
             return true;
-        } catch (std::invalid_argument& ia) {
+        } catch (std::invalid_argument&) {
             return false;
         } catch (std::out_of_range&) {
             return false;
@@ -80,7 +82,7 @@ static bool roll_nwod(std::string const& message, const event_info& event, std::
             oc.append_roll(strs.str(), dr.detail(), dr.summary);
             response = oc;
             return true;
-        } catch (std::invalid_argument& ia) {
+        } catch (std::invalid_argument&) {
             return false;
         } catch (std::out_of_range&) {
             return false;

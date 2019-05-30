@@ -15,7 +15,7 @@ void random::initialize() {
     if (rd_generator.entropy() > 0.0) {
         is_random_device_unavail = false;
     } else {
-        mt_generator.seed(std::chrono::system_clock::now().time_since_epoch().count());
+        mt_generator.seed(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
         is_random_device_unavail = true;
     }
 }
