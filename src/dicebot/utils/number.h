@@ -56,8 +56,14 @@ namespace dicebot {
         bool operator==(const float_type val1) const;
 
         operator std::string() const noexcept;
-        friend std::ostream &operator<<(std::ostream &os, const number &num) noexcept { os << std::string(num); }
-        friend std::ostream &operator<<(std::ostream &os, number &&num) noexcept { os << std::string(num); }
+        friend std::ostream &operator<<(std::ostream &os, const number &num) noexcept {
+            os << std::string(num);
+            return os;
+        }
+        friend std::ostream &operator<<(std::ostream &os, number &&num) noexcept {
+            os << std::string(num);
+            return os;
+        }
         std::string str_holder() const noexcept;
 
         integer_type force_positive_int();

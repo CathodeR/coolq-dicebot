@@ -1,4 +1,5 @@
 # DiceRobot kills you 3000
+
 [![License](https://img.shields.io/github/license/dynilath/coolq-dicebot.svg)](LICENSE)
 [![Build Status](https://img.shields.io/appveyor/ci/dynilath/coolqdicebot.svg)](https://ci.appveyor.com/project/dynilath/coolqdicebot)  
 Just a simple dicebot for coolq in development.  
@@ -7,6 +8,7 @@ Just a simple dicebot for coolq in development.
 感谢@niunuinui 在文档制作上的帮助。
 
 # 特性
+
 * 强大的算式支持  
 * 支持多行输入。  
 * 使用系统随机器，如果系统随机器不可用，则改用mt19937随机器。  
@@ -15,51 +17,71 @@ Just a simple dicebot for coolq in development.
 * 用户能够设置自定的骰子指令，以及保存一些变量。
 
 # 安装
+
 点击[下载cpk](https://github.com/dynilath/coolq-dicebot/releases/latest)前往下载本骰子机器人最新cpk。  
 点击[获取酷Q](https://cqp.cc/)前往酷Q官网下载酷Q。    
 点击[酷Q wiki](https://d.cqp.me/Pro/%E6%96%B0%E6%89%8B%E4%B8%8A%E8%B7%AF)前往酷Qwiki了解如何使用酷Q以及插件如何安装。  
   
 # 实例  
+
 QQ：1701687847  
 它能够自动接受好友请求和加群邀请。请温柔对待它。  
 
 # 目录
+
 <!-- TOC -->
 
-- [help](#help)
-- [基本骰子指令(.roll或.r)](#基本骰子指令roll或r)
-    - [骰子基础](#骰子基础)
-    - [双/三/四骰取高/低](#双三四骰取高低)
-    - [多行输入](#多行输入)
-    - [骰子加入算式](#骰子加入算式)
-    - [开启/关闭详细结果(.roll source on/off)](#开启关闭详细结果roll-source-onoff)
-- [骰子专用的昵称(.name或.n)](#骰子专用的昵称name或n)
-    - [不回复地更改昵称(.name silence或.ns)](#不回复地更改昵称name-silence或ns)
-- [定义骰子(.set或.s)](#定义骰子set或s)
-    - [默认骰子](#默认骰子)
-- [定义变量(.var或.v)](#定义变量var或v)
-- [展示变量和骰子(.list或.l)](#展示变量和骰子list或l)
-    - [全部展示(.list all)](#全部展示list-all)
-    - [展示骰子(.list roll或.lr)](#展示骰子list-roll或lr)
-    - [展示变量(.list var或.lv)](#展示变量list-var或lv)
-- [删除变量和骰子(.delete或.d)](#删除变量和骰子delete或d)
-    - [全部删除(.delete all)](#全部删除delete-all)
-    - [删除骰子(.delete roll或.dr)](#删除骰子delete-roll或dr)
-    - [删除变量(.delete var或.dv)](#删除变量delete-var或dv)
-- [为特定规则定制的骰子](#为特定规则定制的骰子)
-    - [coc定制骰子(.coc或者.c)](#coc定制骰子coc或者c)
-    - [wod定制骰子(.wod或者.w)](#wod定制骰子wod或者w)
-    - [FATE定制骰子(.fate或.f)](#fate定制骰子fate或f)
-- [手动骰子(.manual或.m)](#手动骰子manual或m)
+- [DiceRobot kills you 3000](#dicerobot-kills-you-3000)
+- [特性](#特性)
+- [安装](#安装)
+- [实例](#实例)
+- [目录](#目录)
+- [使用示范](#使用示范)
+    - [help](#help)
+    - [基本骰子指令(.roll或.r)](#基本骰子指令roll或r)
+        - [骰子基础](#骰子基础)
+        - [骰子机器人回复格式](#骰子机器人回复格式)
+        - [双/三/四骰取高/低](#双三四骰取高低)
+        - [多行输入](#多行输入)
+        - [`#`标记和多次骰](#标记和多次骰)
+        - [骰子与算式](#骰子与算式)
+        - [开启/关闭详细结果(.roll source on/off)](#开启关闭详细结果roll-source-onoff)
+    - [骰子专用的昵称(.name或.n)](#骰子专用的昵称name或n)
+        - [不回复地更改昵称(.name silence或.ns)](#不回复地更改昵称name-silence或ns)
+    - [定义骰子(.set或.s)](#定义骰子set或s)
+        - [默认骰子](#默认骰子)
+    - [展示骰子(`.list`或`.l`)](#展示骰子list或l)
+        - [全部展示(`.list`)](#全部展示list)
+        - [展示部分骰子(`.list [筛选字段]`)](#展示部分骰子list-筛选字段)
+    - [删除骰子(`.delete`)](#删除骰子delete)
+        - [全部删除(`.delete`)](#全部删除delete)
+        - [删除骰子(`.delete [名称]`)](#删除骰子delete-名称)
+    - [为特定规则定制的骰子](#为特定规则定制的骰子)
+        - [coc定制骰子(`.coc`或者`.c`)](#coc定制骰子coc或者c)
+        - [wod定制骰子(`.wod`或者`.w`)](#wod定制骰子wod或者w)
+        - [FATE定制骰子(`.fate`或`.f`)](#fate定制骰子fate或f)
+    - [扑克(`.poker`或`.p`)](#扑克poker或p)
+        - [抽牌(`.poker draw`或`.pd`)](#抽牌poker-draw或pd)
+        - [洗牌(`.poker shuffle`)](#洗牌poker-shuffle)
+        - [使用特殊牌](#使用特殊牌)
+    - [手动骰子(`.manual`或`.m`)](#手动骰子manual或m)
+        - [产生手动骰子(`.m`)](#产生手动骰子m)
+        - [骰指定骰子(`.mr`)](#骰指定骰子mr)
+        - [消灭指定骰子(`.mk`)](#消灭指定骰子mk)
+        - [增加骰子(`.mk`)](#增加骰子mk)
+        - [清空手动骰子(`.mka`)](#清空手动骰子mka)
 
 <!-- /TOC -->
 
 # 使用示范
+
 ## help
+
 发送`.help`获取没啥用的帮助信息。
 > dynilath：`.help`
 
 > DiceBot：
+
 > ``` 
 > DiceBot by dynilath v1.7.0
 > 使用方式简介：
@@ -70,14 +92,14 @@ QQ：1701687847
 > .f FATE骰子
 > 更多指令：name set list delete manual poker
 > 使用 .help [指令名称] 来获得对应指令的帮助
-> 
+>  
 > 访问项目主页http://github.com/dynilath/coolq-dicebot
 > 获得使用说明以及了解更多内容。
 > 如果在使用中遇到了bug，或者有什么功能建议，欢迎在项目主页通过issue反馈，感谢您的帮助。
 > ```
 
 你可以通过`.help [指令名称]`获得具体指令的帮助。例如：
-> dynilath：`.help roll`
+> dynilath：`.help roll`  
 
 > DiceBot：
 > ```
@@ -102,7 +124,7 @@ QQ：1701687847
 ### 骰子基础
 
 让我们先骰一个d20试试。  
-> dynilath：`.rd20`     
+> dynilath：`.rd20`  
 > DiceBot：` * dynilath 掷骰: d20 = 20`
 
 `dynilath`是本骰子机器人开发者，后续会一直使用它作为示例。  
@@ -115,7 +137,7 @@ QQ：1701687847
 
 在骰子指令后面加上一些文本，可以作为描述添加到骰子结果中。  
 
-> dynilath：`.rd20攻击`     
+> dynilath：`.rd20攻击`  
 > DiceBot：` * dynilath 攻击 掷骰: d20 = 6`
 
 有时候你会需要骰几种不同的骰子，可以发送如下信息。  
@@ -126,24 +148,25 @@ QQ：1701687847
 ### 骰子机器人回复格式
 
 骰子机器人发送的信息组成结构如下：  
-``` * [你的QQ昵称/群名片] [骰子描述] 掷骰: [骰子指令] = [骰子详细] = [结果]```  
+` * [你的QQ昵称/群名片] [骰子描述] 掷骰: [骰子指令] = [骰子详细] = [结果]`  
 群名片就是你使用骰子所在的群中你的群名片，如果是讨论组则使用昵称。  
 骰子描述即你输入的骰子（例如`d20`、`4d6`）。  
-结果即最终计算得到的数值。
-需要说明的是，`4d6k3`或者`2d6`这样的组视为一个完整的“骰子标志”，它们在输出的时候会被`[   ]`包括起来，例如：    
+结果即最终计算得到的数值。  
+需要说明的是，`4d6k3`或者`2d6`这样的组视为一个完整的“骰子标志”，它们在输出的时候会被`[   ]`包括起来，例如：  
 
 > dynilath：`.r 4d6`  
-> DiceBot：` * dynilath 掷骰: 4d6 = [4 + 4 + 2 + 6] = 16`
+> DiceBot：` * dynilath 掷骰: 4d6 = [4 + 4 + 2 + 6] = 16`  
 
 ### 双/三/四骰取高/低
 
 你可以在骰子指令后加上`k[数值]`或者`kl[数值]`来只取部分结果。  
 其中`k[数值]`表示保留较高结果，`kl[数值]`表示较低结果。  
 下面的例子是骰4d6并保留3个较高的结果（即扔掉较低的那个）。  
-> dynilath：`.r4d6k3`       
+
+> dynilath：`.r4d6k3`  
 > DiceBot：` * dynilath 掷骰: 4d6k3 = [5 + 3 + 5 + 1*] = 13`  
 
-被忽略的数值会在其后面用`*`号标记，它不会算入到总和中。   
+被忽略的数值会在其后面用`*`号标记，它不会算入到总和中。  
 
 ### 多行输入
 

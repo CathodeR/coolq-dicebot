@@ -92,6 +92,7 @@ std::unique_ptr<profile_manager> profile_manager::instance = nullptr;
 profile_manager *profile_manager::create_instance() noexcept {
     db_manager::get_instance()->register_table(PROFILE_TABLE_NAME, PROFILE_TABLE_DEFINE);
     profile_manager::instance = std::make_unique<profile_manager>();
+    return profile_manager::instance.get();
 }
 
 profile_manager *profile_manager::get_instance() noexcept { return instance.get(); }

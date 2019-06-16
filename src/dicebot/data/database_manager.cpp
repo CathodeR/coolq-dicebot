@@ -21,8 +21,8 @@ database_manager* database_manager::create_instance(const char* str_app_dir) noe
 }
 
 void database_manager::destroy_instance() noexcept {
-    sqlite3_close(instance->database);
-    instance == nullptr;
+    sqlite3_close(database_manager::instance->database);
+    database_manager::instance = nullptr;
 }
 database_manager* database_manager::get_instance() noexcept { return instance.get(); }
 

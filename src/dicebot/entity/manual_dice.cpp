@@ -4,6 +4,7 @@
 #include <boost/archive/binary_oarchive.hpp>
 #include <iostream>
 #include <regex>
+#include <sstream>
 
 #include "../../cqsdk/utils/vendor/cpp-base64/base64.h"
 #include "../dice_excepts.h"

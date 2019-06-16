@@ -72,7 +72,8 @@ std::unique_ptr<manual_dice_control> manual_dice_control::instance = nullptr;
 
 manual_dice_control *manual_dice_control::create_instance() {
     db_manager::get_instance()->register_table(MANUALDICE_TABLE_NAME, MANUALDICE_TABLE_DEFINE);
-    instance = std::make_unique<manual_dice_control>();
+    manual_dice_control::instance = std::make_unique<manual_dice_control>();
+    return manual_dice_control::instance.get();
 }
 
 manual_dice_control *manual_dice_control::get_instance() { return instance.get(); }

@@ -1,5 +1,6 @@
 #include "./dicenalyzer.h"
 
+#include <algorithm>
 #include <functional>
 #include <sstream>
 

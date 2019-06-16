@@ -29,6 +29,7 @@ std::unique_ptr<nickname_manager> nickname_manager::instance = nullptr;
 nickname_manager *nickname_manager::create_instance() {
     db_manager::get_instance()->register_table(NICK_TABLE_NAME, NICK_TABLE_DEFINE);
     nickname_manager::instance = std::make_unique<nickname_manager>();
+    return nickname_manager::instance.get();
 }
 
 void nickname_manager::destroy_instance() { nickname_manager::instance = nullptr; }
@@ -67,7 +68,7 @@ static bool insert_database(event_info const &event) {
     ostrs_sql_command << "insert into " NICK_TABLE_NAME " values ( " << event.user_id << ", " << event.group_id << ", "
                       << "'" << nickname_encode(event.nickname) << "'"
                       << ");";
-    db_manager::get_instance()->exec_noquery(ostrs_sql_command.str().c_str());
+    return db_manager::get_instance()->exec_noquery(ostrs_sql_command.str().c_str());
 }
 
 static bool update_database(event_info const &event) {

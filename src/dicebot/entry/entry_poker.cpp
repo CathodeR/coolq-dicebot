@@ -1,5 +1,6 @@
 #include "./entry_poker.h"
 
+#include <functional>
 #include <regex>
 
 #include "../data/poker_manager.h"
@@ -58,7 +59,6 @@ static auto draw_poker = [](const std::string &suffix, const event_info &event, 
 };
 
 static auto shuffle_poker = [](const std::string &suffix, const event_info &event, std::string &response) noexcept -> bool {
-    poker::poker_type card;
     auto p_deck = poker::poker_manager::get_instance()->get_deck(event.group_id);
     p_deck->shuffle();
 

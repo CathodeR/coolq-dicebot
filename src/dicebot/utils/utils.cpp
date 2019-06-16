@@ -1,13 +1,15 @@
 #include "./utils.h"
 #include <algorithm>
+#include <locale>
 #include <vector>
+
 using namespace dicebot;
 
 void utils::remove_blank(std::string& source) {
     std::vector<char> container;
     container.reserve(source.size() + 1);
     for (auto& item : source) {
-        if (std::isblank(item)) continue;
+        if (std::isblank(item, std::locale(""))) continue;
         container.push_back(item);
     }
     container.push_back('\0');
