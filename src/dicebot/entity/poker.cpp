@@ -28,10 +28,20 @@ constexpr poker::poker_type standard_deck[] = {
 constexpr char poker_name_ascii[][14] = {
     "heart 2",   "Heart 3",   "Heart 4",   "Heart 5",   "Heart 6",   "Heart 7",   "Heart 8",   "Heart 9",    "Heart 10",
     "Heart J",   "Heart Q",   "Heart K",   "Heart A",   "Spade 2",   "Spade 3",   "Spade 4",   "Spade 5",    "Spade 6",
-    "Spade 7",   "Spade 8",   "Spade 9",   "Spade 10",  "  Spade J", "Spade Q",   "Spade K",   "Spade A",    "Diamond 2",
+    "Spade 7",   "Spade 8",   "Spade 9",   "Spade 10",  "Spade J",   "Spade Q",   "Spade K",   "Spade A",    "Diamond 2",
     "Diamond 3", "Diamond 4", "Diamond 5", "Diamond 6", "Diamond 7", "Diamond 8", "Diamond 9", "Diamond 10", "Diamond J",
     "Diamond Q", "Diamond K", "Diamond A", "Club 2",    "Club 3",    "Club 4",    "Club 5",    "Club 6",     "Club 7",
     "Club 8",    "Club 9",    "Club 10",   "Club J",    "Club Q",    "Club K",    "Club A",    "Joker",      "Joker(bw)"};
+
+constexpr char poker_name_unicode_lite[][14] = {
+    "♡2", "♡3", "♡4", "♡5",  "♡6", "♡7", "♡8", "♡9", "♡10", "♡J", "♡Q", "♡K",  "♡A", "♠2", "♠3", "♠4", "♠5",    "♠6",
+    "♠7", "♠8", "♠9", "♠10", "♠J", "♠Q", "♠K", "♠A", "♢2",  "♢3", "♢4", "♢5",  "♢6", "♢7", "♢8", "♢9", "♢10",   "♢J",
+    "♢Q", "♢K", "♢A", "♣2",  "♣3", "♣4", "♣5", "♣6", "♣7",  "♣8", "♣9", "♣10", "♣J", "♣Q", "♣K", "♣A", "Joker", "Joker(bw)"};
+
+constexpr char poker_name_unicode_pretty[][14] = {"🂲", "🂳", "🂴", "🂵", "🂶", "🂷", "🂸", "🂹", "🂺", "🂻", "🂽", "🂾", "🂱", "🂢",
+                                                  "🂣", "🂤", "🂥", "🂦", "🂧", "🂨", "🂩", "🂪", "🂫", "🂭", "🂮", "🂡", "🃂", "🃃",
+                                                  "🃄", "🃅", "🃆", "🃇", "🃈", "🃉", "🃊", "🃋", "🃍", "🃎", "🃁", "🃒", "🃓", "🃔",
+                                                  "🃕", "🃖", "🃗", "🃘", "🃙", "🃚", "🃛", "🃝", "🃞", "🃑", "🃟", "🃏"};
 
 const std::unordered_map<std::string, poker::poker_type> card_names = {{"h2", heart_2},
                                                                        {"h3", heart_3},
