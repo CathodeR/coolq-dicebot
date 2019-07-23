@@ -122,8 +122,7 @@ tokenizer::tokenizer(std::deque<token_t>& tokens, tokenizer_flag const& flag, st
 
     if (flag.parse_macros) {
         this->do_parse_identifier = true;
-        for (auto const& pair : *(this->macro_map)) {
-            std::string key = pair.first;
+        for (auto const& [key, value] : *(this->macro_map)) {
             if (key.size() > 3) continue;
             utils::lower_case(key);
             if (key == "d") this->ambi_flag.ambiguity_d = true;
