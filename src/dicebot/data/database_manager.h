@@ -36,39 +36,41 @@ namespace dicebot::database {
 
     class sqlstmt_binder {
         sqlite3_stmt *stmt;
-        sqlstmt_binder(sqlite3_stmt *){};
 
         template <class... Args>
         void column_recur(int which, int64_t &val, Args &... args) {
             val = sqlite3_column_int64(stmt, which);
-            this->column_recur(which + 1, std::forward(args)...);
+            this->column_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
 
         template <class... Args>
         void column_recur(int which, std::string &val, Args &... args) {
-            val = sqlite3_column_text(stmt, which);
-            this->column_recur(which + 1, std::forward(args)...);
+            val = reinterpret_cast<const char *>(sqlite3_column_text(stmt, which));
+            this->column_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
 
         template <class... Args>
         void column_recur(int which, int &val, Args &... args) {
             val = sqlite3_column_int(stmt, which);
-            this->column_recur(which + 1, std::forward(args)...);
+            this->column_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
 
         template <class... Args>
         void column_recur(int which, bool &val, Args &... args) {
             val = sqlite3_column_int(stmt, which) > 0;
-            this->column_recur(which + 1, std::forward(args)...);
+            this->column_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
+
+        void column_recur(int which) {}
 
     public:
         template <class... Args>
         void column(Args &... args) {
-            this->column_recur(0, std::forward(args)...);
+            this->column_recur(0, std::forward<decltype(args)>(args)...);
         }
-        int step() { sqlite3_step(stmt); }
+        int step() { return sqlite3_step(stmt); }
 
+        sqlstmt_binder(sqlite3_stmt *para) { stmt = para; };
         sqlstmt_binder(const sqlstmt_binder &) = delete;
         sqlstmt_binder &operator=(const sqlstmt_binder &) = delete;
 
@@ -83,35 +85,40 @@ namespace dicebot::database {
         template <class... Args>
         void bind_recur(int which, int64_t val, Args... args) {
             sqlite3_bind_int64(stmt, which, val);
-            this->column_recur(which + 1, std::forward(args)...);
+            this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
         void bind_recur(int which, int val, Args... args) {
             sqlite3_bind_int(stmt, which, val);
-            this->column_recur(which + 1, std::forward(args)...);
+            this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
         void bind_recur(int which, const char *val, Args... args) {
-            sqlite3_bind_text(stmt, which, val, SQLITE_STATIC);
-            this->column_recur(which + 1, std::forward(args)...);
+            sqlite3_bind_text(stmt, which, val, -1, SQLITE_STATIC);
+            this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
+        }
+        template <class... Args>
+        void bind_recur(int which, const std::string &val, Args... args) {
+            sqlite3_bind_text(stmt, which, val.data(), -1, SQLITE_STATIC);
+            this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
         void bind_recur(int which, bool val, Args... args) {
             sqlite3_bind_int(stmt, which, val ? 1 : 0);
-            this->column_recur(which + 1, std::forward(args)...);
+            this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
+        void bind_recur(int which) {}
 
     public:
+        sqlstmt_wrapper() { this->stmt = nullptr; }
         sqlstmt_wrapper(sqlite3 *db, const char *sql) {
             const char *tail;
             sqlite3_prepare_v2(db, sql, -1, &this->stmt, &tail);
         }
 
-        friend sqlstmt_binder::sqlstmt_binder(sqlite3_stmt *para) { sqlstmt_binder::stmt = para; }
-
         template <class... Args>
         sqlstmt_binder bind(Args... args) {
-            this->bind_recur(std::forward(args)...);
+            this->bind_recur(1, std::forward<decltype(args)>(args)...);
             return sqlstmt_binder(stmt);
         }
     };
