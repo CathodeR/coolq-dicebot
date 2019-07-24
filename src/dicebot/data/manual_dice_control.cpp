@@ -1,8 +1,5 @@
 #include "./manual_dice_control.h"
 
-#ifdef _DEBUG
-#include <iostream>
-#endif
 #include <sstream>
 
 #include "../entity/manual_dice.h"
