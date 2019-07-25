@@ -83,27 +83,27 @@ namespace dicebot::database {
         sqlite3_stmt *stmt;
 
         template <class... Args>
-        void bind_recur(int which, int64_t val, Args... args) {
+        void bind_recur(int which, const int64_t &val, const Args &... args) {
             sqlite3_bind_int64(stmt, which, val);
             this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
-        void bind_recur(int which, int val, Args... args) {
+        void bind_recur(int which, const int &val, const Args &... args) {
             sqlite3_bind_int(stmt, which, val);
             this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
-        void bind_recur(int which, const char *val, Args... args) {
+        void bind_recur(int which, const char *&val, const Args &... args) {
             sqlite3_bind_text(stmt, which, val, -1, SQLITE_STATIC);
             this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
-        void bind_recur(int which, const std::string &val, Args... args) {
+        void bind_recur(int which, const std::string &val, const Args &... args) {
             sqlite3_bind_text(stmt, which, val.data(), -1, SQLITE_STATIC);
             this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
         template <class... Args>
-        void bind_recur(int which, bool val, Args... args) {
+        void bind_recur(int which, const bool &val, const Args &... args) {
             sqlite3_bind_int(stmt, which, val ? 1 : 0);
             this->bind_recur(which + 1, std::forward<decltype(args)>(args)...);
         }
@@ -117,7 +117,7 @@ namespace dicebot::database {
         }
 
         template <class... Args>
-        sqlstmt_binder bind(Args... args) {
+        sqlstmt_binder bind(const Args &... args) {
             this->bind_recur(1, std::forward<decltype(args)>(args)...);
             return sqlstmt_binder(stmt);
         }
