@@ -33,13 +33,13 @@ sqlstmt_wrapper sqlstmt_manual_dice_exist;
 
 static bool insert_database(const int64_t &qqid, const int64_t &groupid, const manual_dice &manual_dice_target) {
     std::string encoded_str = manual_dice_target.encode();
-    auto binded = sqlstmt_manual_dice_insert.bind(qqid, groupid, encoded_str.data());
+    auto binded = sqlstmt_manual_dice_insert.bind(qqid, groupid, encoded_str);
     return binded.step() == SQLITE_DONE;
 }
 
 static bool update_database(const int64_t &qqid, const int64_t &groupid, const manual_dice &manual_dice_target) {
     std::string encoded_str = manual_dice_target.encode();
-    auto binded = sqlstmt_manual_dice_update.bind(qqid, groupid, encoded_str.data());
+    auto binded = sqlstmt_manual_dice_update.bind(qqid, groupid, encoded_str);
     return binded.step() == SQLITE_DONE;
 }
 
